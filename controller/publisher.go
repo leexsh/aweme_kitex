@@ -17,7 +17,7 @@ type VideoListResponse struct {
 	VideoList []Video `json:"video_list,omitempty"`
 }
 
-func Publisher(c *gin.Context) {
+func Publish(c *gin.Context) {
 	name := c.Query("username")
 
 	if _, ok := usersLoginInfo[name]; !ok {

@@ -12,9 +12,12 @@ type CommentListResponse struct {
 }
 
 func CommentAction(c *gin.Context) {
-	name := c.Query("name")
+	name := c.Query("username")
 	if _, exist := usersLoginInfo[name]; exist {
-		c.JSON(200, Response{StatusCode: 0})
+		c.JSON(200, Response{
+			StatusCode: 0,
+			StatusMsg:  "success",
+		})
 	} else {
 		c.JSON(200, Response{StatusCode: -1, StatusMsg: "User doestn't exist"})
 	}

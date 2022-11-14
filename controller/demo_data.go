@@ -27,7 +27,7 @@ var DemoComments = []Comment{
 
 var DemoUser = User{
 	Id:            1,
-	Name:          "John Doe",
+	Name:          "John",
 	FollowCount:   20,
 	FollowerCount: 12,
 	IsFollow:      false,

@@ -1,5 +1,13 @@
 package routers
 
-import "github.com/gin-gonic/gin"
+import (
+	"aweme_kitex/controller"
 
-func Follow(apiRouter *gin.RouterGroup) {}
+	"github.com/gin-gonic/gin"
+)
+
+func Follow(apiRouter *gin.RouterGroup) {
+	apiRouter.POST("/relation/action/", controller.RelationAction)
+	apiRouter.GET("/relation/follow/list/", controller.FollowList)
+	apiRouter.GET("/relation/follower/list/", controller.FollowerList)
+}

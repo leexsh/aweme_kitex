@@ -14,7 +14,7 @@ var err error
 
 func init() {
 	// 读取ini
-	config, err := ini.Load("config.ini")
+	config, err := ini.Load("./models/config.ini")
 	if err != nil {
 		fmt.Println("Failed to read file:%v", err)
 		os.Exit(-1)
