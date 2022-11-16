@@ -9,5 +9,5 @@ import (
 func User(apiRouter *gin.RouterGroup) {
 	apiRouter.GET("/user/", controller.UserInfo)
 	apiRouter.POST("/user/register/", controller.Register)
-	apiRouter.POST("/user/login", controller.Login)
+	apiRouter.POST("/user/login/", controller.Login)
 }
