@@ -3,9 +3,10 @@ package controller
 import "github.com/gin-gonic/gin"
 
 func FavouriteAction(c *gin.Context) {
-	name := c.Query("username")
+	// name := c.Query("username")
+	identity := c.Query("identity")
 
-	if _, ok := usersLoginInfo[name]; ok {
+	if _, ok := usersLoginInfo[identity]; ok {
 		c.JSON(200, Response{
 			StatusCode: 0,
 			StatusMsg:  "success",
@@ -15,6 +16,7 @@ func FavouriteAction(c *gin.Context) {
 			-1, "User doesn't exist",
 		})
 	}
+
 }
 
 func FavouriteList(c *gin.Context) {

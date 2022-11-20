@@ -11,11 +11,21 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
+	uuid2 "github.com/hashicorp/go-uuid"
 )
 
 const (
 	TEMPLATE = "2006-01-02 15:04:05"
 )
+
+// uuid
+func GenerateUUID() string {
+	str, err := uuid2.GenerateUUID()
+	if err != nil {
+		return ""
+	}
+	return str[0:15]
+}
 
 // UnixToTime 时间戳->日期
 func UnixToTime(timestamp int) string {

@@ -7,14 +7,18 @@ CREATE TABLE `user`
     `password`    varchar(32)        NOT NULL DEFAULT '' COMMENT '密码',
     `follow_count` bigint(20) unsigned NOT NULL DEFAULT 0 COMMENT '关注总数',
     `follower_count` bigint(20) unsigned NOT NULL DEFAULT 0 COMMENT '粉丝总数',
+    `is_follow` tinyint NOT NULL default 0 COMMENT '是否主播',
+    `created_time` timestamp null comment '创建时间',
+    `updated_time` timestamp null comment '更新时间',
+    `deleted_time` timestamp null comment '删除时间',
     PRIMARY KEY (`id`)
 ) ENGINE = InnoDB
   DEFAULT CHARSET = utf8mb4 COMMENT ='用户表';
 
-INSERT INTO `user`
-VALUES (1, 'Jerry', 'jerry', 0, 0),
-       (2, 'Tom', 'Tom', 1, 0),
-       (3, 'Amy', 'Amy', 0, 1);
+INSERT INTO `user`(id, name, password, follow_count, follower_count, is_follow)
+VALUES (1, 'Jerry', 'jerry', 12, 23, 1),
+       (2, 'Tom', 'Tom', 1, 0, 0),
+       (3, 'Amy', 'Amy', 0, 1, 1);
 
 DROP TABLE IF EXISTS `video`;
 CREATE TABLE `video`
