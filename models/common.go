@@ -1,6 +1,10 @@
 package models
 
-import "gorm.io/gorm"
+import (
+	"time"
+
+	"gorm.io/gorm"
+)
 
 // common struct
 type Response struct {
@@ -8,15 +12,22 @@ type Response struct {
 	StatusMsg  string `json:"status_msg,omitempty"`
 }
 
+type Favourite struct {
+	Identity string `json:"identity,omitempty"`
+	UserId   string `json:"user_id,omitempty"`
+	VideoId  string `json:"video_id,omitempty"`
+}
+
 // video
 type Video struct {
-	Id             int64  `json:"id,omitempty"` // id
-	Author         User   `json:"author"`       // author
+	*gorm.Model    `json:",omitempty"`
+	Id             string `json:"id,omitempty"gorm:"column:video_id"` // id
+	Author         string `json:"author"gorm:"column:user_id"`        // author
 	PlayUrl        string `json:"play_url,omitempty"`
 	CoverUrl       string `json:"cover_url,omitempty"`
 	FavouriteCount int64  `json:"favourite_count,omitempty"`
 	CommentCount   int64  `json:"comment_count,omitempty"`
-	IsFavourite    bool   `json:"is_favourite,omitempty"`
+	IsFavourite    bool   `json:"is_favourite,omitempty"gorm:"-"`
 }
 
 type Comment struct {
@@ -28,8 +39,7 @@ type Comment struct {
 
 type User struct {
 	*gorm.Model   `json:",omitempty"`
-	Id            int64  `json:"id,omitempty"` // 自增id
-	Identity      string `json:"identity,omitempty"`
+	UserId        string `json:"identity,omitempty"`
 	Name          string `json:"name,omitempty"`
 	Password      string `json:"password,omitempty"`
 	FollowCount   int64  `json:"follow_count,omitempty"`
@@ -47,4 +57,14 @@ type Users struct {
 	Password  string `json:"password"`
 	FanNum    int64  `json:"follow_count,omitempty"`
 	FollowNum int64  `json:"follow_count,omitempty"`
+}
+
+type Videos struct {
+	Id            int64     `json:"id,omitempty"`
+	PlayUrl       string    `json:"play_url" json:"play_url,omitempty"`
+	CoverUrl      string    `json:"cover_url,omitempty"`
+	FavoriteCount int64     `json:"favorite_count,omitempty"`
+	CommentCount  int64     `json:"comment_count,omitempty"`
+	Create_at     time.Time `json:"create_at"`
+	Title         string    `json:"title"`
 }

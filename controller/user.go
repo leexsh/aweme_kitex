@@ -17,8 +17,7 @@ import (
 var (
 	usersLoginInfo = map[string]User{
 		"caiXuKun": {
-			Id:            1,
-			Identity:      "asdd",
+			UserId:        "asdd",
 			Name:          "caiXuKun",
 			FollowerCount: 5,
 			FollowCount:   20,
@@ -66,15 +65,14 @@ func Register(c *gin.Context) {
 	} else {
 		atomic.AddInt64(&userIdSequeue, 1)
 		newUser := User{
-			Id:       userIdSequeue,
-			Identity: utils.GenerateUUID(),
-			Name:     userName,
+			UserId: utils.GenerateUUID(),
+			Name:   userName,
 		}
-		usersLoginInfo[newUser.Identity] = newUser
+		usersLoginInfo[newUser.UserId] = newUser
 
 		// insert to data
 		newUserData := models.User{
-			Identity:      utils.GenerateUUID(),
+			UserId:        utils.GenerateUUID(),
 			Name:          userName,
 			Password:      utils.Md5(password),
 			FollowCount:   0,
@@ -89,7 +87,7 @@ func Register(c *gin.Context) {
 					StatusCode: 0,
 					StatusMsg:  fmt.Sprintf("write fail, err: %s", res.Error.Error()),
 				},
-				UserId: newUserData.Identity,
+				UserId: newUserData.UserId,
 			})
 			return
 		}
@@ -98,7 +96,7 @@ func Register(c *gin.Context) {
 				StatusCode: 0,
 				StatusMsg:  "write success",
 			},
-			UserId: newUserData.Identity,
+			UserId: newUserData.UserId,
 		})
 	}
 }
@@ -109,7 +107,7 @@ func Login(c *gin.Context) {
 	identity := c.Query("identity")
 
 	models.DB.Where("name=? AND password=?", username, utils.Md5(password)).First(&u)
-	token, err := utils.GenerateToken(u.Id, u.Name, utils.TokenExpire)
+	token, err := utils.GenerateToken(u.UserId, u.Name, utils.TokenExpire)
 	if err != nil {
 		c.JSON(http.StatusOK, UserLoginResponse{
 			Response: Response{
@@ -119,14 +117,14 @@ func Login(c *gin.Context) {
 	if user, exist := usersLoginInfo[identity]; exist {
 		c.JSON(http.StatusOK, UserLoginResponse{
 			Response: Response{StatusCode: 0, StatusMsg: "login success"},
-			UserId:   user.Identity,
+			UserId:   user.UserId,
 			UserName: user.Name,
 			Token:    token,
 		})
 	} else if u.Name == username {
 		// 写入缓存
-		usersLoginInfo[u.Identity] = User{
-			Id:            u.Id,
+		usersLoginInfo[u.UserId] = User{
+			UserId:        u.UserId,
 			Name:          u.Name,
 			FollowerCount: u.FollowCount,
 			FollowCount:   u.FollowerCount,
@@ -134,7 +132,7 @@ func Login(c *gin.Context) {
 		}
 		c.JSON(http.StatusOK, UserLoginResponse{
 			Response: Response{StatusCode: 0, StatusMsg: "login success"},
-			UserId:   u.Identity,
+			UserId:   u.UserId,
 			UserName: u.Name,
 			Token:    token,
 		})
@@ -156,6 +154,22 @@ func UserInfo(c *gin.Context) {
 			User: user,
 		})
 		return
+	}
+	u := models.User{}
+	models.DB.Table("user").Debug().Where("name=?", name).First(&u)
+	if u.UserId != "" {
+		c.JSON(http.StatusOK, UserResponse{
+			Response: Response{
+				StatusCode: 0,
+				StatusMsg:  "get user info success",
+			},
+			User: User{
+				UserId:        u.UserId,
+				Name:          u.Name,
+				FollowCount:   u.FollowCount,
+				FollowerCount: u.FollowerCount,
+			},
+		})
 	} else {
 		c.JSON(http.StatusOK, UserResponse{
 			Response: Response{

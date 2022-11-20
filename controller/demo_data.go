@@ -6,8 +6,8 @@ import (
 
 var DemoVideos = []Video{
 	{
-		Id:             1,
-		Author:         models.User(DemoUser),
+		Id:             "asd",
+		Author:         DemoUser.UserId,
 		PlayUrl:        "https://www.bilibili.com/video/BV1Ve4y147D2?t=4.7",
 		CoverUrl:       "https://c-ssl.duitang.com/uploads/item/202006/13/20200613202923_flfxg.jpg",
 		FavouriteCount: 2,
@@ -26,7 +26,7 @@ var DemoComments = []Comment{
 }
 
 var DemoUser = User{
-	Id:            1,
+	UserId:        "XXX",
 	Name:          "John",
 	FollowCount:   20,
 	FollowerCount: 12,

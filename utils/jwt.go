@@ -14,11 +14,11 @@ var (
 
 type UserClaim struct {
 	jwt.StandardClaims
-	Id   int64
+	Id   string
 	Name string
 }
 
-func GenerateToken(id int64, name string, second int64) (string, error) {
+func GenerateToken(id, name string, second int64) (string, error) {
 	uc := UserClaim{
 		Id:   id,
 		Name: name,

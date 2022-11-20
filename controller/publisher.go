@@ -37,7 +37,7 @@ func Publish(c *gin.Context) {
 	}
 	fileName := filepath.Base(data.Filename)
 	user := usersLoginInfo[name]
-	finalName := fmt.Sprintf("%d_%s", user.Id, fileName)
+	finalName := fmt.Sprintf("%d_%s", user.UserId, fileName)
 	saveFile := filepath.Join("./public/", finalName)
 	if err := c.SaveUploadedFile(data, saveFile); err != nil {
 		c.JSON(200, Response{

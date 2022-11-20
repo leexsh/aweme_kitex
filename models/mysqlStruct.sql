@@ -2,7 +2,8 @@
 # DROP TABLE if exists 'user';
 CREATE TABLE `user`
 (
-    `id`          bigint(20) unsigned NOT NULL AUTO_INCREMENT COMMENT '用户id',
+    `id`          bigint(20) unsigned NOT NULL AUTO_INCREMENT COMMENT '自增id',
+    `user_identity` varchar(256) NOT NULL COMMENT '真实id',
     `name`        varchar(32)        NOT NULL DEFAULT '' COMMENT '用户名称',
     `password`    varchar(32)        NOT NULL DEFAULT '' COMMENT '密码',
     `follow_count` bigint(20) unsigned NOT NULL DEFAULT 0 COMMENT '关注总数',
@@ -55,9 +56,10 @@ values (1, 1, 'ckx', 'https://www.bilibili.com/video/BV1Ve4y147D2?t=4.7',
 DROP TABLE IF EXISTS `favorite`;
 CREATE TABLE `favorite`
 (
-    `id`       bigint(20) unsigned NOT NULL AUTO_INCREMENT COMMENT '点赞id',
-    `user_id`  bigint(20) unsigned NOT NULL DEFAULT 0 COMMENT '用户id',
-    `video_id` bigint(20) unsigned NOT NULL DEFAULT 0 COMMENT '视频id',
+    `id`    bigint(20) unsigned NOT NULL AUTO_INCREMENT COMMENT '自增id',
+    `favour_identity`       varchar(256) NOT NULL COMMENT '真实id',
+    `user_identity` varchar(256) NOT NULL COMMENT '用户id',
+    `video_identity` varchar(256) NOT NULL COMMENT '视频id',
     PRIMARY KEY (`id`)
 ) ENGINE = InnoDB
   DEFAULT CHARSET = utf8mb4 COMMENT ='点赞表';
