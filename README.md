@@ -12,9 +12,9 @@ models                      存放数据库配置，共享结构和工具
 public                      存放本地视频文件
 
 
-model/example.sql           自动创建数据库
+model/mysql_struct.sql      MYSQL DDL
 
-model/app.ini               通过修改相关信息，自动打开数据库
+model/app.ini               数据库配置
 
 
 ## 3. 踩坑记录

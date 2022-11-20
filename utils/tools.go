@@ -24,7 +24,7 @@ func GenerateUUID() string {
 	if err != nil {
 		return ""
 	}
-	return str[0:15]
+	return str
 }
 
 // UnixToTime 时间戳->日期

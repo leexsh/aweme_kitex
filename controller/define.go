@@ -8,3 +8,7 @@ type (
 	Response models.Response
 	Comment  models.Comment
 )
+
+var (
+	db = models.DB
+)

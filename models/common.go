@@ -1,8 +1,6 @@
 package models
 
 import (
-	"time"
-
 	"gorm.io/gorm"
 )
 
@@ -30,11 +28,20 @@ type Video struct {
 	IsFavourite    bool   `json:"is_favourite,omitempty"gorm:"-"`
 }
 
+func (v *Video) TableName() string {
+	return "video"
+}
+
 type Comment struct {
-	Id         int64  `json:"id,omitempty"`
-	User       User   `json:"user"`
-	Content    string `json:"content,omitempty"`
-	CreateDate string `json:"create_date,omitempty"`
+	gorm.Model
+	Id      string `json:"id,omitempty"gorm:"column:comment_id"`
+	UserId  string `json:"user_id"`
+	VideoId string `json:"video_id"`
+	Content string `json:"content,omitempty"`
+}
+
+func (c *Comment) TableName() string {
+	return "comment"
 }
 
 type User struct {
@@ -49,22 +56,4 @@ type User struct {
 
 func (u *User) TableName() string {
 	return "user"
-}
-
-type Users struct {
-	Id        int64  `json:"id"`
-	Name      string `json:"name"`
-	Password  string `json:"password"`
-	FanNum    int64  `json:"follow_count,omitempty"`
-	FollowNum int64  `json:"follow_count,omitempty"`
-}
-
-type Videos struct {
-	Id            int64     `json:"id,omitempty"`
-	PlayUrl       string    `json:"play_url" json:"play_url,omitempty"`
-	CoverUrl      string    `json:"cover_url,omitempty"`
-	FavoriteCount int64     `json:"favorite_count,omitempty"`
-	CommentCount  int64     `json:"comment_count,omitempty"`
-	Create_at     time.Time `json:"create_at"`
-	Title         string    `json:"title"`
 }

@@ -10,7 +10,7 @@ import (
 
 func FavouriteAction(c *gin.Context) {
 	userIdentity := c.Query("identity")
-	// todo: use token
+	// todo: use midware to auth token
 	token := c.Query("token")
 	_, _ = utils.AnalyzeToke(token)
 

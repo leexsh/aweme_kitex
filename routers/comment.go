@@ -7,6 +7,6 @@ import (
 )
 
 func Comment(apiRouter *gin.RouterGroup) {
-	apiRouter.POST("/comments/action/", controller.CommentAction)
-	apiRouter.GET("/comments/list/", controller.CommentList)
+	apiRouter.POST("/comment/action/", controller.CommentAction)
+	apiRouter.GET("/comment/list/", controller.CommentList)
 }
