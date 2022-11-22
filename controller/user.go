@@ -27,7 +27,7 @@ var (
 
 	userIdSequeue = int64(1)
 
-	u    = models.User{}
+	u    = UserRawData{}
 	last = models.User{}
 )
 
@@ -71,15 +71,13 @@ func Register(c *gin.Context) {
 		usersLoginInfo[newUser.UserId] = newUser
 
 		// insert to data
-		newUserData := models.User{
+		newUserData := UserRawData{
 			UserId:        utils.GenerateUUID(),
 			Name:          userName,
 			Password:      utils.Md5(password),
 			FollowCount:   0,
 			FollowerCount: 0,
-			IsFollow:      false,
 		}
-		// models.DB.Select("identity", "name", "password", "follow_count", "follower_count", "is_follow").Create(&newUserData)
 		res := models.DB.Create(&newUserData)
 		if res.Error != nil {
 			c.JSON(http.StatusOK, UserRegisterResponse{
@@ -107,7 +105,7 @@ func Login(c *gin.Context) {
 	identity := c.Query("identity")
 
 	models.DB.Where("name=? AND password=?", username, utils.Md5(password)).First(&u)
-	token, err := utils.GenerateToken(u.UserId, u.Name, utils.TokenExpire)
+	token, err := utils.GenerateToken(u.UserId, u.Name)
 	if err != nil {
 		c.JSON(http.StatusOK, UserLoginResponse{
 			Response: Response{
@@ -144,8 +142,17 @@ func Login(c *gin.Context) {
 }
 
 func UserInfo(c *gin.Context) {
-	name := c.Query("username")
-	if user, exist := usersLoginInfo[name]; exist {
+	token := c.Query("token")
+	user, err := utils.AnalyzeToke(token)
+	if err != nil {
+		c.JSON(http.StatusOK, UserResponse{
+			Response: Response{
+				StatusCode: -1,
+				StatusMsg:  "occur error" + fmt.Sprintln(err.Error()),
+			},
+		})
+	}
+	if user, exist := usersLoginInfo[user.Id]; exist {
 		c.JSON(http.StatusOK, UserResponse{
 			Response: Response{
 				StatusCode: 0,
@@ -156,7 +163,7 @@ func UserInfo(c *gin.Context) {
 		return
 	}
 	u := models.User{}
-	models.DB.Table("user").Debug().Where("name=?", name).First(&u)
+	models.DB.Table("user").Debug().Where("user_id=?", user.Id).First(&u)
 	if u.UserId != "" {
 		c.JSON(http.StatusOK, UserResponse{
 			Response: Response{

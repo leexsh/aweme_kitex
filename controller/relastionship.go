@@ -34,7 +34,7 @@ func FollowList(c *gin.Context) {
 			StatusCode: 200,
 			StatusMsg:  "Success",
 		},
-		[]User{DemoUser},
+		[]User{},
 	})
 }
 
@@ -45,6 +45,6 @@ func FollowerList(c *gin.Context) {
 			StatusCode: 0,
 			StatusMsg:  "success",
 		},
-		[]User{DemoUser},
+		[]User{},
 	})
 }

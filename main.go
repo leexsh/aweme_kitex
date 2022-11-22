@@ -6,7 +6,7 @@ import (
 )
 
 func main() {
-	routers.Include(routers.Video, routers.Follow, routers.User, routers.Comment, routers.Favourite)
+	routers.Include(routers.Video, routers.Follow, routers.User, routers.Comment, routers.Favourite, routers.Feed)
 	r := routers.Init()
 	if err := r.Run(); err != nil {
 		fmt.Printf("startup service failed, err is %#\n", err)

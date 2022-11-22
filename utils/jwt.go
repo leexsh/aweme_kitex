@@ -2,14 +2,12 @@ package utils
 
 import (
 	"errors"
-	"time"
 
 	"github.com/dgrijalva/jwt-go"
 )
 
 var (
-	JwtKey            = "my_aweme_kitex"
-	TokenExpire int64 = 3600 * 12
+	JwtKey = "my_aweme_kitex"
 )
 
 type UserClaim struct {
@@ -18,12 +16,12 @@ type UserClaim struct {
 	Name string
 }
 
-func GenerateToken(id, name string, second int64) (string, error) {
+func GenerateToken(id, name string) (string, error) {
 	uc := UserClaim{
 		Id:   id,
 		Name: name,
 		StandardClaims: jwt.StandardClaims{
-			ExpiresAt: time.Now().Add(time.Second * time.Duration(second)).Unix(),
+			ExpiresAt: -1,
 		},
 	}
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, uc)

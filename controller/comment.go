@@ -3,6 +3,7 @@ package controller
 import (
 	"aweme_kitex/models"
 	"aweme_kitex/utils"
+	"fmt"
 
 	"github.com/gin-gonic/gin"
 )
@@ -17,7 +18,14 @@ type CommentListResponse struct {
 }
 
 func CommentAction(c *gin.Context) {
-	userId := c.Query("userId")
+	token := c.Query("token")
+	user, err := utils.AnalyzeToke(token)
+	if err != nil {
+		c.JSON(200, Response{
+			-1,
+			fmt.Sprintf("occur err:%s", err.Error()),
+		})
+	}
 	actionType := c.Query("actionType")
 	commentText := c.Query("content")
 	videoId := c.Query("videoId")
@@ -29,7 +37,7 @@ func CommentAction(c *gin.Context) {
 		// add comment
 		newComment := &models.Comment{
 			Id:      utils.GenerateUUID(),
-			UserId:  userId,
+			UserId:  user.Id,
 			VideoId: videoId,
 			Content: commentText,
 		}
@@ -57,6 +65,14 @@ func CommentAction(c *gin.Context) {
 }
 
 func CommentList(c *gin.Context) {
+	token := c.Query("token")
+	_, err := utils.AnalyzeToke(token)
+	if err != nil {
+		c.JSON(200, Response{
+			-1,
+			fmt.Sprintf("occur err:%s", err.Error()),
+		})
+	}
 	videoId := c.Query("videoId")
 	commentList := make([]Comment, 0)
 	db.Table("comment").Debug().Where("video_id=?", videoId).Find(&commentList)
