@@ -30,9 +30,7 @@ func CommentAction(c *gin.Context) {
 	commentText := c.Query("content")
 	videoId := c.Query("videoId")
 	commentId := c.Query("commentId")
-	// commentCount, _ := strconv.Atoi(c.Query("commentCount"))
-	// todo: use token
-	_ = c.Query("token")
+
 	if actionType == "1" {
 		// add comment
 		newComment := &models.Comment{

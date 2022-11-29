@@ -1,6 +1,7 @@
 package controller
 
 import (
+	"aweme_kitex/utils"
 	"errors"
 	"sync"
 
@@ -44,7 +45,8 @@ func NewVideoDaoInstance() *VideoDao {
 // 根据最新的时间戳获取视频信息
 func (v *VideoDao) QueryVideoByLatestTime(latestTime int64) ([]*VideoRawData, error) {
 	var videos []*VideoRawData
-	err := db.Limit(20).Order("created_at desc").Where("created_at<?", latestTime).Find(&videos).Error
+	// err := db.Table("video").Debug().Limit(20).Order("created_at desc").Where("created_at<?", latestTime).Find(&videos).Error
+	err := db.Table("video").Debug().Limit(20).Order("created_at desc").Where("created_at<?", utils.UnixToTime(latestTime)).Find(&videos).Error
 	if err == gorm.ErrRecordNotFound {
 		return nil, errors.New("not found videos")
 	}
@@ -114,7 +116,7 @@ func (u2 *UserDao) QueryUserByIds(uIds []string) (map[string]*UserRawData, error
 	var users []*UserRawData
 	err := db.Where("id in (?)", uIds).First(&users).Error
 	if err != nil {
-		return nil, errors.New("quert users fail")
+		return nil, errors.New("query users fail")
 	}
 	userMap := make(map[string]*UserRawData)
 	for _, user := range users {

@@ -28,7 +28,7 @@ func GenerateUUID() string {
 }
 
 // UnixToTime 时间戳->日期
-func UnixToTime(timestamp int) string {
+func UnixToTime(timestamp int64) string {
 	t := time.Unix(int64(timestamp), 0)
 	return t.Format(TEMPLATE)
 }

@@ -27,8 +27,7 @@ var (
 
 	userIdSequeue = int64(1)
 
-	u    = UserRawData{}
-	last = models.User{}
+	u = UserRawData{}
 )
 
 type UserLoginResponse struct {
@@ -41,6 +40,7 @@ type UserLoginResponse struct {
 type UserRegisterResponse struct {
 	Response
 	UserId string `json:"user_id,omitempty"`
+	Token  string `json:"token"`
 }
 
 type UserResponse struct {
@@ -71,10 +71,13 @@ func Register(c *gin.Context) {
 		usersLoginInfo[newUser.UserId] = newUser
 
 		// insert to data
+		userId := utils.GenerateUUID()
+		token, _ := utils.GenerateToken(userId, userName)
 		newUserData := UserRawData{
-			UserId:        utils.GenerateUUID(),
+			UserId:        userId,
 			Name:          userName,
 			Password:      utils.Md5(password),
+			Token:         token,
 			FollowCount:   0,
 			FollowerCount: 0,
 		}
@@ -86,6 +89,7 @@ func Register(c *gin.Context) {
 					StatusMsg:  fmt.Sprintf("write fail, err: %s", res.Error.Error()),
 				},
 				UserId: newUserData.UserId,
+				Token:  token,
 			})
 			return
 		}
@@ -95,6 +99,7 @@ func Register(c *gin.Context) {
 				StatusMsg:  "write success",
 			},
 			UserId: newUserData.UserId,
+			Token:  token,
 		})
 	}
 }
@@ -151,6 +156,7 @@ func UserInfo(c *gin.Context) {
 				StatusMsg:  "occur error" + fmt.Sprintln(err.Error()),
 			},
 		})
+		return
 	}
 	if user, exist := usersLoginInfo[user.Id]; exist {
 		c.JSON(http.StatusOK, UserResponse{
@@ -162,7 +168,7 @@ func UserInfo(c *gin.Context) {
 		})
 		return
 	}
-	u := models.User{}
+	u := UserRawData{}
 	models.DB.Table("user").Debug().Where("user_id=?", user.Id).First(&u)
 	if u.UserId != "" {
 		c.JSON(http.StatusOK, UserResponse{
