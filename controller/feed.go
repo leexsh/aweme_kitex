@@ -178,7 +178,7 @@ func (f *QueryVideoDataFlow) packVideoInfo() error {
 	if len(f.VideoList) == 0 {
 		f.NextTime = 0
 	} else {
-		f.NextTime = f.VideoData[len(f.VideoData)-1].CreatedTime
+		f.NextTime = f.VideoData[len(f.VideoData)-1].CreatedTime.Unix()
 	}
 	return nil
 }

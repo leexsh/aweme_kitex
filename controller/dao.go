@@ -4,22 +4,23 @@ import (
 	"aweme_kitex/utils"
 	"errors"
 	"sync"
+	"time"
 
 	"gorm.io/gorm"
 )
 
 // video
 type VideoRawData struct {
-	VideoId        string `gorm:"column:video_id"`
-	UserId         string `gorm:"column:user_id"`
-	Title          string `gorm:"column:title"`
-	PlayUrl        string `gorm:"column:play_url"`
-	CoverUrl       string `gorm:"column:cover_url"`
-	FavouriteCount int64  `gorm:"column:favourite_count"`
-	CommentCount   int64  `gorm:"column:comment_count"`
-	CreatedTime    int64  `gorm:"column:created_at"`
-	UpdatedTime    int64  `gorm:"column:updated_at"`
-	DeletedTime    int64  `gorm:"column:deleted_at"`
+	VideoId        string    `gorm:"column:video_id"`
+	UserId         string    `gorm:"column:user_id"`
+	Title          string    `gorm:"column:title"`
+	PlayUrl        string    `gorm:"column:play_url"`
+	CoverUrl       string    `gorm:"column:cover_url"`
+	FavouriteCount int64     `gorm:"column:favourite_count"`
+	CommentCount   int64     `gorm:"column:comment_count"`
+	CreatedTime    time.Time `gorm:"column:created_at"`
+	UpdatedTime    time.Time `gorm:"column:updated_at"`
+	DeletedTime    time.Time `gorm:"column:deleted_at"`
 }
 
 func (vr *VideoRawData) TableName() string {
@@ -45,7 +46,7 @@ func NewVideoDaoInstance() *VideoDao {
 // 根据最新的时间戳获取视频信息
 func (v *VideoDao) QueryVideoByLatestTime(latestTime int64) ([]*VideoRawData, error) {
 	var videos []*VideoRawData
-	// err := db.Table("video").Debug().Limit(20).Order("created_at desc").Where("created_at<?", latestTime).Find(&videos).Error
+	// err := db.Table("video").Debug().Limit(20).Order("created_at desc").Where("created_at<?", time.Unix(int64(latestTime), 0)).Find(&videos).Error
 	err := db.Table("video").Debug().Limit(20).Order("created_at desc").Where("created_at<?", utils.UnixToTime(latestTime)).Find(&videos).Error
 	if err == gorm.ErrRecordNotFound {
 		return nil, errors.New("not found videos")

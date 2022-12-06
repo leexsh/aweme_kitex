@@ -28,13 +28,18 @@ func GenerateUUID() string {
 }
 
 // UnixToTime 时间戳->日期
-func UnixToTime(timestamp int64) string {
+func UnixToTimeString(timestamp int64) string {
 	t := time.Unix(int64(timestamp), 0)
 	return t.Format(TEMPLATE)
 }
 
+func UnixToTime(timestamp int64) time.Time {
+	t := time.Unix(int64(timestamp), 0)
+	return t
+}
+
 // DateToUnix 日期->时间戳
-func DateToUnix(str string) int64 {
+func DateStringToUnix(str string) int64 {
 	t, err := time.ParseInLocation(TEMPLATE, str, time.Local)
 	if err != nil {
 		return 0
