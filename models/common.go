@@ -36,7 +36,7 @@ type Video struct {
 	CoverUrl       string `json:"cover_url,omitempty"`
 	FavouriteCount int64  `json:"favourite_count,omitempty"`
 	CommentCount   int64  `json:"comment_count,omitempty"`
-	IsFavourite    bool   `json:"is_favourite,omitempty"gorm:"-"`
+	IsFavourite    bool   `json:"is_favourite,omitempty"`
 	Title          string `json:"title,omitempty"`
 }
 

@@ -59,15 +59,15 @@ func (v *VideoDao) QueryVideoByLatestTime(latestTime int64) ([]*VideoRawData, er
 
 // user
 type UserRawData struct {
-	UserId        string `gorm:"column:user_id"`
-	Name          string `gorm:"column:name"`
-	Password      string `gorm:"column:password"`
-	Token         string `gorm:"column:token"`
-	FollowCount   int64  `gorm:"column:follow_count"`
-	FollowerCount int64  `gorm:"column:follower_count"`
-	CreatedTime   int64  `gorm:"column:created_at"`
-	UpdatedTime   int64  `gorm:"column:updated_at"`
-	DeletedTime   int64  `gorm:"column:deleted_at"`
+	UserId        string    `gorm:"column:user_id"`
+	Name          string    `gorm:"column:name"`
+	Password      string    `gorm:"column:password"`
+	Token         string    `gorm:"column:token"`
+	FollowCount   int64     `gorm:"column:follow_count"`
+	FollowerCount int64     `gorm:"column:follower_count"`
+	CreatedTime   time.Time `gorm:"column:created_at"`
+	UpdatedTime   time.Time `gorm:"column:updated_at"`
+	DeletedTime   time.Time `gorm:"column:deleted_at"`
 }
 
 func (u2 *UserRawData) TableName() string {
@@ -115,7 +115,7 @@ func NewUserDaoInstance() *UserDao {
 
 func (u2 *UserDao) QueryUserByIds(uIds []string) (map[string]*UserRawData, error) {
 	var users []*UserRawData
-	err := db.Where("id in (?)", uIds).First(&users).Error
+	err := db.Debug().Where("user_id in (?)", uIds).Find(&users).Error
 	if err != nil {
 		return nil, errors.New("query users fail")
 	}
@@ -134,7 +134,7 @@ type FavouriteRaw struct {
 }
 
 func (f *FavouriteRaw) TableName() string {
-	return "faveourite"
+	return "favourite"
 }
 
 type FavouriteDao struct {
@@ -156,7 +156,7 @@ func NewFavouriteDaoInstance() *FavouriteDao {
 // 根据uid 和 videoId 获取喜欢列表
 func (f *FavouriteDao) QueryFavoursByIds(currentUId string, videoIds []string) (map[string]*FavouriteRaw, error) {
 	var favours []*FavouriteRaw
-	err := db.Where("user_id=? AND video_id IN ?", currentUId, videoIds).Find(favours).Error
+	err := db.Table("favourite").Where("user_id=? AND video_id IN ?", currentUId, videoIds).Find(&favours).Error
 	if err == gorm.ErrRecordNotFound {
 		return nil, errors.New("favourite not found")
 	}
