@@ -12,11 +12,6 @@ import (
 评论
 */
 
-type CommentListResponse struct {
-	Response
-	CommentList []Comment `json:"comment_list,omitempty"`
-}
-
 func CommentAction(c *gin.Context) {
 	token := c.Query("token")
 	user, err := utils.AnalyzeToke(token)

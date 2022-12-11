@@ -12,15 +12,11 @@ import (
 发布作品
 */
 
-type VideoListResponse struct {
-	Response
-	VideoList []Video `json:"video_list,omitempty"`
-}
-
 func Publish(c *gin.Context) {
-	name := c.Query("username")
+	token := c.Query("token")
+	user, err := CheckToken(token)
 
-	if _, ok := usersLoginInfo[name]; !ok {
+	if err != nil {
 		c.JSON(http.StatusOK, gin.H{
 			"message": "User doesn't exist",
 		})
@@ -36,8 +32,7 @@ func Publish(c *gin.Context) {
 		return
 	}
 	fileName := filepath.Base(data.Filename)
-	user := usersLoginInfo[name]
-	finalName := fmt.Sprintf("%d_%s", user.UserId, fileName)
+	finalName := fmt.Sprintf("%s_%s", user.Name, fileName)
 	saveFile := filepath.Join("./public/", finalName)
 	if err := c.SaveUploadedFile(data, saveFile); err != nil {
 		c.JSON(200, Response{

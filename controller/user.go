@@ -14,40 +14,6 @@ import (
 用户
 */
 
-var (
-	usersLoginInfo = map[string]User{
-		"caiXuKun": {
-			UserId:        "asdd",
-			Name:          "caiXuKun",
-			FollowerCount: 5,
-			FollowCount:   20,
-			IsFollow:      true,
-		},
-	}
-
-	userIdSequeue = int64(1)
-
-	u = UserRawData{}
-)
-
-type UserLoginResponse struct {
-	Response
-	UserId   string `json:"user_id,omitempty"`
-	UserName string `json:"user_name,omitempty"`
-	Token    string `json:"token,omitempty"`
-}
-
-type UserRegisterResponse struct {
-	Response
-	UserId string `json:"user_id,omitempty"`
-	Token  string `json:"token"`
-}
-
-type UserResponse struct {
-	Response
-	User User `json:"user"`
-}
-
 func Register(c *gin.Context) {
 	userName := c.Query("username")
 	password := c.Query("password")

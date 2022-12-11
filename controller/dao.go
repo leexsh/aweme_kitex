@@ -77,23 +77,10 @@ func (u2 *UserRawData) TableName() string {
 type UserDao struct {
 }
 
-// type TokenDao struct {
-// }
-
 var (
-	userDao *UserDao
-	// tokenDao  *TokenDao
+	userDao  *UserDao
 	userOnce sync.Once
-	// tokenOnce sync.Once
 )
-
-// func NewTokenDaoInstance() *TokenDao {
-// 	tokenOnce.Do(
-// 		func() {
-// 			tokenDao = &TokenDao{}
-// 		})
-// 	return tokenDao
-// }
 
 func NewUserDaoInstance() *UserDao {
 	userOnce.Do(
@@ -102,16 +89,6 @@ func NewUserDaoInstance() *UserDao {
 		})
 	return userDao
 }
-
-// 根据token获取用户
-// func (t *UserDao) QueryUserIdByToken(identity string) (string, error) {
-// 	var user UserRawData
-// 	err := db.Where("token=?", identity).Find(&user).Error
-// 	if err != nil {
-// 		return "", err
-// 	}
-// 	return user.UserId, nil
-// }
 
 func (u2 *UserDao) QueryUserByIds(uIds []string) (map[string]*UserRawData, error) {
 	var users []*UserRawData
@@ -198,7 +175,7 @@ func NewRelationDaoInstance() *RelationDao {
 	return relationDao
 }
 
-// 根据当前用户Id和视频作者的id获取关注信息
+// 1vN 根据当前用户Id和视频作者的id获取关注信息
 func (r *RelationDao) QueryRelationByIds(currentUid string, userIds []string) (map[string]*RelationRaw, error) {
 	var relations []*RelationRaw
 	err := db.Where("user_id=? AND to_user_id IN ? AND status IN ?", currentUid, userIds, []int64{0, -1}).
@@ -219,4 +196,21 @@ func (r *RelationDao) QueryRelationByIds(currentUid string, userIds []string) (m
 		}
 	}
 	return relationMap, nil
+}
+
+// 1v1 get relationShip
+func (r *RelationDao) QueryRelationByUid(uid, toUid string) (*RelationRaw, error) {
+	var relation *RelationRaw
+	err := db.Debug().Where("(user_id=? AND to_user_id=?) OR (user_id=? AND to_user_id=?)", uid, toUid, toUid, uid).Find(relation).Error
+	return relation, err
+}
+
+func (r *RelationDao) InsertRaw(relation *RelationRaw) error {
+	err := db.Debug().Create(relation).Error
+	return err
+}
+
+func (r *RelationDao) UpdateRaw(relation *RelationRaw, status int64) error {
+	err := db.Debug().Model(relation).Update("status", relation.Status).Error
+	return err
 }

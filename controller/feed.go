@@ -16,10 +16,6 @@ import (
 direct get data from database
 */
 
-var (
-	defaultToken = "defaultToken"
-)
-
 // ------------service--------------------
 // 该层负责鉴权  向repository获取视频数据和封装数据
 
@@ -49,9 +45,11 @@ type QueryVideoDataFlow struct {
 }
 
 func (f *QueryVideoDataFlow) Do() ([]Video, int64, error) {
-	if err := f.checkToken(); err != nil {
+	user, err := CheckToken(f.Token)
+	if err != nil {
 		return nil, 0, err
 	}
+	f.CurrentId = user.Id
 
 	if err := f.prepareVideoInfo(); err != nil {
 		return nil, 0, err
@@ -60,20 +58,6 @@ func (f *QueryVideoDataFlow) Do() ([]Video, int64, error) {
 		return nil, 0, err
 	}
 	return f.VideoList, f.NextTime, nil
-}
-
-// 鉴权
-func (f *QueryVideoDataFlow) checkToken() error {
-	if f.Token == defaultToken {
-		f.CurrentId = "-1"
-		return nil
-	}
-	uc, err := utils.AnalyzeToke(f.Token)
-	if err != nil {
-		return err
-	}
-	f.CurrentId = uc.Id
-	return nil
 }
 
 // prepare video
