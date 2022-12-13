@@ -7,6 +7,8 @@ var (
 
 	defaultToken = "defaultToken"
 
+	address = "http://localhost:8080/aweme/"
+
 	usersLoginInfo = map[string]User{
 		"caiXuKun": {
 			UserId:        "asdd",

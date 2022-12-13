@@ -57,6 +57,18 @@ func (v *VideoDao) QueryVideoByLatestTime(latestTime int64) ([]*VideoRawData, er
 	return videos, nil
 }
 
+func (v *VideoDao) QueryVideosByUserId(userId string) ([]*VideoRawData, error) {
+	var videos []*VideoRawData
+	err := db.Table("video").Limit(20).Debug().Order("created_at desc").Where("user_id=?", userId).Find(&videos).Error
+	if err == gorm.ErrRecordNotFound {
+		return nil, errors.New("noe found videos")
+	}
+	if err != nil {
+		return nil, err
+	}
+	return videos, nil
+}
+
 // user
 type UserRawData struct {
 	UserId        string    `gorm:"column:user_id"`
