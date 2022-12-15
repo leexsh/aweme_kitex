@@ -1,7 +1,6 @@
 package controller
 
 import (
-	"aweme_kitex/models"
 	"aweme_kitex/utils"
 	"fmt"
 
@@ -28,27 +27,27 @@ func CommentAction(c *gin.Context) {
 
 	if actionType == "1" {
 		// add comment
-		newComment := &models.Comment{
+		newComment := &CommetRaw{
 			Id:      utils.GenerateUUID(),
 			UserId:  user.Id,
 			VideoId: videoId,
 			Content: commentText,
 		}
 		// 1. video comment +1
-		video := models.Video{}
-		models.DB.Table("video").Debug().Where("video_id=?", videoId).Find(&video)
-		models.DB.Table("video").Where("video_id=?", videoId).Update("comment_count", video.CommentCount+1)
+		video := VideoRawData{}
+		db.Table("video").Debug().Where("video_id=?", videoId).Find(&video)
+		db.Table("video").Where("video_id=?", videoId).Update("comment_count", video.CommentCount+1)
 
 		// 2.comment table +1
-		models.DB.Table("comment").Debug().Create(newComment)
+		db.Table("comment").Debug().Create(newComment)
 		c.JSON(200, newComment)
 
 	} else if actionType == "2" {
 		// delete comment
-		video := models.Video{}
-		models.DB.Table("video").Debug().Where("video_id=?", videoId).Find(&video)
-		models.DB.Table("video").Where("video_id=?", videoId).Update("comment_count", video.CommentCount-1)
-		db.Table("comment").Where("comment_id=?", commentId).Delete(&models.Comment{})
+		video := VideoRawData{}
+		db.Table("video").Debug().Where("video_id=?", videoId).Find(&video)
+		db.Table("video").Where("video_id=?", videoId).Update("comment_count", video.CommentCount-1)
+		db.Table("comment").Where("comment_id=?", commentId).Delete(&Comment{})
 		c.JSON(200, Response{
 			StatusCode: 0,
 			StatusMsg:  "delete comment success",
@@ -67,8 +66,19 @@ func CommentList(c *gin.Context) {
 		})
 	}
 	videoId := c.Query("videoId")
-	commentList := make([]Comment, 0)
-	db.Table("comment").Debug().Where("video_id=?", videoId).Find(&commentList)
+	commentRawList := make([]CommetRaw, 0)
+	db.Table("comment").Debug().Where("video_id=?", videoId).Find(&commentRawList)
+	commentList := make([]Comment, len(commentRawList))
+	for i, comment := range commentRawList {
+		comm := Comment{
+			Id:         comment.Id,
+			UserId:     comment.UserId,
+			VideoId:    comment.VideoId,
+			Content:    comment.Content,
+			CreateDate: utils.UnixToTimeString(comment.CreatedTime.Unix()),
+		}
+		commentList[i] = comm
+	}
 	c.JSON(200, CommentListResponse{
 		Response: Response{
 			StatusCode: 0,

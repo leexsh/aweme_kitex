@@ -1,6 +1,7 @@
 package controller
 
 import (
+	"aweme_kitex/models"
 	"aweme_kitex/utils"
 	"errors"
 	"fmt"
@@ -39,13 +40,13 @@ func RelationAction(c *gin.Context) {
 	if action == 1 {
 		// follow
 		var err error
-		newRelation := &RelationRaw{
+		newRelation := &models.RelationRaw{
 			Id:       utils.GenerateUUID(),
 			UserId:   user.Id,
 			ToUserId: toUserId,
 			Status:   1,
 		}
-		err = NewRelationDaoInstance().InsertRaw(newRelation)
+		err = models.NewRelationDaoInstance().InsertRaw(newRelation)
 		if err != nil {
 			errorResponse(c, -1, err)
 			return
@@ -87,7 +88,7 @@ func FollowList(c *gin.Context) {
 }
 
 func accordRelationGetUserInfo(uIds []string) ([]User, error) {
-	users := make([]UserRawData, 0)
+	users := make([]models.UserRawData, 0)
 	err := db.Table("user").Debug().Where("user_id IN ?", uIds).Find(&users).Error
 	if err != nil {
 		return nil, err

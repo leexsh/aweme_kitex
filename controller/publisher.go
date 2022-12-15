@@ -23,6 +23,7 @@ func FileServer(c *gin.Context) {
 		return
 	}
 	fileName := c.Query("name")
+	// fileName := c.Param("name")
 	path := dir + "/public/" + fileName
 	c.File(path)
 }
@@ -91,10 +92,10 @@ type QueryUserVideoList struct {
 	VideoList []Video
 
 	CurrentId    string
-	VideoData    []*VideoRawData
-	UserMap      map[string]*UserRawData
-	FavouriteMap map[string]*FavouriteRaw
-	RelationMap  map[string]*RelationRaw
+	VideoData    []*models.VideoRawData
+	UserMap      map[string]*models.UserRawData
+	FavouriteMap map[string]*models.FavouriteRaw
+	RelationMap  map[string]*models.RelationRaw
 }
 
 func NewQueryUserVideoList(token string) *QueryUserVideoList {
@@ -112,7 +113,7 @@ func (f *QueryUserVideoList) checkToken() error {
 }
 
 func (f *QueryUserVideoList) prepareVideoInfo() error {
-	videoData, err := NewVideoDaoInstance().QueryVideosByUserId(f.CurrentId)
+	videoData, err := models.NewVideoDaoInstance().QueryVideosByUserId(f.CurrentId)
 	if err != nil {
 		return err
 	}
@@ -124,7 +125,7 @@ func (f *QueryUserVideoList) prepareVideoInfo() error {
 		videoIds = append(videoIds, video.VideoId)
 	}
 
-	userMap, err := NewUserDaoInstance().QueryUserByIds(userIds)
+	userMap, err := models.NewUserDaoInstance().QueryUserByIds(userIds)
 	if err != nil {
 		return err
 	}
@@ -136,7 +137,7 @@ func (f *QueryUserVideoList) prepareVideoInfo() error {
 	// 获取点赞信息
 	go func() {
 		defer wg.Done()
-		favoriteMap, err := NewFavouriteDaoInstance().QueryFavoursByIds(f.CurrentId, videoIds)
+		favoriteMap, err := models.NewFavouriteDaoInstance().QueryFavoursByIds(f.CurrentId, videoIds)
 		if err != nil {
 			favoriteErr = err
 			return
@@ -146,7 +147,7 @@ func (f *QueryUserVideoList) prepareVideoInfo() error {
 	// 获取关注信息
 	go func() {
 		defer wg.Done()
-		relationMap, err := NewRelationDaoInstance().QueryRelationByIds(f.CurrentId, userIds)
+		relationMap, err := models.NewRelationDaoInstance().QueryRelationByIds(f.CurrentId, userIds)
 		if err != nil {
 			relationErr = err
 			return
@@ -184,7 +185,7 @@ func (f *QueryUserVideoList) packVideoInfo() error {
 		}
 		videoList = append(videoList, Video{
 			Id: video.VideoId,
-			Author: models.User{
+			Author: User{
 				UserId:        videoUser.UserId,
 				Name:          videoUser.Name,
 				FollowCount:   videoUser.FollowCount,

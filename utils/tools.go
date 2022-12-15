@@ -27,6 +27,10 @@ func GenerateUUID() string {
 	return str
 }
 
+func TimeToString(t time.Time) string {
+	return UnixToTimeString(t.Unix())
+}
+
 // UnixToTime 时间戳->日期
 func UnixToTimeString(timestamp int64) string {
 	t := time.Unix(int64(timestamp), 0)

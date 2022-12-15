@@ -23,7 +23,7 @@ func TestMysql(t *testing.T) {
 	database := config.Section("mysql").Key("database").String()
 	fmt.Println(ip, port, user, password, database)
 
-	dsn := fmt.Sprintf("%v:%v@tcp(%v:%v)/%v?charset=utf8mb4&parseTime=True&loc=Local", "root", os.Getenv("mysql_passwd"), "192.168.0.109", 3306, "aweme_community")
+	dsn := fmt.Sprintf("%v:%v@tcp(%v:%v)/%v?charset=utf8mb4&parseTime=True&loc=Local", "root", os.Getenv("mysql_passwd"), "121.5.114.14", 3306, "cloud_dist")
 	DB, err := gorm.Open(
 		mysql.Open(dsn),
 		&gorm.Config{

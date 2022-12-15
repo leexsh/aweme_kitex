@@ -38,10 +38,10 @@ type QueryVideoDataFlow struct {
 	NextTime   int64
 
 	CurrentId   string
-	VideoData   []*VideoRawData
-	UserMap     map[string]*UserRawData
-	FavoursMap  map[string]*FavouriteRaw
-	RelationMap map[string]*RelationRaw
+	VideoData   []*models.VideoRawData
+	UserMap     map[string]*models.UserRawData
+	FavoursMap  map[string]*models.FavouriteRaw
+	RelationMap map[string]*models.RelationRaw
 }
 
 func (f *QueryVideoDataFlow) Do() ([]Video, int64, error) {
@@ -63,7 +63,7 @@ func (f *QueryVideoDataFlow) Do() ([]Video, int64, error) {
 // prepare video
 func (f *QueryVideoDataFlow) prepareVideoInfo() error {
 	// 1.get video
-	videoData, err := NewVideoDaoInstance().QueryVideoByLatestTime(f.LatestTime)
+	videoData, err := models.NewVideoDaoInstance().QueryVideoByLatestTime(f.LatestTime)
 	if err != nil {
 		return err
 	}
@@ -78,7 +78,7 @@ func (f *QueryVideoDataFlow) prepareVideoInfo() error {
 	}
 
 	// 3. get user info
-	usersMap, err := NewUserDaoInstance().QueryUserByIds(authorIds)
+	usersMap, err := models.NewUserDaoInstance().QueryUserByIds(authorIds)
 	if err != nil {
 		return err
 	}
@@ -95,7 +95,7 @@ func (f *QueryVideoDataFlow) prepareVideoInfo() error {
 	// 5.获取点赞信息
 	go func() {
 		defer wg.Done()
-		favoursMap, err := NewFavouriteDaoInstance().QueryFavoursByIds(f.CurrentId, videoIds)
+		favoursMap, err := models.NewFavouriteDaoInstance().QueryFavoursByIds(f.CurrentId, videoIds)
 		if err != nil {
 			favourErr = err
 			return
@@ -105,7 +105,7 @@ func (f *QueryVideoDataFlow) prepareVideoInfo() error {
 	// 6.获取关注信息
 	go func() {
 		defer wg.Done()
-		relationMap, err := NewRelationDaoInstance().QueryRelationByIds(f.CurrentId, authorIds)
+		relationMap, err := models.NewRelationDaoInstance().QueryRelationByIds(f.CurrentId, authorIds)
 		if err != nil {
 			relationErr = err
 			return
@@ -143,7 +143,7 @@ func (f *QueryVideoDataFlow) packVideoInfo() error {
 		}
 		videoList = append(videoList, Video{
 			Id: video.VideoId,
-			Author: models.User{
+			Author: User{
 				UserId:        videoAuthor.UserId,
 				Name:          videoAuthor.Name,
 				FollowCount:   videoAuthor.FollowCount,

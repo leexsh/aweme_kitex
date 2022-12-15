@@ -1,7 +1,5 @@
 package controller
 
-import "aweme_kitex/models"
-
 var DemoVideos = []Video{
 	{
 		Id:             "asd",
@@ -23,7 +21,7 @@ var DemoComments = []Comment{
 	},
 }
 
-var DemoUser = models.User{
+var DemoUser = User{
 	UserId:        "XXX",
 	Name:          "John",
 	FollowCount:   20,

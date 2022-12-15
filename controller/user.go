@@ -39,7 +39,7 @@ func Register(c *gin.Context) {
 		// insert to data
 		userId := utils.GenerateUUID()
 		token, _ := utils.GenerateToken(userId, userName)
-		newUserData := UserRawData{
+		newUserData := models.UserRawData{
 			UserId:        userId,
 			Name:          userName,
 			Password:      utils.Md5(password),
@@ -134,7 +134,7 @@ func UserInfo(c *gin.Context) {
 		})
 		return
 	}
-	u := UserRawData{}
+	u := models.UserRawData{}
 	models.DB.Table("user").Debug().Where("user_id=?", user.Id).First(&u)
 	if u.UserId != "" {
 		c.JSON(http.StatusOK, UserResponse{

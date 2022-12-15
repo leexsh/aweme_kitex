@@ -1,58 +1,75 @@
 package models
 
 import (
-	"gorm.io/gorm"
+	"time"
 )
 
-// common struct
-type Response struct {
-	StatusCode int32  `json:"status_code,omitempty"`
-	StatusMsg  string `json:"status_msg,omitempty"`
+type VideoRawData struct {
+	VideoId        string    `gorm:"column:video_id"`
+	UserId         string    `gorm:"column:user_id"`
+	Title          string    `gorm:"column:title"`
+	PlayUrl        string    `gorm:"column:play_url"`
+	CoverUrl       string    `gorm:"column:cover_url"`
+	FavouriteCount int64     `gorm:"column:favourite_count"`
+	CommentCount   int64     `gorm:"column:comment_count"`
+	CreatedTime    time.Time `gorm:"column:created_at"`
+	UpdatedTime    time.Time `gorm:"column:updated_at"`
+	DeletedTime    time.Time `gorm:"column:deleted_at"`
 }
 
-type Favourite struct {
-	Id      string `json:"identity,omitempty"`
-	UserId  string `json:"user_id,omitempty"`
-	VideoId string `json:"video_id,omitempty"`
+func (vr *VideoRawData) TableName() string {
+	return "video"
 }
 
-// video
-type Video1 struct {
-	*gorm.Model    `json:",omitempty"`
-	Id             string `json:"id,omitempty"gorm:"column:video_id"` // id
-	Author         string `json:"author"gorm:"column:user_id"`        // author
-	PlayUrl        string `json:"play_url,omitempty"`
-	CoverUrl       string `json:"cover_url,omitempty"`
-	FavouriteCount int64  `json:"favourite_count,omitempty"`
-	CommentCount   int64  `json:"comment_count,omitempty"`
-	IsFavourite    bool   `json:"is_favourite,omitempty"gorm:"-"`
-	Title          string `json:"title,omitempty"`
+// user
+type UserRawData struct {
+	UserId        string    `gorm:"column:user_id"`
+	Name          string    `gorm:"column:name"`
+	Password      string    `gorm:"column:password"`
+	Token         string    `gorm:"column:token"`
+	FollowCount   int64     `gorm:"column:follow_count"`
+	FollowerCount int64     `gorm:"column:follower_count"`
+	CreatedTime   time.Time `gorm:"column:created_at"`
+	UpdatedTime   time.Time `gorm:"column:updated_at"`
+	DeletedTime   time.Time `gorm:"column:deleted_at"`
 }
 
-type Video struct {
-	Id             string `json:"id,omitempty"gorm:"column:video_id"` // id
-	Author         User   `json:"author"gorm:"column:user_id"`        // author
-	PlayUrl        string `json:"play_url,omitempty"`
-	CoverUrl       string `json:"cover_url,omitempty"`
-	FavouriteCount int64  `json:"favourite_count,omitempty"`
-	CommentCount   int64  `json:"comment_count,omitempty"`
-	IsFavourite    bool   `json:"is_favourite,omitempty"`
-	Title          string `json:"title,omitempty"`
+func (u2 *UserRawData) TableName() string {
+	return "user"
 }
 
-type Comment struct {
-	Id         string `json:"id,omitempty"gorm:"column:comment_id"`
-	UserId     string `json:"user_id"`
-	VideoId    string `json:"video_id"`
-	Content    string `json:"content,omitempty"`
-	CreateDate string `json:"createDate,omitempty"`
+// 喜欢
+type FavouriteRaw struct {
+	Id      string `gorm:"column:identity"`
+	UserId  string `gorm:"column:user_id"`
+	VideoId string `gorm:"column:video_id"`
 }
 
-type User struct {
-	UserId        string `json:"identity,omitempty"`
-	Name          string `json:"name,omitempty"`
-	Password      string `json:"password,omitempty"`
-	FollowCount   int64  `json:"follow_count,omitempty"`
-	FollowerCount int64  `json:"follower_count,omitempty"`
-	IsFollow      bool   `json:"is_follow,omitempty"`
+func (f *FavouriteRaw) TableName() string {
+	return "favourite"
+}
+
+// 关注
+type RelationRaw struct {
+	Id       string `gorm:"column:relation_id"`
+	UserId   string `gorm:"column:user_id"`
+	ToUserId string `gorm:"column:to_user_id"`
+	Status   int64  `gorm:"column:status"`
+}
+
+func (r *RelationRaw) TableName() string {
+	return "relation"
+}
+
+// 关注
+type CommentRaw struct {
+	Id          string    `gorm:"column:comment_id"`
+	UserId      string    `gorm:"column:user_id"`
+	VideoId     string    `gorm:"column:video_id"`
+	Content     string    `gorm:"column:content"`
+	CreatedTime time.Time `gorm:"column:created_at"`
+}
+
+func (c *CommentRaw) TableName() string {
+	return "comment"
 }

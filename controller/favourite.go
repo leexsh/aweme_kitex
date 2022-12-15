@@ -19,35 +19,35 @@ func FavouriteAction(c *gin.Context) {
 	}
 	videoId := c.Query("videoId")
 	action := c.Query("actionType")
-	favour := models.Favourite{}
-	video := models.Video{}
-	models.DB.Table("favourite").Debug().Where("user_id=? && video_id=?", user.Id, videoId).First(&favour)
+	favour := Favourite{}
+	video := VideoRawData{}
+	db.Table("favourite").Debug().Where("user_id=? && video_id=?", user.Id, videoId).First(&favour)
 	if favour.Id != "" {
 		if action == "1" {
 			// 设置faveourite
-			res := models.DB.Table("video").Debug().Where("video_id=? AND user_id=?", videoId, user.Id).Find(&video)
-			if res.Error != nil {
+			err := db.Table("video").Debug().Where("video_id=? AND user_id=?", videoId, user.Id).Find(&video).Error
+			if err != nil {
 				c.JSON(200, Response{
 					-1,
-					fmt.Sprintf("occur err:%s", res.Error.Error()),
+					fmt.Sprintf("occur err:%s", err),
 				})
 				return
 			}
 			favourNum := video.FavouriteCount + 1
-			models.DB.Table("video").Debug().Where("video_id=?", videoId).Update("favourite_count", favourNum)
-			favour = models.Favourite{
+			db.Table("video").Debug().Where("video_id=?", videoId).Update("favourite_count", favourNum)
+			favour = Favourite{
 				Id:      utils.GenerateUUID(),
 				UserId:  user.Id,
 				VideoId: videoId,
 			}
-			models.DB.Table("favourite").Debug().Create(&favour)
+			db.Table("favourite").Debug().Create(&favour)
 			c.JSON(200, Response{
 				0,
 				"收藏成功",
 			})
 		} else if action == "2" {
 			// 取消faveourite
-			res := models.DB.Table("video").Debug().Where("video_id=?", videoId).Find(&video)
+			res := db.Table("video").Debug().Where("video_id=?", videoId).Find(&video)
 			if res.Error != nil {
 				c.JSON(200, Response{
 					-1,
@@ -82,7 +82,7 @@ func FavouriteList(c *gin.Context) {
 	}
 
 	var videoIdList = make([]string, 10)
-	models.DB.Select("video_id").Debug().Table("favourite").Where("user_id=?", user.Id).Find(&videoIdList)
+	db.Select("video_id").Debug().Table("favourite").Where("user_id=?", user.Id).Find(&videoIdList)
 	videos := make([]VideoRawData, len(videoIdList))
 	for i := 0; i < len(videoIdList); i++ {
 		models.DB.Table("video").Debug().Select("video_id", "user_id", "title", "play_url", "cover_url", "favourite_count",
