@@ -13,7 +13,7 @@ import (
 
 func CommentAction(c *gin.Context) {
 	token := c.Query("token")
-	user, err := utils.AnalyzeToke(token)
+	user, err := CheckToken(token)
 	if err != nil {
 		c.JSON(200, Response{
 			-1,
@@ -24,6 +24,7 @@ func CommentAction(c *gin.Context) {
 	commentText := c.Query("content")
 	videoId := c.Query("videoId")
 	commentId := c.Query("commentId")
+	_ = c.Query("commetCount")
 
 	if actionType == "1" {
 		// add comment
@@ -71,11 +72,10 @@ func CommentList(c *gin.Context) {
 	commentList := make([]Comment, len(commentRawList))
 	for i, comment := range commentRawList {
 		comm := Comment{
-			Id:         comment.Id,
-			UserId:     comment.UserId,
-			VideoId:    comment.VideoId,
-			Content:    comment.Content,
-			CreateDate: utils.UnixToTimeString(comment.CreatedTime.Unix()),
+			Id:      comment.Id,
+			UserId:  comment.UserId,
+			VideoId: comment.VideoId,
+			Content: comment.Content,
 		}
 		commentList[i] = comm
 	}

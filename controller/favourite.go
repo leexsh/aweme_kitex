@@ -89,7 +89,7 @@ func FavouriteList(c *gin.Context) {
 			"comment_count").Where("video_id=?", videoIdList[i]).Find(&videos[i])
 	}
 	var authorIdList = make([]string, 10)
-	models.DB.Table("video").Debug().Select("user_id").Find(&authorIdList, videoIdList)
+	models.DB.Table("video").Debug().Select("user_id").Where("video_id in ?", videoIdList).Find(&authorIdList)
 	var videoList = make([]Video, len(videos))
 	for i := 0; i < len(videos); i++ {
 		videoList[i].Id = videos[i].VideoId

@@ -3,9 +3,6 @@ package controller
 import "aweme_kitex/models"
 
 type (
-	// Video    models.Video
-	// User     models.User
-	// Comment  models.Comment
 	VideoRawData models.VideoRawData
 	FavouriteRaw models.FavouriteRaw
 	UserRawData  models.UserRawData

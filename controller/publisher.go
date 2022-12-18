@@ -3,33 +3,21 @@ package controller
 import (
 	"aweme_kitex/models"
 	"aweme_kitex/utils"
+	"context"
 	"errors"
 	"fmt"
 	"net/http"
-	"os"
 	"path/filepath"
 	"sync"
 
 	"github.com/gin-gonic/gin"
 )
 
-func FileServer(c *gin.Context) {
-	dir, err := os.Getwd()
-	if err != nil {
-		c.JSON(200, Response{
-			-1,
-			err.Error(),
-		})
-		return
-	}
-	fileName := c.Query("name")
-	// fileName := c.Param("name")
-	path := dir + "/public/" + fileName
-	c.File(path)
-}
-
 /*
 发布作品
+	1.视频上传本地./public
+	2.视频上传COS
+	3.视频信息写入mysql
 */
 
 func Publish(c *gin.Context) {
@@ -53,7 +41,9 @@ func Publish(c *gin.Context) {
 	}
 	fileName := filepath.Base(data.Filename)
 	finalName := fmt.Sprintf("%s_%s", user.Name, fileName)
+
 	saveFile := filepath.Join("./public/", finalName)
+	// 1.save local
 	if err := c.SaveUploadedFile(data, saveFile); err != nil {
 		c.JSON(200, Response{
 			-1,
@@ -62,17 +52,29 @@ func Publish(c *gin.Context) {
 		return
 	}
 
-	title := c.PostForm("title")
+	// 2.upload COS
+	cosKey := fmt.Sprintf("%s/%s", user.Name, finalName)
+	_, _, err = models.COSClient.Object.Upload(
+		context.Background(), cosKey, saveFile, nil,
+	)
+	if err != nil {
+		c.JSON(200, Response{
+			-1,
+			err.Error(),
+		})
+		return
+	}
+	// 3.wirte to mysql
+	ourl := cos.Object.GetObjectURL(cosKey)
 
-	playUrl := address + saveFile
-
+	title := c.Query("title")
 	video := VideoRawData{
 		VideoId: utils.GenerateUUID(),
 		UserId:  user.Id,
 		Title:   title,
-		PlayUrl: playUrl,
+		PlayUrl: ourl.String(),
 	}
-	if err := db.Create(&video).Error; err != nil {
+	if err := db.Table("video").Debug().Create(&video).Error; err != nil {
 		c.JSON(200, Response{
 			-1,
 			err.Error(),
@@ -81,7 +83,7 @@ func Publish(c *gin.Context) {
 	}
 	c.JSON(200, Response{
 		0,
-		title + "uploaded successfully",
+		fmt.Sprintf("%s uploaded successfully", title),
 	})
 }
 

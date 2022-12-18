@@ -4,14 +4,16 @@ import (
 	"aweme_kitex/models"
 	"aweme_kitex/utils"
 	"errors"
+	"os"
 )
 
 var (
-	db = models.DB
+	db  = models.DB
+	cos = models.COSClient
 
 	defaultToken = "defaultToken"
 
-	address = "http://localhost:8080/aweme/"
+	address = os.Getenv("COS_ADDR")
 
 	usersLoginInfo = map[string]User{
 		"caiXuKun": {

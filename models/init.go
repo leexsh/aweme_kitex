@@ -2,17 +2,23 @@ package models
 
 import (
 	"fmt"
+	"net/http"
+	"net/url"
 	"os"
 
 	"github.com/joho/godotenv"
 	_ "github.com/joho/godotenv"
+	"github.com/tencentyun/cos-go-sdk-v5"
 	"gopkg.in/ini.v1"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
 )
 
-var DB *gorm.DB
-var err error
+var (
+	DB        *gorm.DB
+	err       error
+	COSClient *cos.Client
+)
 
 func init() {
 	// 读取ini
@@ -23,6 +29,8 @@ func init() {
 		fmt.Println("Failed to read file:%v", err)
 		os.Exit(-1)
 	}
+
+	// -------------mysql----------------
 	port := config.Section("mysql").Key("port").String()
 	user := config.Section("mysql").Key("user").String()
 	database := config.Section("mysql").Key("database").String()
@@ -44,4 +52,15 @@ func init() {
 	if err != nil {
 		panic(err)
 	}
+
+	// 	-----------COS--------
+	cosAddr := config.Section("cos").Key("cosAddr").String()
+	u, _ := url.Parse(cosAddr)
+	b := &cos.BaseURL{BucketURL: u}
+	COSClient = cos.NewClient(b, &http.Client{
+		Transport: &cos.AuthorizationTransport{
+			SecretID:  os.Getenv("COS_ID"),
+			SecretKey: os.Getenv("COS_KEY"),
+		},
+	})
 }
