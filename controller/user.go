@@ -1,7 +1,8 @@
 package controller
 
 import (
-	"aweme_kitex/models"
+	"aweme_kitex/cfg"
+	"aweme_kitex/model"
 	"aweme_kitex/utils"
 	"fmt"
 	"net/http"
@@ -19,18 +20,18 @@ func Register(c *gin.Context) {
 	password := c.Query("password")
 	identity := c.Query("identity")
 
-	res := models.DB.Where("name=?", userName).First(&u)
+	res := db.Where("name=?", userName).First(&u)
 	fmt.Println(res.RowsAffected)
 	if _, exist := usersLoginInfo[identity]; exist || u.Name == userName {
-		c.JSON(http.StatusOK, UserRegisterResponse{
-			Response: Response{
+		c.JSON(http.StatusOK, model.UserRegisterResponse{
+			Response: model.Response{
 				StatusCode: 0,
 				StatusMsg:  "User already exist",
 			},
 		})
 	} else {
 		atomic.AddInt64(&userIdSequeue, 1)
-		newUser := User{
+		newUser := model.User{
 			UserId: utils.GenerateUUID(),
 			Name:   userName,
 		}
@@ -39,7 +40,7 @@ func Register(c *gin.Context) {
 		// insert to data
 		userId := utils.GenerateUUID()
 		token, _ := utils.GenerateToken(userId, userName)
-		newUserData := models.UserRawData{
+		newUserData := model.UserRawData{
 			UserId:        userId,
 			Name:          userName,
 			Password:      utils.Md5(password),
@@ -47,10 +48,10 @@ func Register(c *gin.Context) {
 			FollowCount:   0,
 			FollowerCount: 0,
 		}
-		res := models.DB.Create(&newUserData)
+		res := cfg.DB.Create(&newUserData)
 		if res.Error != nil {
-			c.JSON(http.StatusOK, UserRegisterResponse{
-				Response: Response{
+			c.JSON(http.StatusOK, model.UserRegisterResponse{
+				Response: model.Response{
 					StatusCode: 0,
 					StatusMsg:  fmt.Sprintf("write fail, err: %s", res.Error.Error()),
 				},
@@ -59,8 +60,8 @@ func Register(c *gin.Context) {
 			})
 			return
 		}
-		c.JSON(http.StatusOK, UserRegisterResponse{
-			Response: Response{
+		c.JSON(http.StatusOK, model.UserRegisterResponse{
+			Response: model.Response{
 				StatusCode: 0,
 				StatusMsg:  "write success",
 			},
@@ -75,58 +76,52 @@ func Login(c *gin.Context) {
 	password := c.Query("password")
 	identity := c.Query("identity")
 
-	models.DB.Where("name=? AND password=?", username, utils.Md5(password)).First(&u)
+	db.Where("name=? AND password=?", username, utils.Md5(password)).First(&u)
 	token, err := utils.GenerateToken(u.UserId, u.Name)
 	if err != nil {
-		c.JSON(http.StatusOK, UserLoginResponse{
-			Response: Response{
+		c.JSON(http.StatusOK, model.UserLoginResponse{
+			Response: model.Response{
 				StatusCode: 0,
 				StatusMsg:  err.Error()}})
 	}
 	if user, exist := usersLoginInfo[identity]; exist {
-		c.JSON(http.StatusOK, UserLoginResponse{
-			Response: Response{StatusCode: 0, StatusMsg: "login success"},
+		c.JSON(http.StatusOK, model.UserLoginResponse{
+			Response: model.Response{StatusCode: 0, StatusMsg: "login success"},
 			UserId:   user.UserId,
 			UserName: user.Name,
 			Token:    token,
 		})
 	} else if u.Name == username {
 		// 写入缓存
-		usersLoginInfo[u.UserId] = User{
+		usersLoginInfo[u.UserId] = model.User{
 			UserId:        u.UserId,
 			Name:          u.Name,
 			FollowerCount: u.FollowCount,
 			FollowCount:   u.FollowerCount,
 			IsFollow:      false,
 		}
-		c.JSON(http.StatusOK, UserLoginResponse{
-			Response: Response{StatusCode: 0, StatusMsg: "login success"},
+		c.JSON(http.StatusOK, model.UserLoginResponse{
+			Response: model.Response{StatusCode: 0, StatusMsg: "login success"},
 			UserId:   u.UserId,
 			UserName: u.Name,
 			Token:    token,
 		})
 	} else {
-		c.JSON(http.StatusOK, UserLoginResponse{
-			Response: Response{StatusCode: 1, StatusMsg: "User doesn't exist"},
+		c.JSON(http.StatusOK, model.UserLoginResponse{
+			Response: model.Response{StatusCode: 1, StatusMsg: "User doesn't exist"},
 		})
 	}
 }
 
 func UserInfo(c *gin.Context) {
 	token := c.Query("token")
-	user, err := utils.AnalyzeToke(token)
+	user, err := CheckToken(token)
 	if err != nil {
-		c.JSON(http.StatusOK, UserResponse{
-			Response: Response{
-				StatusCode: -1,
-				StatusMsg:  "occur error" + fmt.Sprintln(err.Error()),
-			},
-		})
-		return
+		TokenErrorRes(c, err)
 	}
 	if user, exist := usersLoginInfo[user.Id]; exist {
-		c.JSON(http.StatusOK, UserResponse{
-			Response: Response{
+		c.JSON(http.StatusOK, model.UserResponse{
+			Response: model.Response{
 				StatusCode: 0,
 				StatusMsg:  "get user info success",
 			},
@@ -134,15 +129,15 @@ func UserInfo(c *gin.Context) {
 		})
 		return
 	}
-	u := models.UserRawData{}
-	models.DB.Table("user").Debug().Where("user_id=?", user.Id).First(&u)
+	u := model.UserRawData{}
+	db.Table("user").Debug().Where("user_id=?", user.Id).First(&u)
 	if u.UserId != "" {
-		c.JSON(http.StatusOK, UserResponse{
-			Response: Response{
+		c.JSON(http.StatusOK, model.UserResponse{
+			Response: model.Response{
 				StatusCode: 0,
 				StatusMsg:  "get user info success",
 			},
-			User: User{
+			User: model.User{
 				UserId:        u.UserId,
 				Name:          u.Name,
 				FollowCount:   u.FollowCount,
@@ -150,8 +145,8 @@ func UserInfo(c *gin.Context) {
 			},
 		})
 	} else {
-		c.JSON(http.StatusOK, UserResponse{
-			Response: Response{
+		c.JSON(http.StatusOK, model.UserResponse{
+			Response: model.Response{
 				StatusCode: -1,
 				StatusMsg:  "User doesn't exist",
 			},

@@ -1,15 +1,6 @@
-package controller
+package model
 
-import "aweme_kitex/models"
-
-type (
-	VideoRawData models.VideoRawData
-	FavouriteRaw models.FavouriteRaw
-	UserRawData  models.UserRawData
-	RelationRaw  models.RelationRaw
-	CommetRaw    models.CommentRaw
-)
-
+// ----------types & response---------------
 type Favourite struct {
 	Id      string `json:"identity,omitempty"`
 	UserId  string `json:"user_id,omitempty"`
@@ -18,8 +9,8 @@ type Favourite struct {
 
 // video
 type Video struct {
-	Id             string `json:"id,omitempty"gorm:"column:video_id"` // id
-	Author         User   `json:"author"gorm:"column:user_id"`        // author
+	Id             string `json:"id,omitempty"` // id
+	Author         User   `json:"author"`       // author
 	PlayUrl        string `json:"play_url,omitempty"`
 	CoverUrl       string `json:"cover_url,omitempty"`
 	FavouriteCount int64  `json:"favourite_count,omitempty"`
@@ -29,7 +20,7 @@ type Video struct {
 }
 
 type Comment struct {
-	Id         string `json:"id,omitempty"gorm:"column:comment_id"`
+	Id         string `json:"id,omitempty"`
 	UserId     string `json:"user_id"`
 	VideoId    string `json:"video_id"`
 	Content    string `json:"content,omitempty"`
@@ -83,4 +74,10 @@ type VideoListResponse struct {
 type CommentListResponse struct {
 	Response
 	CommentList []Comment `json:"comment_list,omitempty"`
+}
+
+type FeedResponse struct {
+	Response
+	VideoList []Video `json:"video_list,omitempty"`
+	NextTime  int64   `json:"next_time,omitempty"`
 }

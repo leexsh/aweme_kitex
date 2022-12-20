@@ -1,21 +1,43 @@
 package controller
 
 import (
-	"aweme_kitex/models"
+	"aweme_kitex/cfg"
+	"aweme_kitex/model"
 	"aweme_kitex/utils"
 	"errors"
-	"os"
+
+	"github.com/gin-gonic/gin"
+)
+
+type (
+// videoRawData model.VideoRawData
+// favouriteRaw model.FavouriteRaw
+// userRawData  model.UserRawData
+// relationRaw  model.RelationRaw
+// commetRaw    model.CommentRaw
+//
+// video     model.Video
+// favourite model.Favourite
+// comment   model.Comment
+// user      model.User
+
+// response             model.Response
+// userLoginResponse    model.UserLoginResponse
+// userRegisterResponse model.UserRegisterResponse
+// userResponse         model.UserResponse
+// userListResponse     model.UserListResponse
+// videoListResponse    model.VideoListResponse
+// commentListResponse  model.CommentListResponse
+// feedResponse         model.FeedResponse
 )
 
 var (
-	db  = models.DB
-	cos = models.COSClient
+	db  = cfg.DB
+	cos = cfg.COSClient
 
 	defaultToken = "defaultToken"
 
-	address = os.Getenv("COS_ADDR")
-
-	usersLoginInfo = map[string]User{
+	usersLoginInfo = map[string]model.User{
 		"caiXuKun": {
 			UserId:        "asdd",
 			Name:          "caiXuKun",
@@ -27,7 +49,7 @@ var (
 
 	userIdSequeue = int64(1)
 
-	u = models.UserRawData{}
+	u = model.UserRawData{}
 )
 
 // 鉴权
@@ -40,4 +62,12 @@ func CheckToken(token string) (*utils.UserClaim, error) {
 		return nil, err
 	}
 	return uc, nil
+}
+
+func TokenErrorRes(c *gin.Context, err error) {
+	c.JSON(200, model.Response{
+		-1,
+		err.Error(),
+	})
+	return
 }

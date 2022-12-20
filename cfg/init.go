@@ -1,4 +1,4 @@
-package models
+package cfg
 
 import (
 	"fmt"
@@ -23,8 +23,8 @@ var (
 func init() {
 	// 读取ini
 	path, _ := os.Getwd()
-	// config, err := ini.Load(os.Getwd() + "/models/config.ini")
-	config, err := ini.Load(path + "/models/config.ini")
+	// config, err := ini.Load(os.Getwd() + "/model/config.ini")
+	config, err := ini.Load(path + "/cfg/config.ini")
 	if err != nil {
 		fmt.Println("Failed to read file:%v", err)
 		os.Exit(-1)

@@ -1,8 +1,8 @@
 package controller
 
 import (
+	"aweme_kitex/model"
 	"aweme_kitex/utils"
-	"fmt"
 
 	"github.com/gin-gonic/gin"
 )
@@ -15,11 +15,9 @@ func CommentAction(c *gin.Context) {
 	token := c.Query("token")
 	user, err := CheckToken(token)
 	if err != nil {
-		c.JSON(200, Response{
-			-1,
-			fmt.Sprintf("occur err:%s", err.Error()),
-		})
+		TokenErrorRes(c, err)
 	}
+
 	actionType := c.Query("actionType")
 	commentText := c.Query("content")
 	videoId := c.Query("videoId")
@@ -28,14 +26,14 @@ func CommentAction(c *gin.Context) {
 
 	if actionType == "1" {
 		// add comment
-		newComment := &CommetRaw{
+		newComment := &model.CommentRaw{
 			Id:      utils.GenerateUUID(),
 			UserId:  user.Id,
 			VideoId: videoId,
 			Content: commentText,
 		}
 		// 1. video comment +1
-		video := VideoRawData{}
+		video := model.VideoRawData{}
 		db.Table("video").Debug().Where("video_id=?", videoId).Find(&video)
 		db.Table("video").Where("video_id=?", videoId).Update("comment_count", video.CommentCount+1)
 
@@ -45,11 +43,11 @@ func CommentAction(c *gin.Context) {
 
 	} else if actionType == "2" {
 		// delete comment
-		video := VideoRawData{}
+		video := model.VideoRawData{}
 		db.Table("video").Debug().Where("video_id=?", videoId).Find(&video)
 		db.Table("video").Where("video_id=?", videoId).Update("comment_count", video.CommentCount-1)
-		db.Table("comment").Where("comment_id=?", commentId).Delete(&Comment{})
-		c.JSON(200, Response{
+		db.Table("comment").Where("comment_id=?", commentId).Delete(&model.Comment{})
+		c.JSON(200, model.Response{
 			StatusCode: 0,
 			StatusMsg:  "delete comment success",
 		})
@@ -59,19 +57,18 @@ func CommentAction(c *gin.Context) {
 
 func CommentList(c *gin.Context) {
 	token := c.Query("token")
-	_, err := utils.AnalyzeToke(token)
+
+	_, err := CheckToken(token)
 	if err != nil {
-		c.JSON(200, Response{
-			-1,
-			fmt.Sprintf("occur err:%s", err.Error()),
-		})
+		TokenErrorRes(c, err)
 	}
+
 	videoId := c.Query("videoId")
-	commentRawList := make([]CommetRaw, 0)
+	commentRawList := make([]model.CommentRaw, 0)
 	db.Table("comment").Debug().Where("video_id=?", videoId).Find(&commentRawList)
-	commentList := make([]Comment, len(commentRawList))
+	commentList := make([]model.Comment, len(commentRawList))
 	for i, comment := range commentRawList {
-		comm := Comment{
+		comm := model.Comment{
 			Id:      comment.Id,
 			UserId:  comment.UserId,
 			VideoId: comment.VideoId,
@@ -79,8 +76,8 @@ func CommentList(c *gin.Context) {
 		}
 		commentList[i] = comm
 	}
-	c.JSON(200, CommentListResponse{
-		Response: Response{
+	c.JSON(200, model.CommentListResponse{
+		Response: model.Response{
 			StatusCode: 0,
 			StatusMsg:  "get comments success",
 		},

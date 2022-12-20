@@ -1,0 +1,42 @@
+package model
+
+import (
+	"errors"
+	"sync"
+
+	"gorm.io/gorm"
+)
+
+// ---------------收藏---------------
+type FavouriteDao struct {
+}
+
+var (
+	favouriteDao  *FavouriteDao
+	favouriteOnce sync.Once
+)
+
+func NewFavouriteDaoInstance() *FavouriteDao {
+	favouriteOnce.Do(
+		func() {
+			favouriteDao = &FavouriteDao{}
+		})
+	return favouriteDao
+}
+
+// 根据uid 和 videoId 获取喜欢列表
+func (f *FavouriteDao) QueryFavoursByIds(currentUId string, videoIds []string) (map[string]*FavouriteRaw, error) {
+	var favours []*FavouriteRaw
+	err := db.Table("favourite").Where("user_id=? AND video_id IN ?", currentUId, videoIds).Find(&favours).Error
+	if err == gorm.ErrRecordNotFound {
+		return nil, errors.New("favourite not found")
+	}
+	if err != nil {
+		return nil, err
+	}
+	favoursMap := make(map[string]*FavouriteRaw)
+	for _, favour := range favours {
+		favoursMap[favour.VideoId] = favour
+	}
+	return favoursMap, nil
+}

@@ -1,4 +1,4 @@
-package models
+package cfg
 
 import (
 	"context"
@@ -37,7 +37,6 @@ func TestMysql(t *testing.T) {
 	)
 	if err != nil {
 		t.Fatal(err)
-		panic(err)
 	}
 	fmt.Println(DB)
 }
