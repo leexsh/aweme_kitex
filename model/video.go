@@ -4,8 +4,10 @@ import (
 	"aweme_kitex/cfg"
 	"aweme_kitex/utils"
 	"errors"
+	"mime/multipart"
 	"sync"
 
+	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
 )
 
@@ -52,4 +54,20 @@ func (v *VideoDao) QueryVideosByUserId(userId string) ([]*VideoRawData, error) {
 		return nil, err
 	}
 	return videos, nil
+}
+
+// 将视频保存到本地文件夹中
+func (*VideoDao) PublishVideoToPublic(video *multipart.FileHeader, path string, c *gin.Context) error {
+	if err := c.SaveUploadedFile(video, path); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (*VideoDao) SaveVideoData(videoData *VideoRawData) error {
+	err := db.Table("video").Debug().Create(videoData).Error
+	if err != nil {
+		return err
+	}
+	return nil
 }

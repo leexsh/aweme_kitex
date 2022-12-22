@@ -2,13 +2,96 @@ package service
 
 import (
 	"aweme_kitex/model"
+	"aweme_kitex/utils"
 	"errors"
 	"fmt"
+	"mime/multipart"
+	"path/filepath"
 	"sync"
+
+	"github.com/gin-gonic/gin"
 )
 
-// --------------------
-type QueryUserVideoList struct {
+// -------------publish
+func PublishVideoService(userId, userName, title string, data *multipart.FileHeader) error {
+	return NewPublishVideoServiceData(userId, userName, title, data).Do()
+}
+
+func NewPublishVideoServiceData(userId, userName, title string, data *multipart.FileHeader) *PublishVideoServiceData {
+	return &PublishVideoServiceData{
+		Data:            data,
+		Title:           title,
+		CurrentUserId:   userId,
+		CurrentUserName: userName,
+	}
+}
+
+type PublishVideoServiceData struct {
+	Data  *multipart.FileHeader
+	Title string
+	Gin   *gin.Context
+
+	CurrentUserId   string
+	CurrentUserName string
+	Video           model.VideoRawData
+}
+
+func (f *PublishVideoServiceData) Do() error {
+	if err := f.publishVideo(); err != nil {
+		return err
+	}
+	return nil
+}
+func (f *PublishVideoServiceData) publishVideo() error {
+	fileName := filepath.Base(f.Data.Filename)
+	finalName := fmt.Sprintf("%s_%s", f.CurrentUserName, fileName)
+
+	saveFile := filepath.Join("./public/", finalName)
+	// 1.save public
+	err := model.NewVideoDaoInstance().PublishVideoToPublic(f.Data, saveFile, f.Gin)
+	if err != nil {
+		return err
+	}
+	cosKey := fmt.Sprintf("%s/%s", f.CurrentUserName, finalName)
+	var wg sync.WaitGroup
+	wg.Add(2)
+	var cosErr, sqlErr error
+	go func() {
+		// 2. save COS
+		defer wg.Done()
+		err := model.NewCOSDaoInstance().PublishVideoToCOS(cosKey, saveFile)
+		if err != nil {
+			cosErr = err
+		}
+	}()
+
+	go func() {
+		defer wg.Done()
+		ourl := model.NewCOSDaoInstance().GetCOSVideoURL(cosKey)
+		video := &model.VideoRawData{
+			VideoId: utils.GenerateUUID(),
+			UserId:  f.CurrentUserId,
+			Title:   f.Title,
+			PlayUrl: ourl.String(),
+		}
+		err := model.NewVideoDaoInstance().SaveVideoData(video)
+		if err != nil {
+			sqlErr = err
+		}
+	}()
+
+	wg.Wait()
+	if cosErr != nil {
+		return cosErr
+	}
+	if sqlErr != nil {
+		return sqlErr
+	}
+	return nil
+}
+
+// -------------------- published list
+type UserVideoList struct {
 	UserName string
 	UserId   string
 
@@ -19,13 +102,13 @@ type QueryUserVideoList struct {
 	RelationMap  map[string]*model.RelationRaw
 }
 
-func NewQueryUserVideoList(userId string) *QueryUserVideoList {
-	return &QueryUserVideoList{
+func NewQueryUserVideoList(userId string) *UserVideoList {
+	return &UserVideoList{
 		UserId: userId,
 	}
 }
 
-func (f *QueryUserVideoList) prepareVideoInfo() error {
+func (f *UserVideoList) prepareVideoInfo() error {
 	videoData, err := model.NewVideoDaoInstance().QueryVideosByUserId(f.UserId)
 	if err != nil {
 		return err
@@ -77,7 +160,7 @@ func (f *QueryUserVideoList) prepareVideoInfo() error {
 	return nil
 }
 
-func (f *QueryUserVideoList) packVideoInfo() error {
+func (f *UserVideoList) packVideoInfo() error {
 	videoList := make([]model.Video, 0)
 	for _, video := range f.VideoData {
 		videoUser, ok := f.UserMap[video.UserId]
@@ -118,7 +201,7 @@ func (f *QueryUserVideoList) packVideoInfo() error {
 	return nil
 }
 
-func (f *QueryUserVideoList) do() ([]model.Video, error) {
+func (f *UserVideoList) do() ([]model.Video, error) {
 	if err := f.prepareVideoInfo(); err != nil {
 		return nil, err
 	}
@@ -128,6 +211,6 @@ func (f *QueryUserVideoList) do() ([]model.Video, error) {
 	return f.VideoList, nil
 }
 
-func QueryUserVideos(token string) ([]model.Video, error) {
-	return NewQueryUserVideoList(token).do()
+func QueryUserVideos(userId string) ([]model.Video, error) {
+	return NewQueryUserVideoList(userId).do()
 }

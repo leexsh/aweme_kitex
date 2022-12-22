@@ -10,30 +10,30 @@ import (
 )
 
 type (
-// videoRawData model.VideoRawData
-// favouriteRaw model.FavouriteRaw
-// userRawData  model.UserRawData
-// relationRaw  model.RelationRaw
-// commetRaw    model.CommentRaw
-//
-// video     model.Video
-// favourite model.Favourite
-// comment   model.Comment
-// user      model.User
+	// videoRawData model.VideoRawData
+	// favouriteRaw model.FavouriteRaw
+	// userRawData  model.UserRawData
+	// relationRaw  model.RelationRaw
+	// commetRaw    model.CommentRaw
+	//
 
-// response             model.Response
-// userLoginResponse    model.UserLoginResponse
-// userRegisterResponse model.UserRegisterResponse
-// userResponse         model.UserResponse
-// userListResponse     model.UserListResponse
-// videoListResponse    model.VideoListResponse
-// commentListResponse  model.CommentListResponse
-// feedResponse         model.FeedResponse
+	video     model.Video
+	favourite model.Favourite
+	comment   model.Comment
+	user      model.User
+
+	// response             model.Response
+	// userLoginResponse    model.UserLoginResponse
+	// userRegisterResponse model.UserRegisterResponse
+	// userResponse         model.UserResponse
+	// userListResponse     model.UserListResponse
+	// videoListResponse    model.VideoListResponse
+	// commentListResponse  model.CommentListResponse
+	// feedResponse         model.FeedResponse
 )
 
 var (
-	db  = cfg.DB
-	cos = cfg.COSClient
+	db = cfg.DB
 
 	defaultToken = "defaultToken"
 
