@@ -42,17 +42,11 @@ type Response struct {
 	StatusMsg  string `json:"status_msg,omitempty"`
 }
 
-type UserLoginResponse struct {
+type UserLogRstResponse struct {
 	Response
 	UserId   string `json:"user_id,omitempty"`
 	UserName string `json:"user_name,omitempty"`
 	Token    string `json:"token,omitempty"`
-}
-
-type UserRegisterResponse struct {
-	Response
-	UserId string `json:"user_id,omitempty"`
-	Token  string `json:"token"`
 }
 
 type UserResponse struct {

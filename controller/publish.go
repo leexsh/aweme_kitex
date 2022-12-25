@@ -21,17 +21,15 @@ func Publish(c *gin.Context) {
 		TokenErrorRes(c, err)
 	}
 
-	publishRes := handler.PublishVideoHandler(user.Id, user.Name, title, data)
-	c.JSON(200, publishRes)
+	c.JSON(200, handler.PublishVideoHandle(user.Id, user.Name, title, data))
 }
 
 func PublishList(c *gin.Context) {
 	token := c.Query("token")
-
 	user, err := CheckToken(token)
 	if err != nil {
 		TokenErrorRes(c, err)
 	}
-	videoRes := handler.QueryVideoPublishedHandler(user.Id)
-	c.JSON(200, videoRes)
+
+	c.JSON(200, handler.QueryVideoPublishedHandle(user.Id))
 }

@@ -3,7 +3,6 @@ package controller
 import (
 	"aweme_kitex/cfg"
 	"aweme_kitex/model"
-	"aweme_kitex/utils"
 	"errors"
 
 	"github.com/gin-gonic/gin"
@@ -53,11 +52,11 @@ var (
 )
 
 // 鉴权
-func CheckToken(token string) (*utils.UserClaim, error) {
+func CheckToken(token string) (*model.UserClaim, error) {
 	if token == defaultToken {
 		return nil, errors.New("error: check token failed, please update Token")
 	}
-	uc, err := utils.AnalyzeToke(token)
+	uc, err := model.AnalyzeToken(token)
 	if err != nil {
 		return nil, err
 	}

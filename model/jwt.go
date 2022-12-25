@@ -1,4 +1,4 @@
-package utils
+package model
 
 import (
 	"errors"
@@ -34,7 +34,7 @@ func GenerateToken(id, name string) (string, error) {
 	return tokenString, nil
 }
 
-func AnalyzeToke(token string) (*UserClaim, error) {
+func AnalyzeToken(token string) (*UserClaim, error) {
 	uc := &UserClaim{}
 	claims, err := jwt.ParseWithClaims(token, uc, func(token *jwt.Token) (interface{}, error) {
 		return []byte(JwtKey), nil

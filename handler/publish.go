@@ -8,7 +8,7 @@ import (
 
 // --------- handler ---------------
 // 该层功能包括处理传入参数，向service层请求
-func QueryVideoPublishedHandler(userId string) model.VideoListResponse {
+func QueryVideoPublishedHandle(userId string) model.VideoListResponse {
 	videos, err := service.QueryUserVideos(userId)
 	if err != nil {
 		return model.VideoListResponse{
@@ -27,7 +27,7 @@ func QueryVideoPublishedHandler(userId string) model.VideoListResponse {
 	}
 }
 
-func PublishVideoHandler(userId, userName, title string, data *multipart.FileHeader) model.Response {
+func PublishVideoHandle(userId, userName, title string, data *multipart.FileHeader) model.Response {
 	if data == nil {
 		return model.Response{
 			StatusCode: -1, StatusMsg: "publish info is null",

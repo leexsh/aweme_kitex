@@ -1,12 +1,8 @@
 package controller
 
 import (
-	"aweme_kitex/cfg"
-	"aweme_kitex/model"
-	"aweme_kitex/utils"
-	"fmt"
+	"aweme_kitex/handler"
 	"net/http"
-	"sync/atomic"
 
 	"github.com/gin-gonic/gin"
 )
@@ -18,138 +14,22 @@ import (
 func Register(c *gin.Context) {
 	userName := c.Query("username")
 	password := c.Query("password")
-	identity := c.Query("identity")
-
-	res := db.Where("name=?", userName).First(&u)
-	fmt.Println(res.RowsAffected)
-	if _, exist := usersLoginInfo[identity]; exist || u.Name == userName {
-		c.JSON(http.StatusOK, model.UserRegisterResponse{
-			Response: model.Response{
-				StatusCode: 0,
-				StatusMsg:  "User already exist",
-			},
-		})
-	} else {
-		atomic.AddInt64(&userIdSequeue, 1)
-		newUser := model.User{
-			UserId: utils.GenerateUUID(),
-			Name:   userName,
-		}
-		usersLoginInfo[newUser.UserId] = newUser
-
-		// insert to data
-		userId := utils.GenerateUUID()
-		token, _ := utils.GenerateToken(userId, userName)
-		newUserData := model.UserRawData{
-			UserId:        userId,
-			Name:          userName,
-			Password:      utils.Md5(password),
-			Token:         token,
-			FollowCount:   0,
-			FollowerCount: 0,
-		}
-		res := cfg.DB.Create(&newUserData)
-		if res.Error != nil {
-			c.JSON(http.StatusOK, model.UserRegisterResponse{
-				Response: model.Response{
-					StatusCode: 0,
-					StatusMsg:  fmt.Sprintf("write fail, err: %s", res.Error.Error()),
-				},
-				UserId: newUserData.UserId,
-				Token:  token,
-			})
-			return
-		}
-		c.JSON(http.StatusOK, model.UserRegisterResponse{
-			Response: model.Response{
-				StatusCode: 0,
-				StatusMsg:  "write success",
-			},
-			UserId: newUserData.UserId,
-			Token:  token,
-		})
-	}
+	c.JSON(http.StatusOK, handler.UserRegisterHandle(userName, password))
 }
 
 func Login(c *gin.Context) {
 	username := c.Query("username")
 	password := c.Query("password")
-	identity := c.Query("identity")
-
-	db.Where("name=? AND password=?", username, utils.Md5(password)).First(&u)
-	token, err := utils.GenerateToken(u.UserId, u.Name)
-	if err != nil {
-		c.JSON(http.StatusOK, model.UserLoginResponse{
-			Response: model.Response{
-				StatusCode: 0,
-				StatusMsg:  err.Error()}})
-	}
-	if user, exist := usersLoginInfo[identity]; exist {
-		c.JSON(http.StatusOK, model.UserLoginResponse{
-			Response: model.Response{StatusCode: 0, StatusMsg: "login success"},
-			UserId:   user.UserId,
-			UserName: user.Name,
-			Token:    token,
-		})
-	} else if u.Name == username {
-		// 写入缓存
-		usersLoginInfo[u.UserId] = model.User{
-			UserId:        u.UserId,
-			Name:          u.Name,
-			FollowerCount: u.FollowCount,
-			FollowCount:   u.FollowerCount,
-			IsFollow:      false,
-		}
-		c.JSON(http.StatusOK, model.UserLoginResponse{
-			Response: model.Response{StatusCode: 0, StatusMsg: "login success"},
-			UserId:   u.UserId,
-			UserName: u.Name,
-			Token:    token,
-		})
-	} else {
-		c.JSON(http.StatusOK, model.UserLoginResponse{
-			Response: model.Response{StatusCode: 1, StatusMsg: "User doesn't exist"},
-		})
-	}
+	c.JSON(200, handler.UserLoginHandle(username, password))
 }
 
 func UserInfo(c *gin.Context) {
 	token := c.Query("token")
+	userid := c.Query("userid")
 	user, err := CheckToken(token)
 	if err != nil {
 		TokenErrorRes(c, err)
 	}
-	if user, exist := usersLoginInfo[user.Id]; exist {
-		c.JSON(http.StatusOK, model.UserResponse{
-			Response: model.Response{
-				StatusCode: 0,
-				StatusMsg:  "get user info success",
-			},
-			User: user,
-		})
-		return
-	}
-	u := model.UserRawData{}
-	db.Table("user").Debug().Where("user_id=?", user.Id).First(&u)
-	if u.UserId != "" {
-		c.JSON(http.StatusOK, model.UserResponse{
-			Response: model.Response{
-				StatusCode: 0,
-				StatusMsg:  "get user info success",
-			},
-			User: model.User{
-				UserId:        u.UserId,
-				Name:          u.Name,
-				FollowCount:   u.FollowCount,
-				FollowerCount: u.FollowerCount,
-			},
-		})
-	} else {
-		c.JSON(http.StatusOK, model.UserResponse{
-			Response: model.Response{
-				StatusCode: -1,
-				StatusMsg:  "User doesn't exist",
-			},
-		})
-	}
+	c.JSON(200, handler.UserInfoHandle(user, userid))
+
 }
