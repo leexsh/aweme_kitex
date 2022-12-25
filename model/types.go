@@ -21,7 +21,7 @@ type Video struct {
 
 type Comment struct {
 	Id         string `json:"id,omitempty"`
-	UserId     string `json:"user_id"`
+	User       User   `json:"author"`
 	VideoId    string `json:"video_id"`
 	Content    string `json:"content,omitempty"`
 	CreateDate string `json:"createDate,omitempty"`
@@ -65,6 +65,10 @@ type VideoListResponse struct {
 }
 
 // comment
+type CommentActionResponse struct {
+	Response
+	Comment `json:"comment,omitempty"`
+}
 type CommentListResponse struct {
 	Response
 	CommentList []Comment `json:"comment_list,omitempty"`

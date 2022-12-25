@@ -40,3 +40,36 @@ func (f *FavouriteDao) QueryFavoursByIds(currentUId string, videoIds []string) (
 	}
 	return favoursMap, nil
 }
+
+// 创建一条点赞
+func (f *FavouriteDao) CreateFavour(favour *FavouriteRaw) error {
+	err := db.Debug().Table("favourite").Create(favour).Error
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+// del
+func (f *FavouriteDao) DelFavour(userId, videoId string) error {
+	var favour *FavouriteRaw
+	err := db.Table("favourite").Where("user_id = ? AND video_id = ?", userId, videoId).Delete(favour).Error
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+// quiery videos by uid
+func (f *FavouriteDao) QueryFavoursVideoIdByUid(uid string) ([]string, error) {
+	var favours []*FavouriteRaw
+	err := db.Debug().Table("favourite").Where("user_id=?", uid).Find(&favours).Error
+	if err != nil {
+		return nil, err
+	}
+	var videos []string
+	for _, favour := range favours {
+		videos = append(videos, favour.VideoId)
+	}
+	return videos, nil
+}

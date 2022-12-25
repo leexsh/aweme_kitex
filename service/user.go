@@ -13,24 +13,24 @@ import (
 
 // register
 func RegisterUser(name, password string) (string, string, error) {
-	return NewRegisterUserDataFlow(name, password).do()
+	return newRegisterUserDataFlow(name, password).do()
 }
 
-type RegisterUserDataFlow struct {
+type registerUserDataFlow struct {
 	userId   string
 	userName string
 	token    string
 	password string
 }
 
-func NewRegisterUserDataFlow(name, password string) *RegisterUserDataFlow {
-	return &RegisterUserDataFlow{
+func newRegisterUserDataFlow(name, password string) *registerUserDataFlow {
+	return &registerUserDataFlow{
 		userName: name,
 		password: password,
 	}
 }
 
-func (r *RegisterUserDataFlow) do() (string, string, error) {
+func (r *registerUserDataFlow) do() (string, string, error) {
 	// insert to data
 	userId := utils.GenerateUUID()
 	token, _ := model.GenerateToken(userId, r.userName)
@@ -50,23 +50,23 @@ func (r *RegisterUserDataFlow) do() (string, string, error) {
 
 // login
 func LoginUser(name, password string) (string, string, error) {
-	return NewLoginUserDataFlow(name, password).do()
+	return newLoginUserDataFlow(name, password).do()
 }
 
-type LoginUserDataFlow struct {
+type loginUserDataFlow struct {
 	userId   string
 	userName string
 	token    string
 	password string
 }
 
-func NewLoginUserDataFlow(name, password string) *LoginUserDataFlow {
-	return &LoginUserDataFlow{
+func newLoginUserDataFlow(name, password string) *loginUserDataFlow {
+	return &loginUserDataFlow{
 		userName: name,
 		password: password,
 	}
 }
-func (l *LoginUserDataFlow) do() (uid string, token string, err error) {
+func (l *loginUserDataFlow) do() (uid string, token string, err error) {
 	user, err := model.NewUserDaoInstance().QueryUserByPassword(l.userName, utils.Md5(l.password))
 	if user != nil {
 		l.token = user.Token
@@ -77,18 +77,18 @@ func (l *LoginUserDataFlow) do() (uid string, token string, err error) {
 
 // user info
 func QueryUserInfo(user *model.UserClaim, remoteUid string) (*model.User, error) {
-	return NewUserInfoDataFlow(user, remoteUid).do()
+	return newUserInfoDataFlow(user, remoteUid).do()
 }
 
-type UserInfoDataFlow struct {
+type userInfoDataFlow struct {
 	RemoteUser   *model.UserRawData
 	isfollow     bool
 	CurrentUName string
 	CurrentUId   string
 }
 
-func NewUserInfoDataFlow(user *model.UserClaim, remoteUid string) *UserInfoDataFlow {
-	return &UserInfoDataFlow{
+func newUserInfoDataFlow(user *model.UserClaim, remoteUid string) *userInfoDataFlow {
+	return &userInfoDataFlow{
 		RemoteUser: &model.UserRawData{
 			UserId: remoteUid,
 		},
@@ -97,7 +97,7 @@ func NewUserInfoDataFlow(user *model.UserClaim, remoteUid string) *UserInfoDataF
 	}
 }
 
-func (u *UserInfoDataFlow) do() (*model.User, error) {
+func (u *userInfoDataFlow) do() (*model.User, error) {
 	if err := u.prepareInfo(); err != nil {
 		return nil, err
 	}
@@ -108,7 +108,7 @@ func (u *UserInfoDataFlow) do() (*model.User, error) {
 	return user, nil
 }
 
-func (u *UserInfoDataFlow) prepareInfo() error {
+func (u *userInfoDataFlow) prepareInfo() error {
 	uids := []string{u.RemoteUser.UserId}
 	userMap, err := model.NewUserDaoInstance().QueryUserByIds(uids)
 	if err != nil {
@@ -127,7 +127,7 @@ func (u *UserInfoDataFlow) prepareInfo() error {
 
 }
 
-func (u *UserInfoDataFlow) packUserInfo() (*model.User, error) {
+func (u *userInfoDataFlow) packUserInfo() (*model.User, error) {
 	if u.RemoteUser == nil {
 		return nil, errors.New("NOT FOUND this user")
 	}

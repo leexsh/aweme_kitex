@@ -73,7 +73,7 @@ func (*UserDao) QueryUserByUserId(userId string) (*UserRawData, error) {
 	}
 
 	var user *UserRawData
-	err := db.Table("user").Where("userId = ?", userId).First(&user).Error
+	err := db.Table("user").Where("user_id = ?", userId).First(&user).Error
 	if err != nil {
 		return nil, err
 	}

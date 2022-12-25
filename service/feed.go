@@ -11,18 +11,18 @@ import (
 // 该层负责鉴权  向repository获取视频数据和封装数据
 
 func QueryVideoData(latestTime int64, userId string) ([]model.Video, int64, error) {
-	return NewQueryVideoDataFlow(latestTime, userId).Do()
+	return newQueryVideoDataFlow(latestTime, userId).Do()
 }
 
-func NewQueryVideoDataFlow(latestTime int64, userId string) *QueryVideoDataFlow {
-	return &QueryVideoDataFlow{
+func newQueryVideoDataFlow(latestTime int64, userId string) *queryVideoDataFlow {
+	return &queryVideoDataFlow{
 		LatestTime:    latestTime,
 		CurrentUserId: userId,
 	}
 }
 
 // video data
-type QueryVideoDataFlow struct {
+type queryVideoDataFlow struct {
 	CurrentUserId   string
 	CurrentUserName string
 
@@ -36,7 +36,7 @@ type QueryVideoDataFlow struct {
 	RelationMap map[string]*model.RelationRaw
 }
 
-func (f *QueryVideoDataFlow) Do() ([]model.Video, int64, error) {
+func (f *queryVideoDataFlow) Do() ([]model.Video, int64, error) {
 	if err := f.prepareVideoInfo(); err != nil {
 		return nil, 0, err
 	}
@@ -47,7 +47,7 @@ func (f *QueryVideoDataFlow) Do() ([]model.Video, int64, error) {
 }
 
 // prepare video
-func (f *QueryVideoDataFlow) prepareVideoInfo() error {
+func (f *queryVideoDataFlow) prepareVideoInfo() error {
 	// 1.get video
 	videoData, err := model.NewVideoDaoInstance().QueryVideoByLatestTime(f.LatestTime)
 	if err != nil {
@@ -110,7 +110,7 @@ func (f *QueryVideoDataFlow) prepareVideoInfo() error {
 	return nil
 }
 
-func (f *QueryVideoDataFlow) packVideoInfo() error {
+func (f *queryVideoDataFlow) packVideoInfo() error {
 	videoList := make([]model.Video, 0)
 	for _, video := range f.VideoData {
 		videoAuthor, ok := f.UserMap[video.UserId]

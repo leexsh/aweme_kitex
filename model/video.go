@@ -71,3 +71,34 @@ func (*VideoDao) SaveVideoData(videoData *VideoRawData) error {
 	}
 	return nil
 }
+
+// update favourite
+func (*VideoDao) UpdateFavouriteCount(videoId, action string) error {
+	var err error
+	if action == "1" {
+		err = db.Table("video").Where("video_id=?", videoId).Update("favourite_count", gorm.Expr("favourite_count + ?", 1)).Error
+	} else if action == "2" {
+		err = db.Table("video").Where("video_id=?", videoId).Update("favourite_count", gorm.Expr("favourite_count - ?", 1)).Error
+	}
+	return err
+}
+
+func (*VideoDao) QueryVideosByIs(videoId []string) ([]*VideoRawData, error) {
+	var videos []*VideoRawData
+	err := db.Table("video").Where("video_id in (?)", videoId).Find(&videos).Error
+	if err != nil {
+		return nil, err
+	}
+	return videos, nil
+}
+
+// 通过视频id增加视频的评论数
+func (*VideoDao) UpdateCommentCount(videoId string, action string) error {
+	var err error
+	if action == "1" {
+		err = db.Table("video").Where("video_id = ?", videoId).Update("comment_count", gorm.Expr("comment_count + ?", 1)).Error
+	} else if action == "2" {
+		err = db.Table("video").Where("video_id = ?", videoId).Update("comment_count", gorm.Expr("comment_count - ?", 1)).Error
+	}
+	return err
+}

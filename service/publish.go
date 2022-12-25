@@ -14,11 +14,11 @@ import (
 
 // -------------publish
 func PublishVideoService(userId, userName, title string, data *multipart.FileHeader) error {
-	return NewPublishVideoServiceData(userId, userName, title, data).Do()
+	return newPublishVideoServiceData(userId, userName, title, data).Do()
 }
 
-func NewPublishVideoServiceData(userId, userName, title string, data *multipart.FileHeader) *PublishVideoServiceData {
-	return &PublishVideoServiceData{
+func newPublishVideoServiceData(userId, userName, title string, data *multipart.FileHeader) *publishVideoServiceData {
+	return &publishVideoServiceData{
 		Data:            data,
 		Title:           title,
 		CurrentUserId:   userId,
@@ -26,7 +26,7 @@ func NewPublishVideoServiceData(userId, userName, title string, data *multipart.
 	}
 }
 
-type PublishVideoServiceData struct {
+type publishVideoServiceData struct {
 	Data  *multipart.FileHeader
 	Title string
 	Gin   *gin.Context
@@ -36,13 +36,13 @@ type PublishVideoServiceData struct {
 	Video           model.VideoRawData
 }
 
-func (f *PublishVideoServiceData) Do() error {
+func (f *publishVideoServiceData) Do() error {
 	if err := f.publishVideo(); err != nil {
 		return err
 	}
 	return nil
 }
-func (f *PublishVideoServiceData) publishVideo() error {
+func (f *publishVideoServiceData) publishVideo() error {
 	fileName := filepath.Base(f.Data.Filename)
 	finalName := fmt.Sprintf("%s_%s", f.CurrentUserName, fileName)
 
@@ -91,7 +91,7 @@ func (f *PublishVideoServiceData) publishVideo() error {
 }
 
 // -------------------- published list
-type UserVideoList struct {
+type userVideoList struct {
 	UserName string
 	UserId   string
 
@@ -102,13 +102,13 @@ type UserVideoList struct {
 	RelationMap  map[string]*model.RelationRaw
 }
 
-func NewQueryUserVideoList(userId string) *UserVideoList {
-	return &UserVideoList{
+func newQueryUserVideoList(userId string) *userVideoList {
+	return &userVideoList{
 		UserId: userId,
 	}
 }
 
-func (f *UserVideoList) prepareVideoInfo() error {
+func (f *userVideoList) prepareVideoInfo() error {
 	videoData, err := model.NewVideoDaoInstance().QueryVideosByUserId(f.UserId)
 	if err != nil {
 		return err
@@ -160,7 +160,7 @@ func (f *UserVideoList) prepareVideoInfo() error {
 	return nil
 }
 
-func (f *UserVideoList) packVideoInfo() error {
+func (f *userVideoList) packVideoInfo() error {
 	videoList := make([]model.Video, 0)
 	for _, video := range f.VideoData {
 		videoUser, ok := f.UserMap[video.UserId]
@@ -201,7 +201,7 @@ func (f *UserVideoList) packVideoInfo() error {
 	return nil
 }
 
-func (f *UserVideoList) do() ([]model.Video, error) {
+func (f *userVideoList) do() ([]model.Video, error) {
 	if err := f.prepareVideoInfo(); err != nil {
 		return nil, err
 	}
@@ -212,5 +212,5 @@ func (f *UserVideoList) do() ([]model.Video, error) {
 }
 
 func QueryUserVideos(userId string) ([]model.Video, error) {
-	return NewQueryUserVideoList(userId).do()
+	return newQueryUserVideoList(userId).do()
 }

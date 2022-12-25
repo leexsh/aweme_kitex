@@ -43,7 +43,7 @@ func (u2 *UserRawData) TableName() string {
 
 // 喜欢
 type FavouriteRaw struct {
-	Id      string `gorm:"column:identity"`
+	Id      string `gorm:"column:favour_id"`
 	UserId  string `gorm:"column:user_id"`
 	VideoId string `gorm:"column:video_id"`
 }
