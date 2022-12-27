@@ -1,14 +1,15 @@
 package service
 
 import (
-	"aweme_kitex/model"
+	"aweme_kitex/models"
+	"aweme_kitex/models/repository"
 	"aweme_kitex/utils"
 	"errors"
 	"fmt"
 	"sync"
 )
 
-func FavouriteActionService(user *model.UserClaim, videoId, action string) error {
+func FavouriteActionService(user *models.UserClaim, videoId, action string) error {
 	return newFavouriteActionData(user, videoId, action).do()
 }
 
@@ -18,10 +19,10 @@ type favouriteActionDataFlow struct {
 	videoId     string
 	action      string
 
-	FavouriteData *model.FavouriteRaw
+	FavouriteData *models.FavouriteRaw
 }
 
-func newFavouriteActionData(user *model.UserClaim, videoId, action string) *favouriteActionDataFlow {
+func newFavouriteActionData(user *models.UserClaim, videoId, action string) *favouriteActionDataFlow {
 	return &favouriteActionDataFlow{
 		CurrentUid:  user.Id,
 		CurrentName: user.Name,
@@ -35,7 +36,7 @@ func (f *favouriteActionDataFlow) do() error {
 		return errors.New("invalid action type")
 	}
 	if f.action == "1" {
-		favour := &model.FavouriteRaw{
+		favour := &models.FavouriteRaw{
 			Id:      utils.GenerateUUID(),
 			UserId:  f.CurrentUid,
 			VideoId: f.videoId,
@@ -47,14 +48,14 @@ func (f *favouriteActionDataFlow) do() error {
 		// 事务
 		go func() {
 			defer wg.Done()
-			err := model.NewFavouriteDaoInstance().CreateFavour(favour)
+			err := repository.NewFavouriteDaoInstance().CreateFavour(favour)
 			if err != nil {
 				favourErr = err
 			}
 		}()
 		go func() {
 			wg.Done()
-			err := model.NewVideoDaoInstance().UpdateFavouriteCount(f.videoId, f.action)
+			err := repository.NewVideoDaoInstance().UpdateFavouriteCount(f.videoId, f.action)
 			if err != nil {
 				videoErr = err
 			}
@@ -74,14 +75,14 @@ func (f *favouriteActionDataFlow) do() error {
 		// 事务
 		go func() {
 			defer wg.Done()
-			err := model.NewFavouriteDaoInstance().DelFavour(f.CurrentUid, f.videoId)
+			err := repository.NewFavouriteDaoInstance().DelFavour(f.CurrentUid, f.videoId)
 			if err != nil {
 				favourErr = err
 			}
 		}()
 		go func() {
 			wg.Done()
-			err := model.NewVideoDaoInstance().UpdateFavouriteCount(f.videoId, f.action)
+			err := repository.NewVideoDaoInstance().UpdateFavouriteCount(f.videoId, f.action)
 			if err != nil {
 				videoErr = err
 			}
@@ -98,7 +99,7 @@ func (f *favouriteActionDataFlow) do() error {
 	return nil
 }
 
-func FavouriteListService(userId, userName string) ([]model.Video, error) {
+func FavouriteListService(userId, userName string) ([]models.Video, error) {
 	return newFavouriteListDataFlow(userId, userName).do()
 }
 
@@ -106,12 +107,12 @@ type favouriteListDataFlow struct {
 	currentUId   string
 	currentUName string
 
-	favours []model.Video
+	favours []models.Video
 
-	videoRawData []*model.VideoRawData
-	users        map[string]*model.UserRawData
-	favoursMap   map[string]*model.FavouriteRaw
-	RelationMap  map[string]*model.RelationRaw
+	videoRawData []*models.VideoRawData
+	users        map[string]*models.UserRawData
+	favoursMap   map[string]*models.FavouriteRaw
+	RelationMap  map[string]*models.RelationRaw
 }
 
 func newFavouriteListDataFlow(id, name string) *favouriteListDataFlow {
@@ -121,7 +122,7 @@ func newFavouriteListDataFlow(id, name string) *favouriteListDataFlow {
 	}
 }
 
-func (f *favouriteListDataFlow) do() ([]model.Video, error) {
+func (f *favouriteListDataFlow) do() ([]models.Video, error) {
 	if err := f.prepareVideoInfo(); err != nil {
 		return nil, err
 	}
@@ -132,12 +133,12 @@ func (f *favouriteListDataFlow) do() ([]model.Video, error) {
 }
 
 func (f *favouriteListDataFlow) prepareVideoInfo() error {
-	videosIds, err := model.NewFavouriteDaoInstance().QueryFavoursVideoIdByUid(f.currentUId)
+	videosIds, err := repository.NewFavouriteDaoInstance().QueryFavoursVideoIdByUid(f.currentUId)
 	if err != nil {
 		return err
 	}
 	// get videos
-	videoData, err := model.NewVideoDaoInstance().QueryVideosByIs(videosIds)
+	videoData, err := repository.NewVideoDaoInstance().QueryVideosByIs(videosIds)
 	if err != nil {
 		return err
 	}
@@ -149,9 +150,13 @@ func (f *favouriteListDataFlow) prepareVideoInfo() error {
 	}
 
 	// get video authors
-	userMap, err := model.NewUserDaoInstance().QueryUserByIds(uids)
+	users, err := repository.NewUserDaoInstance().QueryUserByIds(uids)
 	if err != nil {
 		return err
+	}
+	userMap := make(map[string]*models.UserRawData)
+	for _, user := range users {
+		userMap[user.UserId] = user
 	}
 	f.users = userMap
 
@@ -160,7 +165,7 @@ func (f *favouriteListDataFlow) prepareVideoInfo() error {
 	var favErr, relationErr error
 	go func() {
 		defer wg.Done()
-		favoursMap, err := model.NewFavouriteDaoInstance().QueryFavoursByIds(f.currentUId, videosIds)
+		favoursMap, err := repository.NewFavouriteDaoInstance().QueryFavoursByIds(f.currentUId, videosIds)
 		if err != nil {
 			favErr = err
 		}
@@ -168,7 +173,7 @@ func (f *favouriteListDataFlow) prepareVideoInfo() error {
 	}()
 	go func() {
 		defer wg.Done()
-		relationMap, err := model.NewRelationDaoInstance().QueryRelationByIds(f.currentUId, videosIds)
+		relationMap, err := repository.NewRelationDaoInstance().QueryRelationByIds(f.currentUId, videosIds)
 		if err != nil {
 			relationErr = err
 		}
@@ -186,7 +191,7 @@ func (f *favouriteListDataFlow) prepareVideoInfo() error {
 }
 
 func (f *favouriteListDataFlow) packageVideo() error {
-	videoList := make([]model.Video, 0)
+	videoList := make([]models.Video, 0)
 	for _, video := range f.videoRawData {
 		author, ok := f.users[video.UserId]
 		if !ok {
@@ -202,9 +207,9 @@ func (f *favouriteListDataFlow) packageVideo() error {
 		if ok {
 			isFollow = true
 		}
-		videoList = append(videoList, model.Video{
+		videoList = append(videoList, models.Video{
 			Id: video.VideoId,
-			Author: model.User{
+			Author: models.User{
 				UserId:        author.UserId,
 				Name:          author.Name,
 				FollowCount:   author.FollowCount,

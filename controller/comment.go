@@ -2,7 +2,7 @@ package controller
 
 import (
 	"aweme_kitex/handler"
-	"aweme_kitex/model"
+	"aweme_kitex/models"
 
 	"github.com/gin-gonic/gin"
 )
@@ -24,9 +24,9 @@ func CommentAction(c *gin.Context) {
 		c.JSON(200, *handler.CreateCommentHandle(user, videoId, commentText))
 	} else if actionType == "2" {
 		commentId := c.Query("commentId")
-		c.JSON(200, *handler.DelCommentHandle(user, videoId, commentId))
+		c.JSON(200, *handler.DelCommentHandle(user, commentId))
 	} else {
-		c.JSON(200, model.Response{
+		c.JSON(200, models.Response{
 			StatusCode: 0,
 			StatusMsg:  "action type error",
 		})

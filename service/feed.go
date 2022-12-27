@@ -1,7 +1,8 @@
 package service
 
 import (
-	"aweme_kitex/model"
+	"aweme_kitex/models"
+	"aweme_kitex/models/repository"
 	"errors"
 	"fmt"
 	"sync"
@@ -10,7 +11,7 @@ import (
 // ------------service--------------------
 // 该层负责鉴权  向repository获取视频数据和封装数据
 
-func QueryVideoData(latestTime int64, userId string) ([]model.Video, int64, error) {
+func QueryVideoData(latestTime int64, userId string) ([]models.Video, int64, error) {
 	return newQueryVideoDataFlow(latestTime, userId).Do()
 }
 
@@ -27,16 +28,16 @@ type queryVideoDataFlow struct {
 	CurrentUserName string
 
 	LatestTime int64
-	VideoList  []model.Video
+	VideoList  []models.Video
 	NextTime   int64
 
-	VideoData   []*model.VideoRawData
-	UserMap     map[string]*model.UserRawData
-	FavoursMap  map[string]*model.FavouriteRaw
-	RelationMap map[string]*model.RelationRaw
+	VideoData   []*models.VideoRawData
+	UserMap     map[string]*models.UserRawData
+	FavoursMap  map[string]*models.FavouriteRaw
+	RelationMap map[string]*models.RelationRaw
 }
 
-func (f *queryVideoDataFlow) Do() ([]model.Video, int64, error) {
+func (f *queryVideoDataFlow) Do() ([]models.Video, int64, error) {
 	if err := f.prepareVideoInfo(); err != nil {
 		return nil, 0, err
 	}
@@ -49,7 +50,7 @@ func (f *queryVideoDataFlow) Do() ([]model.Video, int64, error) {
 // prepare video
 func (f *queryVideoDataFlow) prepareVideoInfo() error {
 	// 1.get video
-	videoData, err := model.NewVideoDaoInstance().QueryVideoByLatestTime(f.LatestTime)
+	videoData, err := repository.NewVideoDaoInstance().QueryVideoByLatestTime(f.LatestTime)
 	if err != nil {
 		return err
 	}
@@ -64,11 +65,15 @@ func (f *queryVideoDataFlow) prepareVideoInfo() error {
 	}
 
 	// 3. get user info
-	usersMap, err := model.NewUserDaoInstance().QueryUserByIds(authorIds)
+	users, err := repository.NewUserDaoInstance().QueryUserByIds(authorIds)
 	if err != nil {
 		return err
 	}
-	f.UserMap = usersMap
+	userMap := make(map[string]*models.UserRawData)
+	for _, user := range users {
+		userMap[user.UserId] = user
+	}
+	f.UserMap = userMap
 
 	// 4. should login
 	if f.CurrentUserId == "" {
@@ -81,7 +86,7 @@ func (f *queryVideoDataFlow) prepareVideoInfo() error {
 	// 5.获取点赞信息
 	go func() {
 		defer wg.Done()
-		favoursMap, err := model.NewFavouriteDaoInstance().QueryFavoursByIds(f.CurrentUserId, videoIds)
+		favoursMap, err := repository.NewFavouriteDaoInstance().QueryFavoursByIds(f.CurrentUserId, videoIds)
 		if err != nil {
 			favourErr = err
 			return
@@ -91,7 +96,7 @@ func (f *queryVideoDataFlow) prepareVideoInfo() error {
 	// 6.获取关注信息
 	go func() {
 		defer wg.Done()
-		relationMap, err := model.NewRelationDaoInstance().QueryRelationByIds(f.CurrentUserId, authorIds)
+		relationMap, err := repository.NewRelationDaoInstance().QueryRelationByIds(f.CurrentUserId, authorIds)
 		if err != nil {
 			relationErr = err
 			return
@@ -111,7 +116,7 @@ func (f *queryVideoDataFlow) prepareVideoInfo() error {
 }
 
 func (f *queryVideoDataFlow) packVideoInfo() error {
-	videoList := make([]model.Video, 0)
+	videoList := make([]models.Video, 0)
 	for _, video := range f.VideoData {
 		videoAuthor, ok := f.UserMap[video.UserId]
 		if !ok {
@@ -127,9 +132,9 @@ func (f *queryVideoDataFlow) packVideoInfo() error {
 				isFollow = true
 			}
 		}
-		videoList = append(videoList, model.Video{
+		videoList = append(videoList, models.Video{
 			Id: video.VideoId,
-			Author: model.User{
+			Author: models.User{
 				UserId:        videoAuthor.UserId,
 				Name:          videoAuthor.Name,
 				FollowCount:   videoAuthor.FollowCount,

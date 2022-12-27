@@ -1,7 +1,8 @@
 package service
 
 import (
-	"aweme_kitex/model"
+	"aweme_kitex/models"
+	"aweme_kitex/models/repository"
 	"aweme_kitex/utils"
 	"errors"
 	"fmt"
@@ -33,7 +34,7 @@ type publishVideoServiceData struct {
 
 	CurrentUserId   string
 	CurrentUserName string
-	Video           model.VideoRawData
+	Video           models.VideoRawData
 }
 
 func (f *publishVideoServiceData) Do() error {
@@ -48,7 +49,7 @@ func (f *publishVideoServiceData) publishVideo() error {
 
 	saveFile := filepath.Join("./public/", finalName)
 	// 1.save public
-	err := model.NewVideoDaoInstance().PublishVideoToPublic(f.Data, saveFile, f.Gin)
+	err := repository.NewVideoDaoInstance().PublishVideoToPublic(f.Data, saveFile, f.Gin)
 	if err != nil {
 		return err
 	}
@@ -59,7 +60,7 @@ func (f *publishVideoServiceData) publishVideo() error {
 	go func() {
 		// 2. save COS
 		defer wg.Done()
-		err := model.NewCOSDaoInstance().PublishVideoToCOS(cosKey, saveFile)
+		err := repository.NewCOSDaoInstance().PublishVideoToCOS(cosKey, saveFile)
 		if err != nil {
 			cosErr = err
 		}
@@ -67,14 +68,14 @@ func (f *publishVideoServiceData) publishVideo() error {
 
 	go func() {
 		defer wg.Done()
-		ourl := model.NewCOSDaoInstance().GetCOSVideoURL(cosKey)
-		video := &model.VideoRawData{
+		ourl := repository.NewCOSDaoInstance().GetCOSVideoURL(cosKey)
+		video := &models.VideoRawData{
 			VideoId: utils.GenerateUUID(),
 			UserId:  f.CurrentUserId,
 			Title:   f.Title,
 			PlayUrl: ourl.String(),
 		}
-		err := model.NewVideoDaoInstance().SaveVideoData(video)
+		err := repository.NewVideoDaoInstance().SaveVideoData(video)
 		if err != nil {
 			sqlErr = err
 		}
@@ -95,11 +96,11 @@ type userVideoList struct {
 	UserName string
 	UserId   string
 
-	VideoList    []model.Video
-	VideoData    []*model.VideoRawData
-	UserMap      map[string]*model.UserRawData
-	FavouriteMap map[string]*model.FavouriteRaw
-	RelationMap  map[string]*model.RelationRaw
+	VideoList    []models.Video
+	VideoData    []*models.VideoRawData
+	UserMap      map[string]*models.UserRawData
+	FavouriteMap map[string]*models.FavouriteRaw
+	RelationMap  map[string]*models.RelationRaw
 }
 
 func newQueryUserVideoList(userId string) *userVideoList {
@@ -109,7 +110,7 @@ func newQueryUserVideoList(userId string) *userVideoList {
 }
 
 func (f *userVideoList) prepareVideoInfo() error {
-	videoData, err := model.NewVideoDaoInstance().QueryVideosByUserId(f.UserId)
+	videoData, err := repository.NewVideoDaoInstance().QueryVideosByUserId(f.UserId)
 	if err != nil {
 		return err
 	}
@@ -121,9 +122,13 @@ func (f *userVideoList) prepareVideoInfo() error {
 		videoIds = append(videoIds, video.VideoId)
 	}
 
-	userMap, err := model.NewUserDaoInstance().QueryUserByIds(userIds)
+	users, err := repository.NewUserDaoInstance().QueryUserByIds(userIds)
 	if err != nil {
 		return err
+	}
+	userMap := make(map[string]*models.UserRawData)
+	for _, user := range users {
+		userMap[user.UserId] = user
 	}
 	f.UserMap = userMap
 
@@ -133,7 +138,7 @@ func (f *userVideoList) prepareVideoInfo() error {
 	// 获取点赞信息
 	go func() {
 		defer wg.Done()
-		favoriteMap, err := model.NewFavouriteDaoInstance().QueryFavoursByIds(f.UserId, videoIds)
+		favoriteMap, err := repository.NewFavouriteDaoInstance().QueryFavoursByIds(f.UserId, videoIds)
 		if err != nil {
 			favoriteErr = err
 			return
@@ -143,7 +148,7 @@ func (f *userVideoList) prepareVideoInfo() error {
 	// 获取关注信息
 	go func() {
 		defer wg.Done()
-		relationMap, err := model.NewRelationDaoInstance().QueryRelationByIds(f.UserId, userIds)
+		relationMap, err := repository.NewRelationDaoInstance().QueryRelationByIds(f.UserId, userIds)
 		if err != nil {
 			relationErr = err
 			return
@@ -161,7 +166,7 @@ func (f *userVideoList) prepareVideoInfo() error {
 }
 
 func (f *userVideoList) packVideoInfo() error {
-	videoList := make([]model.Video, 0)
+	videoList := make([]models.Video, 0)
 	for _, video := range f.VideoData {
 		videoUser, ok := f.UserMap[video.UserId]
 		if !ok {
@@ -179,9 +184,9 @@ func (f *userVideoList) packVideoInfo() error {
 		if ok {
 			isFollow = true
 		}
-		videoList = append(videoList, model.Video{
+		videoList = append(videoList, models.Video{
 			Id: video.VideoId,
-			Author: model.User{
+			Author: models.User{
 				UserId:        videoUser.UserId,
 				Name:          videoUser.Name,
 				FollowCount:   videoUser.FollowCount,
@@ -201,7 +206,7 @@ func (f *userVideoList) packVideoInfo() error {
 	return nil
 }
 
-func (f *userVideoList) do() ([]model.Video, error) {
+func (f *userVideoList) do() ([]models.Video, error) {
 	if err := f.prepareVideoInfo(); err != nil {
 		return nil, err
 	}
@@ -211,6 +216,6 @@ func (f *userVideoList) do() ([]model.Video, error) {
 	return f.VideoList, nil
 }
 
-func QueryUserVideos(userId string) ([]model.Video, error) {
+func QueryUserVideos(userId string) ([]models.Video, error) {
 	return newQueryUserVideoList(userId).do()
 }

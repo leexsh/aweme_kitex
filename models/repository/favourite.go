@@ -1,6 +1,7 @@
-package model
+package repository
 
 import (
+	"aweme_kitex/models"
 	"errors"
 	"sync"
 
@@ -25,16 +26,16 @@ func NewFavouriteDaoInstance() *FavouriteDao {
 }
 
 // 根据uid 和 videoId 获取喜欢列表
-func (f *FavouriteDao) QueryFavoursByIds(currentUId string, videoIds []string) (map[string]*FavouriteRaw, error) {
-	var favours []*FavouriteRaw
-	err := db.Table("favourite").Where("user_id=? AND video_id IN ?", currentUId, videoIds).Find(&favours).Error
+func (f *FavouriteDao) QueryFavoursByIds(currentUId string, videoIds []string) (map[string]*models.FavouriteRaw, error) {
+	var favours []*models.FavouriteRaw
+	err := DB.Table("favourite").Where("user_id=? AND video_id IN ?", currentUId, videoIds).Find(&favours).Error
 	if err == gorm.ErrRecordNotFound {
 		return nil, errors.New("favourite not found")
 	}
 	if err != nil {
 		return nil, err
 	}
-	favoursMap := make(map[string]*FavouriteRaw)
+	favoursMap := make(map[string]*models.FavouriteRaw)
 	for _, favour := range favours {
 		favoursMap[favour.VideoId] = favour
 	}
@@ -42,8 +43,8 @@ func (f *FavouriteDao) QueryFavoursByIds(currentUId string, videoIds []string) (
 }
 
 // 创建一条点赞
-func (f *FavouriteDao) CreateFavour(favour *FavouriteRaw) error {
-	err := db.Debug().Table("favourite").Create(favour).Error
+func (f *FavouriteDao) CreateFavour(favour *models.FavouriteRaw) error {
+	err := DB.Debug().Table("favourite").Create(favour).Error
 	if err != nil {
 		return err
 	}
@@ -52,8 +53,8 @@ func (f *FavouriteDao) CreateFavour(favour *FavouriteRaw) error {
 
 // del
 func (f *FavouriteDao) DelFavour(userId, videoId string) error {
-	var favour *FavouriteRaw
-	err := db.Table("favourite").Where("user_id = ? AND video_id = ?", userId, videoId).Delete(favour).Error
+	var favour *models.FavouriteRaw
+	err := DB.Table("favourite").Where("user_id = ? AND video_id = ?", userId, videoId).Delete(favour).Error
 	if err != nil {
 		return err
 	}
@@ -62,8 +63,8 @@ func (f *FavouriteDao) DelFavour(userId, videoId string) error {
 
 // quiery videos by uid
 func (f *FavouriteDao) QueryFavoursVideoIdByUid(uid string) ([]string, error) {
-	var favours []*FavouriteRaw
-	err := db.Debug().Table("favourite").Where("user_id=?", uid).Find(&favours).Error
+	var favours []*models.FavouriteRaw
+	err := DB.Debug().Table("favourite").Where("user_id=?", uid).Find(&favours).Error
 	if err != nil {
 		return nil, err
 	}

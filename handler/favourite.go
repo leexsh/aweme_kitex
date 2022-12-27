@@ -1,37 +1,37 @@
 package handler
 
 import (
-	"aweme_kitex/model"
+	"aweme_kitex/models"
 	"aweme_kitex/service"
 )
 
 // --- 关注和收藏列表----
 
-func FavouriteActionHandle(user *model.UserClaim, videoId, action string) *model.Response {
+func FavouriteActionHandle(user *models.UserClaim, videoId, action string) *models.Response {
 	err := service.FavouriteActionService(user, videoId, action)
 	if err != nil {
-		return &model.Response{
+		return &models.Response{
 			-1,
 			err.Error(),
 		}
 	}
-	return &model.Response{
+	return &models.Response{
 		0,
 		"favourite action success",
 	}
 }
 
-func FavouriteListHandle(user *model.UserClaim) *model.VideoListResponse {
+func FavouriteListHandle(user *models.UserClaim) *models.VideoListResponse {
 	videos, err := service.FavouriteListService(user.Id, user.Name)
 	if err != nil {
-		return &model.VideoListResponse{
-			Response: model.Response{
+		return &models.VideoListResponse{
+			Response: models.Response{
 				-1, err.Error(),
 			},
 		}
 	}
-	return &model.VideoListResponse{
-		model.Response{
+	return &models.VideoListResponse{
+		models.Response{
 			0, "get favourite list success",
 		},
 		videos,

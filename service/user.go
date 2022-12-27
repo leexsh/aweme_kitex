@@ -1,7 +1,8 @@
 package service
 
 import (
-	"aweme_kitex/model"
+	"aweme_kitex/models"
+	"aweme_kitex/models/repository"
 	"aweme_kitex/utils"
 	"errors"
 	"fmt"
@@ -33,8 +34,8 @@ func newRegisterUserDataFlow(name, password string) *registerUserDataFlow {
 func (r *registerUserDataFlow) do() (string, string, error) {
 	// insert to data
 	userId := utils.GenerateUUID()
-	token, _ := model.GenerateToken(userId, r.userName)
-	newUser := &model.UserRawData{
+	token, _ := models.GenerateToken(userId, r.userName)
+	newUser := &models.UserRawData{
 		UserId:        userId,
 		Name:          r.userName,
 		Password:      utils.Md5(r.password),
@@ -44,7 +45,7 @@ func (r *registerUserDataFlow) do() (string, string, error) {
 	}
 	// todo 写数据库和缓存
 	fmt.Println(newUser)
-	err := model.NewUserDaoInstance().UploadUserData(newUser)
+	err := repository.NewUserDaoInstance().UploadUserData(newUser)
 	return userId, token, err
 }
 
@@ -67,7 +68,7 @@ func newLoginUserDataFlow(name, password string) *loginUserDataFlow {
 	}
 }
 func (l *loginUserDataFlow) do() (uid string, token string, err error) {
-	user, err := model.NewUserDaoInstance().QueryUserByPassword(l.userName, utils.Md5(l.password))
+	user, err := repository.NewUserDaoInstance().QueryUserByPassword(l.userName, utils.Md5(l.password))
 	if user != nil {
 		l.token = user.Token
 		l.userId = user.UserId
@@ -76,20 +77,20 @@ func (l *loginUserDataFlow) do() (uid string, token string, err error) {
 }
 
 // user info
-func QueryUserInfo(user *model.UserClaim, remoteUid string) (*model.User, error) {
+func QueryUserInfo(user *models.UserClaim, remoteUid string) (*models.User, error) {
 	return newUserInfoDataFlow(user, remoteUid).do()
 }
 
 type userInfoDataFlow struct {
-	RemoteUser   *model.UserRawData
+	RemoteUser   *models.UserRawData
 	isfollow     bool
 	CurrentUName string
 	CurrentUId   string
 }
 
-func newUserInfoDataFlow(user *model.UserClaim, remoteUid string) *userInfoDataFlow {
+func newUserInfoDataFlow(user *models.UserClaim, remoteUid string) *userInfoDataFlow {
 	return &userInfoDataFlow{
-		RemoteUser: &model.UserRawData{
+		RemoteUser: &models.UserRawData{
 			UserId: remoteUid,
 		},
 		CurrentUId:   user.Id,
@@ -97,7 +98,7 @@ func newUserInfoDataFlow(user *model.UserClaim, remoteUid string) *userInfoDataF
 	}
 }
 
-func (u *userInfoDataFlow) do() (*model.User, error) {
+func (u *userInfoDataFlow) do() (*models.User, error) {
 	if err := u.prepareInfo(); err != nil {
 		return nil, err
 	}
@@ -110,12 +111,13 @@ func (u *userInfoDataFlow) do() (*model.User, error) {
 
 func (u *userInfoDataFlow) prepareInfo() error {
 	uids := []string{u.RemoteUser.UserId}
-	userMap, err := model.NewUserDaoInstance().QueryUserByIds(uids)
+	users, err := repository.NewUserDaoInstance().QueryUserByIds(uids)
 	if err != nil {
 		return err
 	}
-	u.RemoteUser = userMap[u.RemoteUser.UserId]
-	_, err = model.NewRelationDaoInstance().QueryRelationByIds(u.CurrentUId, uids)
+	u.RemoteUser = users[0]
+
+	_, err = repository.NewRelationDaoInstance().QueryRelationByIds(u.CurrentUId, uids)
 	if err == gorm.ErrRecordNotFound {
 		u.isfollow = false
 	} else if err != nil {
@@ -127,11 +129,11 @@ func (u *userInfoDataFlow) prepareInfo() error {
 
 }
 
-func (u *userInfoDataFlow) packUserInfo() (*model.User, error) {
+func (u *userInfoDataFlow) packUserInfo() (*models.User, error) {
 	if u.RemoteUser == nil {
 		return nil, errors.New("NOT FOUND this user")
 	}
-	user := &model.User{
+	user := &models.User{
 		UserId:        u.RemoteUser.UserId,
 		Name:          u.RemoteUser.Name,
 		FollowCount:   u.RemoteUser.FollowCount,

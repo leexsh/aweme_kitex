@@ -1,4 +1,4 @@
-package model
+package models
 
 // ----------types & response---------------
 type Favourite struct {
@@ -9,31 +9,31 @@ type Favourite struct {
 
 // video
 type Video struct {
-	Id             string `json:"id,omitempty"` // id
-	Author         User   `json:"author"`       // author
-	PlayUrl        string `json:"play_url,omitempty"`
-	CoverUrl       string `json:"cover_url,omitempty"`
-	FavouriteCount int64  `json:"favourite_count,omitempty"`
-	CommentCount   int64  `json:"comment_count,omitempty"`
-	IsFavourite    bool   `json:"is_favourite,omitempty"`
-	Title          string `json:"title,omitempty"`
+	Id             string `json:"id"`     // id
+	Author         User   `json:"author"` // author
+	PlayUrl        string `json:"play_url"`
+	CoverUrl       string `json:"cover_url"`
+	FavouriteCount int64  `json:"favourite_count"`
+	CommentCount   int64  `json:"comment_count"`
+	IsFavourite    bool   `json:"is_favourite"`
+	Title          string `json:"title"`
 }
 
 type Comment struct {
 	Id         string `json:"id,omitempty"`
 	User       User   `json:"author"`
 	VideoId    string `json:"video_id"`
-	Content    string `json:"content,omitempty"`
-	CreateDate string `json:"createDate,omitempty"`
+	Content    string `json:"content"`
+	CreateDate string `json:"createDate"`
 }
 
 type User struct {
-	UserId        string `json:"identity,omitempty"`
-	Name          string `json:"name,omitempty"`
+	UserId        string `json:"identity"`
+	Name          string `json:"name"`
 	Password      string `json:"password,omitempty"`
-	FollowCount   int64  `json:"follow_count,omitempty"`
-	FollowerCount int64  `json:"follower_count,omitempty"`
-	IsFollow      bool   `json:"is_follow,omitempty"`
+	FollowCount   int64  `json:"follow_count"`
+	FollowerCount int64  `json:"follower_count"`
+	IsFollow      bool   `json:"is_follow"`
 }
 
 // -------------response--------------
@@ -56,7 +56,7 @@ type UserResponse struct {
 
 type UserListResponse struct {
 	Response
-	UserList []User `json:"user_list"`
+	UserList []*User `json:"user_list"`
 }
 
 type VideoListResponse struct {

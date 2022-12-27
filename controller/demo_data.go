@@ -1,9 +1,9 @@
 package controller
 
 //
-// import "aweme_kitex/model"
+// import "aweme_kitex/models"
 //
-// var DemoVideos = []model.Video{
+// var DemoVideos = []models.Video{
 // 	{
 // 		Id:             "asd",
 // 		Author:         DemoUser,
@@ -15,7 +15,7 @@ package controller
 // 	},
 // }
 //
-// var DemoComments = []model.Comment{
+// var DemoComments = []models.Comment{
 // 	{
 // 		Id:      "aaa",
 // 		UserId:  "asd",
@@ -24,7 +24,7 @@ package controller
 // 	},
 // }
 //
-// var DemoUser = model.User{
+// var DemoUser = models.User{
 // 	UserId:        "XXX",
 // 	Name:          "John",
 // 	FollowCount:   20,

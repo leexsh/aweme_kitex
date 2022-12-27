@@ -1,7 +1,7 @@
 package handler
 
 import (
-	"aweme_kitex/model"
+	"aweme_kitex/models"
 	"aweme_kitex/service"
 	"errors"
 	"fmt"
@@ -10,7 +10,7 @@ import (
 // handle user logic
 
 // register
-func UserRegisterHandle(userName, password string) *model.UserLogRstResponse {
+func UserRegisterHandle(userName, password string) *models.UserLogRstResponse {
 	if len := len(userName); len <= 0 || len > 32 {
 		return userLogRstErrRes(errors.New("register user name error"))
 	}
@@ -23,8 +23,8 @@ func UserRegisterHandle(userName, password string) *model.UserLogRstResponse {
 		return userLogRstErrRes(err)
 	}
 
-	return &model.UserLogRstResponse{
-		model.Response{
+	return &models.UserLogRstResponse{
+		models.Response{
 			0,
 			fmt.Sprintf("%s register success!", userName),
 		},
@@ -35,7 +35,7 @@ func UserRegisterHandle(userName, password string) *model.UserLogRstResponse {
 }
 
 // login
-func UserLoginHandle(userName, password string) *model.UserLogRstResponse {
+func UserLoginHandle(userName, password string) *models.UserLogRstResponse {
 	if len := len(userName); len <= 0 || len > 32 {
 		return userLogRstErrRes(errors.New("login user name error"))
 	}
@@ -46,8 +46,8 @@ func UserLoginHandle(userName, password string) *model.UserLogRstResponse {
 	if err != nil {
 		return userLogRstErrRes(err)
 	}
-	return &model.UserLogRstResponse{
-		model.Response{
+	return &models.UserLogRstResponse{
+		models.Response{
 			0,
 			fmt.Sprintf("%s register success!", userName),
 		},
@@ -58,18 +58,18 @@ func UserLoginHandle(userName, password string) *model.UserLogRstResponse {
 }
 
 // userinfo
-func UserInfoHandle(user *model.UserClaim, remoteUid string) *model.UserResponse {
+func UserInfoHandle(user *models.UserClaim, remoteUid string) *models.UserResponse {
 	res, err := service.QueryUserInfo(user, remoteUid)
 	if err != nil {
-		return &model.UserResponse{
-			Response: model.Response{
+		return &models.UserResponse{
+			Response: models.Response{
 				-1,
 				err.Error(),
 			},
 		}
 	}
-	return &model.UserResponse{
-		model.Response{
+	return &models.UserResponse{
+		models.Response{
 			0,
 			"get user info success",
 		},
@@ -77,9 +77,9 @@ func UserInfoHandle(user *model.UserClaim, remoteUid string) *model.UserResponse
 	}
 }
 
-func userLogRstErrRes(err error) *model.UserLogRstResponse {
-	return &model.UserLogRstResponse{
-		Response: model.Response{
+func userLogRstErrRes(err error) *models.UserLogRstResponse {
+	return &models.UserLogRstResponse{
+		Response: models.Response{
 			-1,
 			err.Error(),
 		},

@@ -2,61 +2,47 @@ package controller
 
 import (
 	"aweme_kitex/cfg"
-	"aweme_kitex/model"
+	"aweme_kitex/models"
 	"errors"
 
 	"github.com/gin-gonic/gin"
 )
 
 type (
-	// videoRawData model.VideoRawData
-	// favouriteRaw model.FavouriteRaw
-	// userRawData  model.UserRawData
-	// relationRaw  model.RelationRaw
-	// commetRaw    model.CommentRaw
+	// videoRawData models.VideoRawData
+	// favouriteRaw models.FavouriteRaw
+	// userRawData  models.UserRawData
+	// relationRaw  models.RelationRaw
+	// commetRaw    models.CommentRaw
 	//
 
-	video     model.Video
-	favourite model.Favourite
-	comment   model.Comment
-	user      model.User
+	video     models.Video
+	favourite models.Favourite
+	comment   models.Comment
+	user      models.User
 
-	// response             model.Response
-	// userLoginResponse    model.UserLoginResponse
-	// userRegisterResponse model.UserRegisterResponse
-	// userResponse         model.UserResponse
-	// userListResponse     model.UserListResponse
-	// videoListResponse    model.VideoListResponse
-	// commentListResponse  model.CommentListResponse
-	// feedResponse         model.FeedResponse
+	// response             models.Response
+	// userLoginResponse    models.UserLoginResponse
+	// userRegisterResponse models.UserRegisterResponse
+	// userResponse         models.UserResponse
+	// userListResponse     models.UserListResponse
+	// videoListResponse    models.VideoListResponse
+	// commentListResponse  models.CommentListResponse
+	// feedResponse         models.FeedResponse
 )
 
 var (
 	db = cfg.DB
 
 	defaultToken = "defaultToken"
-
-	usersLoginInfo = map[string]model.User{
-		"caiXuKun": {
-			UserId:        "asdd",
-			Name:          "caiXuKun",
-			FollowerCount: 5,
-			FollowCount:   20,
-			IsFollow:      true,
-		},
-	}
-
-	userIdSequeue = int64(1)
-
-	u = model.UserRawData{}
 )
 
 // 鉴权
-func CheckToken(token string) (*model.UserClaim, error) {
+func CheckToken(token string) (*models.UserClaim, error) {
 	if token == defaultToken {
 		return nil, errors.New("error: check token failed, please update Token")
 	}
-	uc, err := model.AnalyzeToken(token)
+	uc, err := models.AnalyzeToken(token)
 	if err != nil {
 		return nil, err
 	}
@@ -64,7 +50,7 @@ func CheckToken(token string) (*model.UserClaim, error) {
 }
 
 func TokenErrorRes(c *gin.Context, err error) {
-	c.JSON(200, model.Response{
+	c.JSON(200, models.Response{
 		-1,
 		err.Error(),
 	})
