@@ -2,6 +2,7 @@ package repository
 
 import (
 	"aweme_kitex/models"
+	"aweme_kitex/utils"
 	"sync"
 )
 
@@ -23,6 +24,7 @@ func NewCommentDaoInstance() *CommentDao {
 func (*CommentDao) CreateComment(comment *models.CommentRaw) error {
 	err := DB.Table("comment").Create(comment).Error
 	if err != nil {
+		utils.Error("create comment err: " + err.Error())
 		return err
 	}
 	return nil
@@ -33,6 +35,7 @@ func (*CommentDao) DeleteComment(commentId string) (*models.CommentRaw, error) {
 	var commentRaw *models.CommentRaw
 	err := DB.Debug().Table("comment").Where("comment_id = ?", commentId).Delete(&commentRaw).Error
 	if err != nil {
+		utils.Error("delete comment err: " + err.Error())
 		return &models.CommentRaw{}, err
 	}
 	return commentRaw, nil
@@ -43,6 +46,7 @@ func (*CommentDao) QueryCommentByVideoId(videoId string) ([]models.CommentRaw, e
 	var comments []models.CommentRaw
 	err := DB.Debug().Table("comment").Order("created_at desc").Where("video_id = ?", videoId).Find(&comments).Error
 	if err != nil {
+		utils.Error("query comment err: " + err.Error())
 		return nil, err
 	}
 	return comments, nil

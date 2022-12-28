@@ -2,6 +2,7 @@ package repository
 
 import (
 	"aweme_kitex/models"
+	"aweme_kitex/utils"
 	"errors"
 	"sync"
 
@@ -33,6 +34,7 @@ func (f *FavouriteDao) QueryFavoursByIds(currentUId string, videoIds []string) (
 		return nil, errors.New("favourite not found")
 	}
 	if err != nil {
+		utils.Error("query favours by id err: " + err.Error())
 		return nil, err
 	}
 	favoursMap := make(map[string]*models.FavouriteRaw)
@@ -46,6 +48,7 @@ func (f *FavouriteDao) QueryFavoursByIds(currentUId string, videoIds []string) (
 func (f *FavouriteDao) CreateFavour(favour *models.FavouriteRaw) error {
 	err := DB.Debug().Table("favourite").Create(favour).Error
 	if err != nil {
+		utils.Error("create a favour err: " + err.Error())
 		return err
 	}
 	return nil
@@ -56,6 +59,7 @@ func (f *FavouriteDao) DelFavour(userId, videoId string) error {
 	var favour *models.FavouriteRaw
 	err := DB.Table("favourite").Where("user_id = ? AND video_id = ?", userId, videoId).Delete(favour).Error
 	if err != nil {
+		utils.Error("delete a favour err: " + err.Error())
 		return err
 	}
 	return nil
@@ -66,6 +70,7 @@ func (f *FavouriteDao) QueryFavoursVideoIdByUid(uid string) ([]string, error) {
 	var favours []*models.FavouriteRaw
 	err := DB.Debug().Table("favourite").Where("user_id=?", uid).Find(&favours).Error
 	if err != nil {
+		utils.Error("query favourite video err: " + err.Error())
 		return nil, err
 	}
 	var videos []string

@@ -17,16 +17,15 @@ import (
 var (
 	DB        *gorm.DB
 	COSClient *cos.Client
+	err       error
 )
 
-func init() {
+func Init() error {
 	// 读取ini
 	path, _ := os.Getwd()
-	// config, err := ini.Load(os.Getwd() + "/models/config.ini")
 	config, err := ini.Load(path + "/cfg/config.ini")
 	if err != nil {
-		fmt.Println("Failed to read file:%v", err)
-		os.Exit(-1)
+		return err
 	}
 
 	// -------------mysql----------------
@@ -49,7 +48,7 @@ func init() {
 		},
 	)
 	if err != nil {
-		panic(err)
+		return err
 	}
 
 	// 	-----------COS--------
@@ -62,4 +61,5 @@ func init() {
 			SecretKey: os.Getenv("COS_KEY"),
 		},
 	})
+	return nil
 }

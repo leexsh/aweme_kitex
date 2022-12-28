@@ -34,12 +34,12 @@ func NewVideoDaoInstance() *VideoDao {
 
 func (v *VideoDao) QueryVideoByLatestTime(latestTime int64) ([]*models.VideoRawData, error) {
 	var videos []*models.VideoRawData
-	// err := db.Table("video").Debug().Limit(20).Order("created_at desc").Where("created_at<?", time.Unix(int64(latestTime), 0)).Find(&videos).Error
 	err := cfg.DB.Table("video").Debug().Limit(20).Order("created_at desc").Where("created_at<?", utils.UnixToTime(latestTime)).Find(&videos).Error
 	if err == gorm.ErrRecordNotFound {
 		return nil, errors.New("not found videos")
 	}
 	if err != nil {
+		utils.Error("query videos by latest time error : " + err.Error())
 		return nil, errors.New("found videos error")
 	}
 	return videos, nil
@@ -52,6 +52,7 @@ func (v *VideoDao) QueryVideosByUserId(userId string) ([]*models.VideoRawData, e
 		return nil, errors.New("noe found videos")
 	}
 	if err != nil {
+		utils.Error("query videos by userId error : " + err.Error())
 		return nil, err
 	}
 	return videos, nil
@@ -60,6 +61,7 @@ func (v *VideoDao) QueryVideosByUserId(userId string) ([]*models.VideoRawData, e
 // 将视频保存到本地文件夹中
 func (*VideoDao) PublishVideoToPublic(video *multipart.FileHeader, path string, c *gin.Context) error {
 	if err := c.SaveUploadedFile(video, path); err != nil {
+		utils.Error("save videos to local error : " + err.Error())
 		return err
 	}
 	return nil
@@ -68,6 +70,7 @@ func (*VideoDao) PublishVideoToPublic(video *multipart.FileHeader, path string, 
 func (*VideoDao) SaveVideoData(videoData *models.VideoRawData) error {
 	err := DB.Table("video").Debug().Create(videoData).Error
 	if err != nil {
+		utils.Error("create video error : " + err.Error())
 		return err
 	}
 	return nil
@@ -81,6 +84,9 @@ func (*VideoDao) UpdateFavouriteCount(videoId, action string) error {
 	} else if action == "2" {
 		err = DB.Table("video").Where("video_id=?", videoId).Update("favourite_count", gorm.Expr("favourite_count - ?", 1)).Error
 	}
+	if err != nil {
+		utils.Error("update videos favourites error : " + err.Error())
+	}
 	return err
 }
 
@@ -88,6 +94,7 @@ func (*VideoDao) QueryVideosByIs(videoId []string) ([]*models.VideoRawData, erro
 	var videos []*models.VideoRawData
 	err := DB.Table("video").Where("video_id in (?)", videoId).Find(&videos).Error
 	if err != nil {
+		utils.Error("query video by id error : " + err.Error())
 		return nil, err
 	}
 	return videos, nil
@@ -100,6 +107,9 @@ func (*VideoDao) UpdateCommentCount(videoId string, action string) error {
 		err = DB.Table("video").Where("video_id = ?", videoId).Update("comment_count", gorm.Expr("comment_count + ?", 1)).Error
 	} else if action == "2" {
 		err = DB.Table("video").Where("video_id = ?", videoId).Update("comment_count", gorm.Expr("comment_count - ?", 1)).Error
+	}
+	if err != nil {
+		utils.Error("update videos comment count error : " + err.Error())
 	}
 	return err
 }

@@ -16,7 +16,24 @@ model/mysql_struct.sql      MYSQL DDL
 
 model/app.ini               数据库配置
 
-## 2.
+## 2.组件
+   - __logger: go.uber.org/zap__
+     https://segmentfault.com/a/1190000022461706
+
+
+   - __sql dirver: gorm__
+
+
+   - __token: jwt__
+
+
+   - __web: gin__
+
+
+   - __uuid: github.com/hashicorp/go-uuid__
+
+
+   - __object storage: Tencent COS__
   
 ## 3. 踩坑记录
 1. os.getenv("MYSQL_PASSWD")读取失败 
@@ -31,6 +48,7 @@ model/app.ini               数据库配置
    - 参考：https://www.jianshu.com/p/ffff11015ccf。
 ## 4.todo
 1. 整理sql信息到mysql_struct.sql
+2. 单元测试
 
 ## 5.参考资料
    - 腾讯云对象存储Go SDK(https://cloud.tencent.com/document/product/436/31215)

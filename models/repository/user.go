@@ -2,6 +2,7 @@ package repository
 
 import (
 	"aweme_kitex/models"
+	"aweme_kitex/utils"
 	"errors"
 	"sync"
 
@@ -31,6 +32,7 @@ func (u2 *UserDao) QueryUserByIds(uIds []string) ([]*models.UserRawData, error) 
 	var users []*models.UserRawData
 	err := DB.Debug().Where("user_id in (?)", uIds).Find(&users).Error
 	if err != nil {
+		utils.Error("query user by Ids err: " + err.Error())
 		return nil, errors.New("query users fail")
 	}
 	return users, nil
@@ -43,12 +45,14 @@ func (*UserDao) CheckUserNotExist(userId string) error {
 	}
 	var user *models.UserRawData
 	err := DB.Table("user").Where("userId = ?", userId).First(&user).Error
-	if err == nil {
-		return errors.New("user already exists")
-	}
 	if err == gorm.ErrRecordNotFound {
 		return nil
 	}
+	if err == nil {
+		utils.Errorf("check user not exist fail, err:%s", err.Error())
+		return errors.New("user already exists")
+	}
+
 	return err
 }
 
@@ -71,6 +75,7 @@ func (*UserDao) QueryUserByUserId(userId string) (*models.UserRawData, error) {
 	var user *models.UserRawData
 	err := DB.Table("user").Where("user_id = ?", userId).First(&user).Error
 	if err != nil {
+		utils.Error("query user by Id err: " + err.Error())
 		return nil, err
 	}
 	return user, nil
@@ -84,6 +89,7 @@ func (*UserDao) QueryUserByPassword(userName, password string) (*models.UserRawD
 	var usre *models.UserRawData
 	err := DB.Table("user").Where("name=? AND password=?", userName, password).First(&usre).Error
 	if err != nil {
+		utils.Error("query user by password err: " + err.Error())
 		return nil, err
 	}
 	return usre, nil
