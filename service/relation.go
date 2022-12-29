@@ -3,6 +3,7 @@ package service
 import (
 	"aweme_kitex/models"
 	"aweme_kitex/models/repository"
+	"errors"
 )
 
 /*
@@ -34,6 +35,9 @@ type relationActionDataFlow struct {
 }
 
 func (r *relationActionDataFlow) do() error {
+	if err := r.checkToUserId(); err != nil {
+		return err
+	}
 	if r.actionType == "1" {
 		err := r.createRelation()
 		if err != nil {
@@ -63,6 +67,17 @@ func (r *relationActionDataFlow) deleteRelation() error {
 	return nil
 }
 
+func (r *relationActionDataFlow) checkToUserId() error {
+	users, err := repository.NewUserDaoInstance().QueryUserByIds([]string{r.toUserId})
+	if err != nil {
+		return err
+	}
+	if len(users) == 0 {
+		return errors.New("toUserId not exist")
+	}
+	return nil
+}
+
 func GetFollowList(userId string) ([]*models.User, error) {
 	return newRelationListDataFlow(userId).getFollow()
 }
@@ -85,6 +100,9 @@ func newRelationListDataFlow(userId string) *relationListDataFlow {
 }
 
 func (f *relationListDataFlow) getFollow() ([]*models.User, error) {
+	if err := f.checkUserId(); err != nil {
+		return nil, err
+	}
 	if err := f.prepareFollowInfo(); err != nil {
 		return nil, err
 	}
@@ -92,6 +110,18 @@ func (f *relationListDataFlow) getFollow() ([]*models.User, error) {
 		return nil, err
 	}
 	return f.UserList, nil
+}
+
+// 检查用户是否存在
+func (f *relationListDataFlow) checkUserId() error {
+	users, err := repository.NewUserDaoInstance().QueryUserByIds([]string{f.UserId})
+	if err != nil {
+		return err
+	}
+	if len(users) == 0 {
+		return errors.New("userId not exist")
+	}
+	return nil
 }
 
 func (r *relationListDataFlow) prepareFollowInfo() error {
@@ -135,6 +165,9 @@ func (r *relationListDataFlow) packageFollowInfo() error {
 }
 
 func (f *relationListDataFlow) getFollower() ([]*models.User, error) {
+	if err := f.checkUserId(); err != nil {
+		return nil, err
+	}
 	if err := f.prepareFollowerInfo(); err != nil {
 		return nil, err
 	}

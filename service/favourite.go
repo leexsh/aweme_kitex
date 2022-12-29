@@ -31,7 +31,21 @@ func newFavouriteActionData(user *models.UserClaim, videoId, action string) *fav
 	}
 }
 
+func (f *favouriteActionDataFlow) checkVideoId() error {
+	videos, err := repository.NewVideoDaoInstance().QueryVideosByIs([]string{f.videoId})
+	if err != nil {
+		return err
+	}
+	if len(videos) == 0 {
+		return errors.New("video not exist")
+	}
+	return nil
+}
+
 func (f *favouriteActionDataFlow) do() error {
+	if err := f.checkVideoId(); err != nil {
+		return err
+	}
 	if f.action != "1" && f.action != "2" {
 		return errors.New("invalid action type")
 	}
@@ -42,59 +56,15 @@ func (f *favouriteActionDataFlow) do() error {
 			VideoId: f.videoId,
 		}
 		f.FavouriteData = favour
-		var wg sync.WaitGroup
-		wg.Add(2)
-		var favourErr, videoErr error
-		// 事务
-		go func() {
-			defer wg.Done()
-			err := repository.NewFavouriteDaoInstance().CreateFavour(favour)
-			if err != nil {
-				favourErr = err
-			}
-		}()
-		go func() {
-			wg.Done()
-			err := repository.NewVideoDaoInstance().UpdateFavouriteCount(f.videoId, f.action)
-			if err != nil {
-				videoErr = err
-			}
-		}()
-		wg.Wait()
-		if favourErr != nil {
-			return favourErr
+		err := repository.NewFavouriteDaoInstance().CreateFavour(favour, f.videoId)
+		if err != nil {
+			return err
 		}
-		if videoErr != nil {
-			return videoErr
-		}
-
 	} else if f.action == "2" {
-		var wg sync.WaitGroup
-		wg.Add(2)
-		var favourErr, videoErr error
-		// 事务
-		go func() {
-			defer wg.Done()
-			err := repository.NewFavouriteDaoInstance().DelFavour(f.CurrentUid, f.videoId)
-			if err != nil {
-				favourErr = err
-			}
-		}()
-		go func() {
-			wg.Done()
-			err := repository.NewVideoDaoInstance().UpdateFavouriteCount(f.videoId, f.action)
-			if err != nil {
-				videoErr = err
-			}
-		}()
-		wg.Wait()
-		if favourErr != nil {
-			return favourErr
+		err := repository.NewFavouriteDaoInstance().DelFavour(f.CurrentUid, f.videoId)
+		if err != nil {
+			return err
 		}
-		if videoErr != nil {
-			return videoErr
-		}
-
 	}
 	return nil
 }

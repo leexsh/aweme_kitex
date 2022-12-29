@@ -20,5 +20,6 @@ func Feed(c *gin.Context) {
 		TokenErrorRes(c, err)
 	}
 	feedRes := handler.QueryVideoFeedHandler(user.Id, defaultTimeStr)
+	utils.Info(feedRes)
 	c.JSON(http.StatusOK, feedRes)
 }

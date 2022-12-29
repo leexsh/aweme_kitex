@@ -38,6 +38,9 @@ func newCommentDataFlow(id, videoId, content, commentId string) *commentDataFlow
 }
 
 func (c *commentDataFlow) createComment() (*models.Comment, error) {
+	if err := c.checkVideoId(); err != nil {
+		return nil, err
+	}
 	if err := c.prepareComment("1"); err != nil {
 		return nil, err
 	}
@@ -47,6 +50,12 @@ func (c *commentDataFlow) createComment() (*models.Comment, error) {
 	return c.comment, nil
 }
 func (c *commentDataFlow) delComment() (*models.Comment, error) {
+	if err := c.checkCommentId(); err != nil {
+		return nil, err
+	}
+	if err := c.checkVideoId(); err != nil {
+		return nil, err
+	}
 	if err := c.prepareComment("2"); err != nil {
 		return nil, err
 	}
@@ -67,6 +76,30 @@ func (c *commentDataFlow) delComment() (*models.Comment, error) {
 	return c.comment, nil
 }
 
+// 检查视频id是否存在
+func (f *commentDataFlow) checkVideoId() error {
+	videos, err := repository.NewVideoDaoInstance().QueryVideosByIs([]string{f.videoId})
+	if err != nil {
+		return err
+	}
+	if len(videos) == 0 {
+		return errors.New("video not exist")
+	}
+	return nil
+}
+
+// 检查commentid
+func (f *commentDataFlow) checkCommentId() error {
+	comments, err := repository.NewCommentDaoInstance().QueryCommentByCommentIds([]string{f.commentId})
+	if err != nil {
+		return err
+	}
+	if len(comments) == 0 {
+		return errors.New("commentId not exist")
+	}
+	return nil
+}
+
 func (c *commentDataFlow) prepareComment(action string) error {
 	commentRaw := &models.CommentRaw{
 		Id:      utils.GenerateUUID(),
@@ -76,8 +109,8 @@ func (c *commentDataFlow) prepareComment(action string) error {
 	}
 	c.commentRaw = commentRaw
 	var wg sync.WaitGroup
-	wg.Add(3)
-	var commentErr, videoErr, userErr error
+	wg.Add(2)
+	var commentErr, userErr error
 	go func() {
 		defer wg.Done()
 		if action == "1" {
@@ -95,13 +128,6 @@ func (c *commentDataFlow) prepareComment(action string) error {
 	}()
 	go func() {
 		defer wg.Done()
-		err := repository.NewVideoDaoInstance().UpdateCommentCount(c.videoId, action)
-		if err != nil {
-			videoErr = err
-		}
-	}()
-	go func() {
-		defer wg.Done()
 		user, err := repository.NewUserDaoInstance().QueryUserByUserId(c.currentUid)
 		if err != nil {
 			userErr = err
@@ -111,9 +137,6 @@ func (c *commentDataFlow) prepareComment(action string) error {
 	wg.Wait()
 	if commentErr != nil {
 		return commentErr
-	}
-	if videoErr != nil {
-		return videoErr
 	}
 	if userErr != nil {
 		return userErr
@@ -139,6 +162,7 @@ func (c *commentDataFlow) packageComment() error {
 	return nil
 }
 
+// ---------------------------
 func ShowCommentList(uid, videoId string) ([]models.Comment, error) {
 	return newCommentListDataFlow(uid, videoId).do()
 }
@@ -161,6 +185,9 @@ func newCommentListDataFlow(uid string, videoId string) *commentListDataFlow {
 }
 
 func (c *commentListDataFlow) do() ([]models.Comment, error) {
+	if err := c.checkVideoId(); err != nil {
+		return nil, err
+	}
 	if err := c.prepareListCommentInfo(); err != nil {
 		return nil, err
 	}
@@ -168,6 +195,18 @@ func (c *commentListDataFlow) do() ([]models.Comment, error) {
 		return nil, err
 	}
 	return c.CommentList, nil
+}
+
+// 检查视频id是否正确
+func (f *commentListDataFlow) checkVideoId() error {
+	videos, err := repository.NewVideoDaoInstance().QueryVideosByIs([]string{f.VideoId})
+	if err != nil {
+		return err
+	}
+	if len(videos) == 0 {
+		return errors.New("videoId not exist")
+	}
+	return nil
 }
 
 func (c *commentListDataFlow) prepareListCommentInfo() error {

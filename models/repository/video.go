@@ -76,20 +76,6 @@ func (*VideoDao) SaveVideoData(videoData *models.VideoRawData) error {
 	return nil
 }
 
-// update favourite
-func (*VideoDao) UpdateFavouriteCount(videoId, action string) error {
-	var err error
-	if action == "1" {
-		err = DB.Table("video").Where("video_id=?", videoId).Update("favourite_count", gorm.Expr("favourite_count + ?", 1)).Error
-	} else if action == "2" {
-		err = DB.Table("video").Where("video_id=?", videoId).Update("favourite_count", gorm.Expr("favourite_count - ?", 1)).Error
-	}
-	if err != nil {
-		utils.Error("update videos favourites error : " + err.Error())
-	}
-	return err
-}
-
 func (*VideoDao) QueryVideosByIs(videoId []string) ([]*models.VideoRawData, error) {
 	var videos []*models.VideoRawData
 	err := DB.Table("video").Where("video_id in (?)", videoId).Find(&videos).Error
@@ -98,18 +84,4 @@ func (*VideoDao) QueryVideosByIs(videoId []string) ([]*models.VideoRawData, erro
 		return nil, err
 	}
 	return videos, nil
-}
-
-// 通过视频id增加视频的评论数
-func (*VideoDao) UpdateCommentCount(videoId string, action string) error {
-	var err error
-	if action == "1" {
-		err = DB.Table("video").Where("video_id = ?", videoId).Update("comment_count", gorm.Expr("comment_count + ?", 1)).Error
-	} else if action == "2" {
-		err = DB.Table("video").Where("video_id = ?", videoId).Update("comment_count", gorm.Expr("comment_count - ?", 1)).Error
-	}
-	if err != nil {
-		utils.Error("update videos comment count error : " + err.Error())
-	}
-	return err
 }

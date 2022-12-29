@@ -6,8 +6,6 @@ import (
 	"aweme_kitex/utils"
 	"errors"
 	"fmt"
-
-	"gorm.io/gorm"
 )
 
 // user service
@@ -115,13 +113,15 @@ func (u *userInfoDataFlow) prepareInfo() error {
 	if err != nil {
 		return err
 	}
+	if len(users) == 0 {
+		return errors.New("user not exist")
+	}
 	u.RemoteUser = users[0]
 
-	_, err = repository.NewRelationDaoInstance().QueryRelationByIds(u.CurrentUId, uids)
-	if err == gorm.ErrRecordNotFound {
+	relationMap, err := repository.NewRelationDaoInstance().QueryRelationByIds(u.CurrentUId, uids)
+	_, ok := relationMap[u.CurrentUId]
+	if !ok {
 		u.isfollow = false
-	} else if err != nil {
-		return err
 	} else {
 		u.isfollow = true
 	}

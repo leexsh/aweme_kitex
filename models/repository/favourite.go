@@ -45,23 +45,42 @@ func (f *FavouriteDao) QueryFavoursByIds(currentUId string, videoIds []string) (
 }
 
 // 创建一条点赞
-func (f *FavouriteDao) CreateFavour(favour *models.FavouriteRaw) error {
-	err := DB.Debug().Table("favourite").Create(favour).Error
-	if err != nil {
-		utils.Error("create a favour err: " + err.Error())
-		return err
-	}
+func (f *FavouriteDao) CreateFavour(favour *models.FavouriteRaw, videoId string) error {
+	DB.Transaction(func(tx *gorm.DB) error {
+		err := tx.Table("video").Where("video_id = ?", videoId).Update("favorite_count", gorm.Expr("favorite_count + ?", 1)).Error
+		if err != nil {
+			utils.Error("AddFavoriteCount error " + err.Error())
+			return err
+		}
+
+		err = tx.Table("favorite").Create(favour).Error
+		if err != nil {
+			utils.Error("create favorite record fail " + err.Error())
+			return err
+		}
+
+		return nil
+	})
 	return nil
 }
 
 // del
 func (f *FavouriteDao) DelFavour(userId, videoId string) error {
-	var favour *models.FavouriteRaw
-	err := DB.Table("favourite").Where("user_id = ? AND video_id = ?", userId, videoId).Delete(favour).Error
-	if err != nil {
-		utils.Error("delete a favour err: " + err.Error())
-		return err
-	}
+	DB.Transaction(func(tx *gorm.DB) error {
+		var favorite *models.FavouriteRaw
+		err := tx.Table("favorite").Where("user_id = ? AND video_id = ?", userId, videoId).Delete(&favorite).Error
+		if err != nil {
+			utils.Error("delete favorite record fail " + err.Error())
+			return err
+		}
+
+		err = tx.Table("video").Where("video_id = ?", videoId).Update("favorite_count", gorm.Expr("favorite_count - ?", 1)).Error
+		if err != nil {
+			utils.Error("SubFavoriteCount error " + err.Error())
+			return err
+		}
+		return nil
+	})
 	return nil
 }
 
