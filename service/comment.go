@@ -38,7 +38,7 @@ func newCommentDataFlow(id, videoId, content, commentId string) *commentDataFlow
 }
 
 func (c *commentDataFlow) createComment() (*models.Comment, error) {
-	if err := c.checkVideoId(); err != nil {
+	if _, err := checkVideoId([]string{c.videoId}); err != nil {
 		return nil, err
 	}
 	if err := c.prepareComment("1"); err != nil {
@@ -50,10 +50,10 @@ func (c *commentDataFlow) createComment() (*models.Comment, error) {
 	return c.comment, nil
 }
 func (c *commentDataFlow) delComment() (*models.Comment, error) {
-	if err := c.checkCommentId(); err != nil {
+	if _, err := checkCommentId([]string{c.commentId}); err != nil {
 		return nil, err
 	}
-	if err := c.checkVideoId(); err != nil {
+	if _, err := checkVideoId([]string{c.videoId}); err != nil {
 		return nil, err
 	}
 	if err := c.prepareComment("2"); err != nil {
@@ -61,7 +61,7 @@ func (c *commentDataFlow) delComment() (*models.Comment, error) {
 	}
 	commet := &models.Comment{
 		Id: c.commentRaw.Id,
-		User: models.User{
+		User: &models.User{
 			UserId:        c.user.UserId,
 			Name:          c.user.Name,
 			FollowerCount: c.user.FollowerCount,
@@ -74,30 +74,6 @@ func (c *commentDataFlow) delComment() (*models.Comment, error) {
 	}
 	c.comment = commet
 	return c.comment, nil
-}
-
-// 检查视频id是否存在
-func (f *commentDataFlow) checkVideoId() error {
-	videos, err := repository.NewVideoDaoInstance().QueryVideosByIs([]string{f.videoId})
-	if err != nil {
-		return err
-	}
-	if len(videos) == 0 {
-		return errors.New("video not exist")
-	}
-	return nil
-}
-
-// 检查commentid
-func (f *commentDataFlow) checkCommentId() error {
-	comments, err := repository.NewCommentDaoInstance().QueryCommentByCommentIds([]string{f.commentId})
-	if err != nil {
-		return err
-	}
-	if len(comments) == 0 {
-		return errors.New("commentId not exist")
-	}
-	return nil
 }
 
 func (c *commentDataFlow) prepareComment(action string) error {
@@ -147,7 +123,7 @@ func (c *commentDataFlow) prepareComment(action string) error {
 func (c *commentDataFlow) packageComment() error {
 	commet := &models.Comment{
 		Id: c.commentRaw.Id,
-		User: models.User{
+		User: &models.User{
 			UserId:        c.user.UserId,
 			Name:          c.user.Name,
 			FollowerCount: c.user.FollowerCount,
@@ -163,16 +139,16 @@ func (c *commentDataFlow) packageComment() error {
 }
 
 // ---------------------------
-func ShowCommentList(uid, videoId string) ([]models.Comment, error) {
+func ShowCommentList(uid, videoId string) ([]*models.Comment, error) {
 	return newCommentListDataFlow(uid, videoId).do()
 }
 
 type commentListDataFlow struct {
 	VideoId     string
-	CommentList []models.Comment
+	CommentList []*models.Comment
 
 	userId      string
-	Comments    []models.CommentRaw
+	Comments    []*models.CommentRaw
 	UserMap     map[string]*models.UserRawData
 	RelationMap map[string]*models.RelationRaw
 }
@@ -184,7 +160,7 @@ func newCommentListDataFlow(uid string, videoId string) *commentListDataFlow {
 	}
 }
 
-func (c *commentListDataFlow) do() ([]models.Comment, error) {
+func (c *commentListDataFlow) do() ([]*models.Comment, error) {
 	if err := c.checkVideoId(); err != nil {
 		return nil, err
 	}
@@ -246,7 +222,7 @@ func (c *commentListDataFlow) prepareListCommentInfo() error {
 
 // 打包评论信息返回
 func (c *commentListDataFlow) packCommentListInfo() error {
-	commentList := make([]models.Comment, 0)
+	commentList := make([]*models.Comment, 0)
 	for _, comment := range c.Comments {
 		commentUser, ok := c.UserMap[comment.UserId]
 		if !ok {
@@ -259,9 +235,9 @@ func (c *commentListDataFlow) packCommentListInfo() error {
 			isFollow = true
 		}
 
-		commentList = append(commentList, models.Comment{
+		commentList = append(commentList, &models.Comment{
 			Id: comment.Id,
-			User: models.User{
+			User: &models.User{
 				UserId:        commentUser.UserId,
 				Name:          commentUser.Name,
 				FollowCount:   commentUser.FollowCount,

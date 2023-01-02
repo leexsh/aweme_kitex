@@ -14,16 +14,17 @@ import (
 )
 
 // -------------publish
-func PublishVideoService(userId, userName, title string, data *multipart.FileHeader) error {
-	return newPublishVideoServiceData(userId, userName, title, data).Do()
+func PublishVideoService(userId, userName, title string, data *multipart.FileHeader, c *gin.Context) error {
+	return newPublishVideoServiceData(userId, userName, title, data, c).Do()
 }
 
-func newPublishVideoServiceData(userId, userName, title string, data *multipart.FileHeader) *publishVideoServiceData {
+func newPublishVideoServiceData(userId, userName, title string, data *multipart.FileHeader, c *gin.Context) *publishVideoServiceData {
 	return &publishVideoServiceData{
 		Data:            data,
 		Title:           title,
 		CurrentUserId:   userId,
 		CurrentUserName: userName,
+		Gin:             c,
 	}
 }
 
@@ -34,7 +35,7 @@ type publishVideoServiceData struct {
 
 	CurrentUserId   string
 	CurrentUserName string
-	Video           models.VideoRawData
+	Video           *models.VideoRawData
 }
 
 func (f *publishVideoServiceData) Do() error {
@@ -54,39 +55,22 @@ func (f *publishVideoServiceData) publishVideo() error {
 		return err
 	}
 	cosKey := fmt.Sprintf("%s/%s", f.CurrentUserName, finalName)
-	var wg sync.WaitGroup
-	wg.Add(2)
-	var cosErr, sqlErr error
-	go func() {
-		// 2. save COS
-		defer wg.Done()
-		err := repository.NewCOSDaoInstance().PublishVideoToCOS(cosKey, saveFile)
-		if err != nil {
-			cosErr = err
-		}
-	}()
-
-	go func() {
-		defer wg.Done()
-		ourl := repository.NewCOSDaoInstance().GetCOSVideoURL(cosKey)
-		video := &models.VideoRawData{
-			VideoId: utils.GenerateUUID(),
-			UserId:  f.CurrentUserId,
-			Title:   f.Title,
-			PlayUrl: ourl.String(),
-		}
-		err := repository.NewVideoDaoInstance().SaveVideoData(video)
-		if err != nil {
-			sqlErr = err
-		}
-	}()
-
-	wg.Wait()
-	if cosErr != nil {
-		return cosErr
+	err = repository.NewCOSDaoInstance().PublishVideoToCOS(cosKey, saveFile)
+	// 2.upload cos
+	if err != nil {
+		return err
 	}
-	if sqlErr != nil {
-		return sqlErr
+
+	ourl := repository.NewCOSDaoInstance().GetCOSVideoURL(cosKey)
+	video := &models.VideoRawData{
+		VideoId: utils.GenerateUUID(),
+		UserId:  f.CurrentUserId,
+		Title:   f.Title,
+		PlayUrl: ourl.String(),
+	}
+	err = repository.NewVideoDaoInstance().SaveVideoData(video)
+	if err != nil {
+		return err
 	}
 	return nil
 }
@@ -96,7 +80,7 @@ type userVideoList struct {
 	UserName string
 	UserId   string
 
-	VideoList    []models.Video
+	VideoList    []*models.Video
 	VideoData    []*models.VideoRawData
 	UserMap      map[string]*models.UserRawData
 	FavouriteMap map[string]*models.FavouriteRaw
@@ -166,7 +150,7 @@ func (f *userVideoList) prepareVideoInfo() error {
 }
 
 func (f *userVideoList) packVideoInfo() error {
-	videoList := make([]models.Video, 0)
+	videoList := make([]*models.Video, 0)
 	for _, video := range f.VideoData {
 		videoUser, ok := f.UserMap[video.UserId]
 		if !ok {
@@ -184,9 +168,9 @@ func (f *userVideoList) packVideoInfo() error {
 		if ok {
 			isFollow = true
 		}
-		videoList = append(videoList, models.Video{
+		videoList = append(videoList, &models.Video{
 			Id: video.VideoId,
-			Author: models.User{
+			Author: &models.User{
 				UserId:        videoUser.UserId,
 				Name:          videoUser.Name,
 				FollowCount:   videoUser.FollowCount,
@@ -206,7 +190,7 @@ func (f *userVideoList) packVideoInfo() error {
 	return nil
 }
 
-func (f *userVideoList) do() ([]models.Video, error) {
+func (f *userVideoList) do() ([]*models.Video, error) {
 	if err := f.prepareVideoInfo(); err != nil {
 		return nil, err
 	}
@@ -216,6 +200,6 @@ func (f *userVideoList) do() ([]models.Video, error) {
 	return f.VideoList, nil
 }
 
-func QueryUserVideos(userId string) ([]models.Video, error) {
+func QueryUserVideos(userId string) ([]*models.Video, error) {
 	return newQueryUserVideoList(userId).do()
 }

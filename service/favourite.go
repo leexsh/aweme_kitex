@@ -31,19 +31,8 @@ func newFavouriteActionData(user *models.UserClaim, videoId, action string) *fav
 	}
 }
 
-func (f *favouriteActionDataFlow) checkVideoId() error {
-	videos, err := repository.NewVideoDaoInstance().QueryVideosByIs([]string{f.videoId})
-	if err != nil {
-		return err
-	}
-	if len(videos) == 0 {
-		return errors.New("video not exist")
-	}
-	return nil
-}
-
 func (f *favouriteActionDataFlow) do() error {
-	if err := f.checkVideoId(); err != nil {
+	if _, err := checkVideoId([]string{f.videoId}); err != nil {
 		return err
 	}
 	if f.action != "1" && f.action != "2" {
@@ -69,7 +58,7 @@ func (f *favouriteActionDataFlow) do() error {
 	return nil
 }
 
-func FavouriteListService(userId, userName string) ([]models.Video, error) {
+func FavouriteListService(userId, userName string) ([]*models.Video, error) {
 	return newFavouriteListDataFlow(userId, userName).do()
 }
 
@@ -77,7 +66,7 @@ type favouriteListDataFlow struct {
 	currentUId   string
 	currentUName string
 
-	favours []models.Video
+	favours []*models.Video
 
 	videoRawData []*models.VideoRawData
 	users        map[string]*models.UserRawData
@@ -92,7 +81,7 @@ func newFavouriteListDataFlow(id, name string) *favouriteListDataFlow {
 	}
 }
 
-func (f *favouriteListDataFlow) do() ([]models.Video, error) {
+func (f *favouriteListDataFlow) do() ([]*models.Video, error) {
 	if err := f.prepareVideoInfo(); err != nil {
 		return nil, err
 	}
@@ -161,7 +150,7 @@ func (f *favouriteListDataFlow) prepareVideoInfo() error {
 }
 
 func (f *favouriteListDataFlow) packageVideo() error {
-	videoList := make([]models.Video, 0)
+	videoList := make([]*models.Video, 0)
 	for _, video := range f.videoRawData {
 		author, ok := f.users[video.UserId]
 		if !ok {
@@ -177,9 +166,9 @@ func (f *favouriteListDataFlow) packageVideo() error {
 		if ok {
 			isFollow = true
 		}
-		videoList = append(videoList, models.Video{
+		videoList = append(videoList, &models.Video{
 			Id: video.VideoId,
-			Author: models.User{
+			Author: &models.User{
 				UserId:        author.UserId,
 				Name:          author.Name,
 				FollowCount:   author.FollowCount,

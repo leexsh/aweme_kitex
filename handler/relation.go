@@ -23,16 +23,16 @@ func RelationActionHandle(user *models.UserClaim, toUser, action string) *models
 	}
 }
 
-func ShowFollowListHandle(u *models.UserClaim) *models.UserListResponse {
+func ShowFollowListHandle(u *models.UserClaim) *models.RelationListhResponse {
 	userList, err := service.GetFollowList(u.Id)
 	if err != nil {
-		return &models.UserListResponse{
+		return &models.RelationListhResponse{
 			Response: models.Response{
 				-1, err.Error(),
 			},
 		}
 	}
-	return &models.UserListResponse{
+	return &models.RelationListhResponse{
 		models.Response{
 			0,
 			"get follow list succes",
@@ -41,16 +41,16 @@ func ShowFollowListHandle(u *models.UserClaim) *models.UserListResponse {
 	}
 }
 
-func ShowFollowerListHandle(u *models.UserClaim) *models.UserListResponse {
+func ShowFollowerListHandle(u *models.UserClaim) *models.RelationListhResponse {
 	userList, err := service.GetFollowerList(u.Id)
 	if err != nil {
-		return &models.UserListResponse{
+		return &models.RelationListhResponse{
 			Response: models.Response{
 				-1, err.Error(),
 			},
 		}
 	}
-	return &models.UserListResponse{
+	return &models.RelationListhResponse{
 		models.Response{
 			0,
 			"get follower list succes",

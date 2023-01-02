@@ -21,10 +21,10 @@ func CommentAction(c *gin.Context) {
 	actionType := c.Query("actionType")
 	if actionType == "1" {
 		commentText := c.Query("content")
-		c.JSON(200, *handler.CreateCommentHandle(user, videoId, commentText))
+		c.JSON(200, handler.CreateCommentHandle(user, videoId, commentText))
 	} else if actionType == "2" {
 		commentId := c.Query("commentId")
-		c.JSON(200, *handler.DelCommentHandle(user, commentId))
+		c.JSON(200, handler.DelCommentHandle(user, commentId))
 	} else {
 		c.JSON(200, models.Response{
 			StatusCode: 0,
@@ -41,5 +41,5 @@ func CommentList(c *gin.Context) {
 	}
 
 	videoId := c.Query("videoId")
-	c.JSON(200, *handler.CommentListHandle(user, videoId))
+	c.JSON(200, handler.CommentListHandle(user, videoId))
 }

@@ -10,7 +10,7 @@ type Favourite struct {
 // video
 type Video struct {
 	Id             string `json:"id"`     // id
-	Author         User   `json:"author"` // author
+	Author         *User  `json:"author"` // author
 	PlayUrl        string `json:"play_url"`
 	CoverUrl       string `json:"cover_url"`
 	FavouriteCount int64  `json:"favourite_count"`
@@ -21,7 +21,7 @@ type Video struct {
 
 type Comment struct {
 	Id         string `json:"id,omitempty"`
-	User       User   `json:"author"`
+	User       *User  `json:"author"`
 	VideoId    string `json:"video_id"`
 	Content    string `json:"content"`
 	CreateDate string `json:"createDate"`
@@ -61,7 +61,7 @@ type UserListResponse struct {
 
 type VideoListResponse struct {
 	Response
-	VideoList []Video `json:"video_list,omitempty"`
+	VideoList interface{} `json:"video_list,omitempty"`
 }
 
 // comment
@@ -71,11 +71,16 @@ type CommentActionResponse struct {
 }
 type CommentListResponse struct {
 	Response
-	CommentList []Comment `json:"comment_list,omitempty"`
+	CommentList interface{} `json:"comment_list,omitempty"`
+}
+
+type RelationListhResponse struct {
+	Response
+	UserList interface{} `json:"user_list,omitempty"`
 }
 
 type FeedResponse struct {
 	Response
-	VideoList []Video `json:"video_list,omitempty"`
-	NextTime  int64   `json:"next_time,omitempty"`
+	VideoList interface{} `json:"video_list,omitempty"`
+	NextTime  int64       `json:"next_time,omitempty"`
 }

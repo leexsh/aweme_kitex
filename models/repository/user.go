@@ -58,7 +58,7 @@ func (*UserDao) CheckUserNotExist(userId string) error {
 
 // 上传用户信息到缓存的用户信息表和数据库
 func (*UserDao) UploadUserData(user *models.UserRawData) error {
-	UsersLoginInfo[user.UserId] = *user
+	UsersLoginInfo[user.UserId] = user
 	err := DB.Table("user").Create(&user).Error
 	if err != nil {
 		return err
@@ -69,7 +69,7 @@ func (*UserDao) UploadUserData(user *models.UserRawData) error {
 // 通过token获取用户id和用户
 func (*UserDao) QueryUserByUserId(userId string) (*models.UserRawData, error) {
 	if userInfo, exist := UsersLoginInfo[userId]; exist {
-		return &userInfo, nil
+		return userInfo, nil
 	}
 
 	var user *models.UserRawData
@@ -84,7 +84,7 @@ func (*UserDao) QueryUserByUserId(userId string) (*models.UserRawData, error) {
 
 func (*UserDao) QueryUserByPassword(userName, password string) (*models.UserRawData, error) {
 	if userInfo, exist := UsersLoginInfo[userName]; exist {
-		return &userInfo, nil
+		return userInfo, nil
 	}
 	var usre *models.UserRawData
 	err := DB.Table("user").Where("name=? AND password=?", userName, password).First(&usre).Error

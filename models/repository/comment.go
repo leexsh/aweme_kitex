@@ -71,8 +71,8 @@ func (*CommentDao) QueryCommentByCommentIds(commentIds []string) ([]*models.Comm
 }
 
 // 通过视频id号倒序返回一组评论信息
-func (*CommentDao) QueryCommentByVideoId(videoId string) ([]models.CommentRaw, error) {
-	var comments []models.CommentRaw
+func (*CommentDao) QueryCommentByVideoId(videoId string) ([]*models.CommentRaw, error) {
+	var comments []*models.CommentRaw
 	err := DB.Debug().Table("comment").Order("created_at desc").Where("video_id = ?", videoId).Find(&comments).Error
 	if err != nil {
 		utils.Error("query comment err: " + err.Error())

@@ -11,7 +11,7 @@ import (
 // ------------service--------------------
 // 该层负责鉴权  向repository获取视频数据和封装数据
 
-func QueryVideoData(latestTime int64, userId string) ([]models.Video, int64, error) {
+func QueryVideoData(latestTime int64, userId string) ([]*models.Video, int64, error) {
 	return newQueryVideoDataFlow(latestTime, userId).Do()
 }
 
@@ -28,7 +28,7 @@ type queryVideoDataFlow struct {
 	CurrentUserName string
 
 	LatestTime int64
-	VideoList  []models.Video
+	VideoList  []*models.Video
 	NextTime   int64
 
 	VideoData   []*models.VideoRawData
@@ -37,7 +37,7 @@ type queryVideoDataFlow struct {
 	RelationMap map[string]*models.RelationRaw
 }
 
-func (f *queryVideoDataFlow) Do() ([]models.Video, int64, error) {
+func (f *queryVideoDataFlow) Do() ([]*models.Video, int64, error) {
 	if err := f.prepareVideoInfo(); err != nil {
 		return nil, 0, err
 	}
@@ -116,7 +116,7 @@ func (f *queryVideoDataFlow) prepareVideoInfo() error {
 }
 
 func (f *queryVideoDataFlow) packVideoInfo() error {
-	videoList := make([]models.Video, 0)
+	videoList := make([]*models.Video, 0)
 	for _, video := range f.VideoData {
 		videoAuthor, ok := f.UserMap[video.UserId]
 		if !ok {
@@ -132,9 +132,9 @@ func (f *queryVideoDataFlow) packVideoInfo() error {
 				isFollow = true
 			}
 		}
-		videoList = append(videoList, models.Video{
+		videoList = append(videoList, &models.Video{
 			Id: video.VideoId,
-			Author: models.User{
+			Author: &models.User{
 				UserId:        videoAuthor.UserId,
 				Name:          videoAuthor.Name,
 				FollowCount:   videoAuthor.FollowCount,
