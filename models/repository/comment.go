@@ -44,14 +44,23 @@ func (*CommentDao) CreateComment(comment *models.CommentRaw) error {
 func (*CommentDao) DeleteComment(commentId string) (*models.CommentRaw, error) {
 	var commentRaw *models.CommentRaw
 	DB.Transaction(func(tx *gorm.DB) error {
-		err := tx.Table("comment").Where("comment_id = ?", commentId).Delete(&commentRaw).Error
+		err := tx.Table("comment").Where("id = ?", commentId).First(&commentRaw).Error
+		if err == gorm.ErrRecordNotFound {
+			utils.Errorf("not find comment %v, %v", commentRaw, err.Error())
+			return err
+		}
+		if err != nil {
+			utils.Error("delete comment fail " + err.Error())
+			return err
+		}
+		err = tx.Table("comment").Where("comment_id = ?", commentId).Delete(&commentRaw).Error
 		if err != nil {
 			utils.Error("delete comment fail " + err.Error())
 			return err
 		}
 		err = tx.Table("video").Where("video_id = ?", commentRaw.VideoId).Update("comment_count", gorm.Expr("comment_count - ?", 1)).Error
 		if err != nil {
-			utils.Error("AddCommentCount error " + err.Error())
+			utils.Error("DelCommentCount error " + err.Error())
 			return err
 		}
 		return nil
