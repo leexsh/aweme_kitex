@@ -68,7 +68,7 @@ func (*VideoDao) PublishVideoToPublic(video *multipart.FileHeader, path string, 
 }
 
 func (*VideoDao) SaveVideoData(videoData *models.VideoRawData) error {
-	err := DB.Table("video").Debug().Create(videoData).Error
+	err := cfg.DB.Table("video").Debug().Create(videoData).Error
 	if err != nil {
 		utils.Error("create video error : " + err.Error())
 		return err
@@ -78,7 +78,7 @@ func (*VideoDao) SaveVideoData(videoData *models.VideoRawData) error {
 
 func (*VideoDao) QueryVideosByIs(videoId []string) ([]*models.VideoRawData, error) {
 	var videos []*models.VideoRawData
-	err := DB.Table("video").Where("video_id in (?)", videoId).Find(&videos).Error
+	err := cfg.DB.Table("video").Where("video_id in (?)", videoId).Find(&videos).Error
 	if err != nil {
 		utils.Error("query video by id error : " + err.Error())
 		return nil, err

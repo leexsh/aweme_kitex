@@ -1,7 +1,6 @@
 package controller
 
 import (
-	"aweme_kitex/cfg"
 	"aweme_kitex/models"
 	"errors"
 
@@ -32,8 +31,6 @@ type (
 )
 
 var (
-	db = cfg.DB
-
 	defaultToken = "defaultToken"
 )
 

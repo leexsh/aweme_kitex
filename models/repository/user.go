@@ -1,10 +1,14 @@
 package repository
 
 import (
+	"aweme_kitex/cfg"
 	"aweme_kitex/models"
 	"aweme_kitex/utils"
+	"encoding/json"
 	"errors"
+	"fmt"
 	"sync"
+	"time"
 
 	"gorm.io/gorm"
 )
@@ -30,7 +34,7 @@ func NewUserDaoInstance() *UserDao {
 // 根据用户id获取用户信息
 func (u2 *UserDao) QueryUserByIds(uIds []string) ([]*models.UserRawData, error) {
 	var users []*models.UserRawData
-	err := DB.Debug().Where("user_id in (?)", uIds).Find(&users).Error
+	err := cfg.DB.Debug().Where("user_id in (?)", uIds).Find(&users).Error
 	if err != nil {
 		utils.Error("query user by Ids err: " + err.Error())
 		return nil, errors.New("query users fail")
@@ -40,11 +44,17 @@ func (u2 *UserDao) QueryUserByIds(uIds []string) ([]*models.UserRawData, error) 
 
 // 检查用户是否不存在
 func (*UserDao) CheckUserNotExist(userId string) error {
+	userRedis := &models.UserRawData{}
+	val, err := cfg.RedisClient.Get(userId).Result()
+	_ = json.Unmarshal([]byte(val), userRedis)
+	if userRedis.UserId == userId {
+		return nil
+	}
 	if _, exist := UsersLoginInfo[userId]; exist {
 		return errors.New("user already exists")
 	}
 	var user *models.UserRawData
-	err := DB.Table("user").Where("userId = ?", userId).First(&user).Error
+	err = cfg.DB.Table("user").Where("userId = ?", userId).First(&user).Error
 	if err == gorm.ErrRecordNotFound {
 		return nil
 	}
@@ -58,8 +68,12 @@ func (*UserDao) CheckUserNotExist(userId string) error {
 
 // 上传用户信息到缓存的用户信息表和数据库
 func (*UserDao) UploadUserData(user *models.UserRawData) error {
-	UsersLoginInfo[user.UserId] = user
-	err := DB.Table("user").Create(&user).Error
+	ub, err := json.Marshal(user)
+	if err != nil {
+		fmt.Printf("%s\n", err.Error())
+	}
+	err = cfg.RedisClient.Set(user.UserId, string(ub), time.Hour).Err()
+	err = cfg.DB.Table("user").Create(&user).Error
 	if err != nil {
 		return err
 	}
@@ -68,15 +82,29 @@ func (*UserDao) UploadUserData(user *models.UserRawData) error {
 
 // 通过token获取用户id和用户
 func (*UserDao) QueryUserByUserId(userId string) (*models.UserRawData, error) {
+	userRedis := &models.UserRawData{}
+	val, err := cfg.RedisClient.Get(userId).Result()
+	_ = json.Unmarshal([]byte(val), userRedis)
+	if userRedis.UserId == userId {
+		return userRedis, nil
+	}
+
 	if userInfo, exist := UsersLoginInfo[userId]; exist {
 		return userInfo, nil
 	}
 
 	var user *models.UserRawData
-	err := DB.Table("user").Where("user_id = ?", userId).First(&user).Error
+	err = cfg.DB.Table("user").Where("user_id = ?", userId).First(&user).Error
 	if err != nil {
 		utils.Error("query user by Id err: " + err.Error())
 		return nil, err
+	}
+	{
+		ub, err := json.Marshal(user)
+		if err != nil {
+			fmt.Printf("%s\n", err.Error())
+		}
+		err = cfg.RedisClient.Set(userId, string(ub), time.Hour).Err()
 	}
 	return user, nil
 
@@ -87,7 +115,7 @@ func (*UserDao) QueryUserByPassword(userName, password string) (*models.UserRawD
 		return userInfo, nil
 	}
 	var usre *models.UserRawData
-	err := DB.Table("user").Where("name=? AND password=?", userName, password).First(&usre).Error
+	err := cfg.DB.Table("user").Where("name=? AND password=?", userName, password).First(&usre).Error
 	if err != nil {
 		utils.Error("query user by password err: " + err.Error())
 		return nil, err

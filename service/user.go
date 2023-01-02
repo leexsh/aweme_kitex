@@ -108,17 +108,17 @@ func (u *userInfoDataFlow) do() (*models.User, error) {
 }
 
 func (u *userInfoDataFlow) prepareInfo() error {
-	uids := []string{u.RemoteUser.UserId}
-	users, err := repository.NewUserDaoInstance().QueryUserByIds(uids)
+	// uids := []string{u.RemoteUser.UserId}
+	user, err := repository.NewUserDaoInstance().QueryUserByUserId(u.RemoteUser.UserId)
 	if err != nil {
 		return err
 	}
-	if len(users) == 0 {
-		return errors.New("user not exist")
-	}
-	u.RemoteUser = users[0]
-
-	relationMap, err := repository.NewRelationDaoInstance().QueryRelationByIds(u.CurrentUId, uids)
+	// if len(users) == 0 {
+	// 	return errors.New("user not exist")
+	// }
+	// u.RemoteUser = users[0]
+	u.RemoteUser = user
+	relationMap, err := repository.NewRelationDaoInstance().QueryRelationByIds(u.CurrentUId, []string{u.RemoteUser.UserId})
 	_, ok := relationMap[u.CurrentUId]
 	if !ok {
 		u.isfollow = false

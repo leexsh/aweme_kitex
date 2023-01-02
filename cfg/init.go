@@ -1,11 +1,13 @@
 package cfg
 
 import (
+	"aweme_kitex/utils"
 	"fmt"
 	"net/http"
 	"net/url"
 	"os"
 
+	"github.com/go-redis/redis"
 	"github.com/joho/godotenv"
 	_ "github.com/joho/godotenv"
 	"github.com/tencentyun/cos-go-sdk-v5"
@@ -15,9 +17,10 @@ import (
 )
 
 var (
-	DB        *gorm.DB
-	COSClient *cos.Client
-	err       error
+	DB          *gorm.DB
+	COSClient   *cos.Client
+	RedisClient *redis.Client
+	err         error
 )
 
 func Init() error {
@@ -61,5 +64,15 @@ func Init() error {
 			SecretKey: os.Getenv("COS_KEY"),
 		},
 	})
+
+	// -------------redis----------
+	RedisClient = redis.NewClient(&redis.Options{
+		Addr:     "121.5.114.14:6379",
+		Password: "123456", // no password set
+		DB:       0,        // use default DB
+	})
+
+	pong, err := RedisClient.Ping().Result()
+	utils.Info("pong is: " + pong)
 	return nil
 }

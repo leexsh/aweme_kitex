@@ -29,12 +29,12 @@ func (vr *VideoRawData) TableName() string {
 // user
 type UserRawData struct {
 	TimeModel
-	UserId        string `gorm:"column:user_id"`
-	Name          string `gorm:"column:name"`
-	Password      string `gorm:"column:password"`
-	Token         string `gorm:"column:token"`
-	FollowCount   int64  `gorm:"column:follow_count"`
-	FollowerCount int64  `gorm:"column:follower_count"`
+	UserId        string `gorm:"column:user_id"json:"userId,omitempty"`
+	Name          string `gorm:"column:name"json:"name,omitempty"`
+	Password      string `gorm:"column:password"json:"password,omitempty"`
+	Token         string `gorm:"column:token"json:"token,omitempty"`
+	FollowCount   int64  `gorm:"column:follow_count"json:"followCount,omitempty"`
+	FollowerCount int64  `gorm:"column:follower_count"json:"FollowerCount,omitempty"`
 }
 
 func (u2 *UserRawData) TableName() string {

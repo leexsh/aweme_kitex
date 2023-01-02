@@ -1,6 +1,7 @@
 package repository
 
 import (
+	"aweme_kitex/cfg"
 	"aweme_kitex/models"
 	"aweme_kitex/utils"
 	"sync"
@@ -24,7 +25,7 @@ func NewCommentDaoInstance() *CommentDao {
 
 // 通过一条评论创建一条评论记录并增加视频评论数
 func (*CommentDao) CreateComment(comment *models.CommentRaw) error {
-	DB.Transaction(func(tx *gorm.DB) error {
+	cfg.DB.Transaction(func(tx *gorm.DB) error {
 		err := tx.Table("comment").Create(comment).Error
 		if err != nil {
 			utils.Error("create comment fail " + err.Error())
@@ -43,7 +44,7 @@ func (*CommentDao) CreateComment(comment *models.CommentRaw) error {
 // 通过评论id号删除一条评论，返回该评论
 func (*CommentDao) DeleteComment(commentId string) (*models.CommentRaw, error) {
 	var commentRaw *models.CommentRaw
-	DB.Transaction(func(tx *gorm.DB) error {
+	cfg.DB.Transaction(func(tx *gorm.DB) error {
 		err := tx.Table("comment").Where("id = ?", commentId).First(&commentRaw).Error
 		if err == gorm.ErrRecordNotFound {
 			utils.Errorf("not find comment %v, %v", commentRaw, err.Error())
@@ -71,7 +72,7 @@ func (*CommentDao) DeleteComment(commentId string) (*models.CommentRaw, error) {
 // 通过评论id查询一组评论信息
 func (*CommentDao) QueryCommentByCommentIds(commentIds []string) ([]*models.CommentRaw, error) {
 	var comments []*models.CommentRaw
-	err := DB.Table("comment").Where("comment_id In ?", commentIds).Find(&comments).Error
+	err := cfg.DB.Table("comment").Where("comment_id In ?", commentIds).Find(&comments).Error
 	if err != nil {
 		utils.Error("query comment by comment id fail " + err.Error())
 		return nil, err
@@ -82,7 +83,7 @@ func (*CommentDao) QueryCommentByCommentIds(commentIds []string) ([]*models.Comm
 // 通过视频id号倒序返回一组评论信息
 func (*CommentDao) QueryCommentByVideoId(videoId string) ([]*models.CommentRaw, error) {
 	var comments []*models.CommentRaw
-	err := DB.Debug().Table("comment").Order("created_at desc").Where("video_id = ?", videoId).Find(&comments).Error
+	err := cfg.DB.Debug().Table("comment").Order("created_at desc").Where("video_id = ?", videoId).Find(&comments).Error
 	if err != nil {
 		utils.Error("query comment err: " + err.Error())
 		return nil, err

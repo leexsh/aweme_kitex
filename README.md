@@ -34,6 +34,9 @@ model/app.ini               数据库配置
 
 
    - __object storage: Tencent COS__
+
+
+   - __redis: go-redis__
   
 ## 3. 踩坑记录
 1. os.getenv("MYSQL_PASSWD")读取失败 

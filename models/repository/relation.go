@@ -1,6 +1,7 @@
 package repository
 
 import (
+	"aweme_kitex/cfg"
 	"aweme_kitex/models"
 	"aweme_kitex/utils"
 	"errors"
@@ -30,7 +31,7 @@ func NewRelationDaoInstance() *RelationDao {
 // 1vN 根据当前用户Id和视频作者的id获取关注信息
 func (r *RelationDao) QueryRelationByIds(currentUid string, userIds []string) (map[string]*models.RelationRaw, error) {
 	var relations []*models.RelationRaw
-	err := DB.Table("relation").Where("user_id=? AND to_user_id IN ?", currentUid, userIds).Find(&relations).Error
+	err := cfg.DB.Table("relation").Where("user_id=? AND to_user_id IN ?", currentUid, userIds).Find(&relations).Error
 
 	if err != nil {
 		utils.Error("query relation by Id err: " + err.Error())
@@ -50,7 +51,7 @@ func (r *RelationDao) CreateRelation(userId, toUserId string) error {
 		ToUserId: toUserId,
 		Status:   1,
 	}
-	DB.Transaction(func(tx *gorm.DB) error {
+	cfg.DB.Transaction(func(tx *gorm.DB) error {
 		err := tx.Debug().Table("user").Where("user_id=?", userId).Update("follow_count", gorm.Expr("follow_count + ?", 1)).Error
 		if err != nil {
 			utils.Error("create relation err: " + err.Error())
@@ -71,7 +72,7 @@ func (r *RelationDao) CreateRelation(userId, toUserId string) error {
 
 func (r *RelationDao) DeleteRelation(userId, toUserId string) error {
 	var relationRaw *models.RelationRaw
-	DB.Transaction(func(tx *gorm.DB) error {
+	cfg.DB.Transaction(func(tx *gorm.DB) error {
 		err := tx.Table("user").Where("user_id = ?", userId).Update("follow_count", gorm.Expr("follow_count - ?", 1)).Error
 		if err != nil {
 			utils.Error("delete relation by Id err: " + err.Error())
@@ -95,7 +96,7 @@ func (r *RelationDao) DeleteRelation(userId, toUserId string) error {
 // get follow by uid
 func (r *RelationDao) QueryFollowByUid(uid string) ([]*models.RelationRaw, error) {
 	var relations []*models.RelationRaw
-	err := DB.Table("relation").Where("user_id = ?", uid).Find(&relations).Error
+	err := cfg.DB.Table("relation").Where("user_id = ?", uid).Find(&relations).Error
 	if err != nil {
 		return nil, err
 	}
@@ -105,7 +106,7 @@ func (r *RelationDao) QueryFollowByUid(uid string) ([]*models.RelationRaw, error
 // 通过用户id，查询该用户的粉丝， 返回两者之间的关注记录
 func (*RelationDao) QueryFollowerById(userId string) ([]*models.RelationRaw, error) {
 	var relations []*models.RelationRaw
-	err := DB.Table("relation").Where("to_user_id = ?", userId).Find(&relations).Error
+	err := cfg.DB.Table("relation").Where("to_user_id = ?", userId).Find(&relations).Error
 	if err != nil {
 		return nil, err
 	}
