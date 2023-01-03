@@ -6,7 +6,6 @@ import (
 	"aweme_kitex/utils"
 	"encoding/json"
 	"errors"
-	"fmt"
 	"sync"
 	"time"
 
@@ -45,13 +44,10 @@ func (u2 *UserDao) QueryUserByIds(uIds []string) ([]*models.UserRawData, error) 
 // 检查用户是否不存在
 func (*UserDao) CheckUserNotExist(userId string) error {
 	userRedis := &models.UserRawData{}
-	val, err := cfg.RedisClient.Get(userId).Result()
+	val, err := redisGet(userId)
 	_ = json.Unmarshal([]byte(val), userRedis)
 	if userRedis.UserId == userId {
 		return nil
-	}
-	if _, exist := UsersLoginInfo[userId]; exist {
-		return errors.New("user already exists")
 	}
 	var user *models.UserRawData
 	err = cfg.DB.Table("user").Where("userId = ?", userId).First(&user).Error
@@ -68,11 +64,7 @@ func (*UserDao) CheckUserNotExist(userId string) error {
 
 // 上传用户信息到缓存的用户信息表和数据库
 func (*UserDao) UploadUserData(user *models.UserRawData) error {
-	ub, err := json.Marshal(user)
-	if err != nil {
-		fmt.Printf("%s\n", err.Error())
-	}
-	err = cfg.RedisClient.Set(user.UserId, string(ub), time.Hour).Err()
+	err := redisSet(user.UserId, marshal(user), time.Hour)
 	err = cfg.DB.Table("user").Create(&user).Error
 	if err != nil {
 		return err
@@ -82,38 +74,33 @@ func (*UserDao) UploadUserData(user *models.UserRawData) error {
 
 // 通过token获取用户id和用户
 func (*UserDao) QueryUserByUserId(userId string) (*models.UserRawData, error) {
+	// 1. 有缓存，先从缓存中取出来
 	userRedis := &models.UserRawData{}
-	val, err := cfg.RedisClient.Get(userId).Result()
-	_ = json.Unmarshal([]byte(val), userRedis)
+	val, err := redisGet(userId)
+	_ = unmarshal(val, userRedis)
 	if userRedis.UserId == userId {
 		return userRedis, nil
 	}
 
-	if userInfo, exist := UsersLoginInfo[userId]; exist {
-		return userInfo, nil
-	}
-
 	var user *models.UserRawData
+	// 2. 没有缓存，先写数据库
 	err = cfg.DB.Table("user").Where("user_id = ?", userId).First(&user).Error
 	if err != nil {
 		utils.Error("query user by Id err: " + err.Error())
 		return nil, err
 	}
 	{
-		ub, err := json.Marshal(user)
+		// 3.写缓存
+		err = redisSet(userId, marshal(user), time.Hour)
 		if err != nil {
-			fmt.Printf("%s\n", err.Error())
+			return nil, err
 		}
-		err = cfg.RedisClient.Set(userId, string(ub), time.Hour).Err()
 	}
 	return user, nil
 
 }
 
 func (*UserDao) QueryUserByPassword(userName, password string) (*models.UserRawData, error) {
-	if userInfo, exist := UsersLoginInfo[userName]; exist {
-		return userInfo, nil
-	}
 	var usre *models.UserRawData
 	err := cfg.DB.Table("user").Where("name=? AND password=?", userName, password).First(&usre).Error
 	if err != nil {

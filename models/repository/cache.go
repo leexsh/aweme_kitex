@@ -1,15 +1,24 @@
 package repository
 
-import "aweme_kitex/models"
+import (
+	"aweme_kitex/cfg"
+	"time"
+)
 
-// 缓存的用户信息表，存储token到用户的映射
-// 该缓存数据在服务重新启动自动清除
-var UsersLoginInfo = map[string]*models.UserRawData{
-	"JerryJerry123": {
-		UserId:        "JerryJerry123",
-		Name:          "Jerry",
-		Password:      "Jerry123",
-		FollowCount:   0,
-		FollowerCount: 0,
-	},
+// redis
+/*
+	1.读
+		- 先读缓存，存在则返回
+		- 不存在，读取数据库
+		- 读完数据库后写缓存
+	2.写
+		- 先写数据库，
+		- 删除缓存
+*/
+func redisSet(key string, value interface{}, expiration time.Duration) error {
+	return cfg.RedisClient.Set(key, value, expiration).Err()
+}
+
+func redisGet(key string) (string, error) {
+	return cfg.RedisClient.Get(key).Result()
 }
