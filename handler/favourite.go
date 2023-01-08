@@ -2,12 +2,13 @@ package handler
 
 import (
 	"aweme_kitex/models"
+	"aweme_kitex/pkg/jwt"
 	"aweme_kitex/service"
 )
 
 // --- 关注和收藏列表----
 
-func FavouriteActionHandle(user *models.UserClaim, videoId, action string) *models.Response {
+func FavouriteActionHandle(user *jwt.UserClaim, videoId, action string) *models.Response {
 	err := service.FavouriteActionService(user, videoId, action)
 	if err != nil {
 		return &models.Response{
@@ -21,7 +22,7 @@ func FavouriteActionHandle(user *models.UserClaim, videoId, action string) *mode
 	}
 }
 
-func FavouriteListHandle(user *models.UserClaim) *models.VideoListResponse {
+func FavouriteListHandle(user *jwt.UserClaim) *models.VideoListResponse {
 	videos, err := service.FavouriteListService(user.Id, user.Name)
 	if err != nil {
 		return &models.VideoListResponse{

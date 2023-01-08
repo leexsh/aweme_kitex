@@ -3,13 +3,14 @@ package service
 import (
 	"aweme_kitex/models"
 	"aweme_kitex/models/repository"
+	"aweme_kitex/pkg/jwt"
 	"aweme_kitex/utils"
 	"errors"
 	"fmt"
 	"sync"
 )
 
-func FavouriteActionService(user *models.UserClaim, videoId, action string) error {
+func FavouriteActionService(user *jwt.UserClaim, videoId, action string) error {
 	return newFavouriteActionData(user, videoId, action).do()
 }
 
@@ -22,7 +23,7 @@ type favouriteActionDataFlow struct {
 	FavouriteData *models.FavouriteRaw
 }
 
-func newFavouriteActionData(user *models.UserClaim, videoId, action string) *favouriteActionDataFlow {
+func newFavouriteActionData(user *jwt.UserClaim, videoId, action string) *favouriteActionDataFlow {
 	return &favouriteActionDataFlow{
 		CurrentUid:  user.Id,
 		CurrentName: user.Name,

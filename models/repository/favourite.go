@@ -3,7 +3,7 @@ package repository
 import (
 	"aweme_kitex/cfg"
 	"aweme_kitex/models"
-	"aweme_kitex/utils"
+	"aweme_kitex/pkg/logger"
 	"errors"
 	"sync"
 
@@ -35,7 +35,7 @@ func (f *FavouriteDao) QueryFavoursByIds(currentUId string, videoIds []string) (
 		return nil, errors.New("favourite not found")
 	}
 	if err != nil {
-		utils.Error("query favours by id err: " + err.Error())
+		logger.Error("query favours by id err: " + err.Error())
 		return nil, err
 	}
 	favoursMap := make(map[string]*models.FavouriteRaw)
@@ -50,13 +50,13 @@ func (f *FavouriteDao) CreateFavour(favour *models.FavouriteRaw, videoId string)
 	cfg.DB.Transaction(func(tx *gorm.DB) error {
 		err := tx.Table("video").Where("video_id = ?", videoId).Update("favorite_count", gorm.Expr("favorite_count + ?", 1)).Error
 		if err != nil {
-			utils.Error("AddFavoriteCount error " + err.Error())
+			logger.Error("AddFavoriteCount error " + err.Error())
 			return err
 		}
 
 		err = tx.Table("favorite").Create(favour).Error
 		if err != nil {
-			utils.Error("create favorite record fail " + err.Error())
+			logger.Error("create favorite record fail " + err.Error())
 			return err
 		}
 
@@ -71,13 +71,13 @@ func (f *FavouriteDao) DelFavour(userId, videoId string) error {
 		var favorite *models.FavouriteRaw
 		err := tx.Table("favorite").Where("user_id = ? AND video_id = ?", userId, videoId).Delete(&favorite).Error
 		if err != nil {
-			utils.Error("delete favorite record fail " + err.Error())
+			logger.Error("delete favorite record fail " + err.Error())
 			return err
 		}
 
 		err = tx.Table("video").Where("video_id = ?", videoId).Update("favorite_count", gorm.Expr("favorite_count - ?", 1)).Error
 		if err != nil {
-			utils.Error("SubFavoriteCount error " + err.Error())
+			logger.Error("SubFavoriteCount error " + err.Error())
 			return err
 		}
 		return nil
@@ -90,7 +90,7 @@ func (f *FavouriteDao) QueryFavoursVideoIdByUid(uid string) ([]string, error) {
 	var favours []*models.FavouriteRaw
 	err := cfg.DB.Debug().Table("favourite").Where("user_id=?", uid).Find(&favours).Error
 	if err != nil {
-		utils.Error("query favourite video err: " + err.Error())
+		logger.Error("query favourite video err: " + err.Error())
 		return nil, err
 	}
 	var videos []string

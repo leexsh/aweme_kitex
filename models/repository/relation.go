@@ -3,6 +3,7 @@ package repository
 import (
 	"aweme_kitex/cfg"
 	"aweme_kitex/models"
+	"aweme_kitex/pkg/logger"
 	"aweme_kitex/utils"
 	"errors"
 	"sync"
@@ -34,7 +35,7 @@ func (r *RelationDao) QueryRelationByIds(currentUid string, userIds []string) (m
 	err := cfg.DB.Table("relation").Where("user_id=? AND to_user_id IN ?", currentUid, userIds).Find(&relations).Error
 
 	if err != nil {
-		utils.Error("query relation by Id err: " + err.Error())
+		logger.Error("query relation by Id err: " + err.Error())
 		return nil, errors.New("query relation record fail")
 	}
 	relationMap := make(map[string]*models.RelationRaw)
@@ -54,7 +55,7 @@ func (r *RelationDao) CreateRelation(userId, toUserId string) error {
 	cfg.DB.Transaction(func(tx *gorm.DB) error {
 		err := tx.Debug().Table("user").Where("user_id=?", userId).Update("follow_count", gorm.Expr("follow_count + ?", 1)).Error
 		if err != nil {
-			utils.Error("create relation err: " + err.Error())
+			logger.Error("create relation err: " + err.Error())
 			return err
 		}
 		err = tx.Debug().Table("user").Where("user_id=?", toUserId).Update("follower_count", gorm.Expr("follower_count + ?", 1)).Error
@@ -75,7 +76,7 @@ func (r *RelationDao) DeleteRelation(userId, toUserId string) error {
 	cfg.DB.Transaction(func(tx *gorm.DB) error {
 		err := tx.Table("user").Where("user_id = ?", userId).Update("follow_count", gorm.Expr("follow_count - ?", 1)).Error
 		if err != nil {
-			utils.Error("delete relation by Id err: " + err.Error())
+			logger.Error("delete relation by Id err: " + err.Error())
 			return err
 		}
 

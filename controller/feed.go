@@ -2,6 +2,7 @@ package controller
 
 import (
 	"aweme_kitex/handler"
+	"aweme_kitex/pkg/logger"
 	"aweme_kitex/utils"
 	"net/http"
 	"strconv"
@@ -20,6 +21,6 @@ func Feed(c *gin.Context) {
 		TokenErrorRes(c, err)
 	}
 	feedRes := handler.QueryVideoFeedHandler(user.Id, defaultTimeStr)
-	utils.Info(&feedRes)
+	logger.Info(&feedRes)
 	c.JSON(http.StatusOK, feedRes)
 }

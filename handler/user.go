@@ -2,6 +2,7 @@ package handler
 
 import (
 	"aweme_kitex/models"
+	"aweme_kitex/pkg/jwt"
 	"aweme_kitex/service"
 	"errors"
 	"fmt"
@@ -58,7 +59,7 @@ func UserLoginHandle(userName, password string) *models.UserLogRstResponse {
 }
 
 // userinfo
-func UserInfoHandle(user *models.UserClaim, remoteUid string) *models.UserResponse {
+func UserInfoHandle(user *jwt.UserClaim, remoteUid string) *models.UserResponse {
 	res, err := service.QueryUserInfo(user, remoteUid)
 	if err != nil {
 		return &models.UserResponse{

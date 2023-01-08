@@ -2,7 +2,7 @@ package handler
 
 import (
 	"aweme_kitex/models"
-	"aweme_kitex/utils"
+	"aweme_kitex/pkg/logger"
 	"strconv"
 
 	"aweme_kitex/service"
@@ -15,7 +15,7 @@ func QueryVideoFeedHandler(userId string, latestTimeStr string) *models.FeedResp
 	// 1.处理传人参数
 	latestTime, err := strconv.ParseInt(latestTimeStr, 10, 64)
 	if err != nil {
-		utils.Error(err)
+		logger.Error(err)
 		return &models.FeedResponse{
 			Response: models.Response{
 				StatusCode: -1,
@@ -27,7 +27,7 @@ func QueryVideoFeedHandler(userId string, latestTimeStr string) *models.FeedResp
 	// 2.ge video
 	videoList, nextTime, err := service.QueryVideoData(latestTime, userId)
 	if err != nil {
-		utils.Error(err)
+		logger.Error(err)
 		return &models.FeedResponse{
 			Response: models.Response{
 				StatusCode: -1,

@@ -2,6 +2,7 @@ package controller
 
 import (
 	"aweme_kitex/models"
+	"aweme_kitex/pkg/jwt"
 	"errors"
 
 	"github.com/gin-gonic/gin"
@@ -35,11 +36,11 @@ var (
 )
 
 // 鉴权
-func CheckToken(token string) (*models.UserClaim, error) {
+func CheckToken(token string) (*jwt.UserClaim, error) {
 	if token == defaultToken {
 		return nil, errors.New("error: check token failed, please update Token")
 	}
-	uc, err := models.AnalyzeToken(token)
+	uc, err := jwt.AnalyzeToken(token)
 	if err != nil {
 		return nil, err
 	}

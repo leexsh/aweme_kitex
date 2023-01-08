@@ -2,10 +2,11 @@ package handler
 
 import (
 	"aweme_kitex/models"
+	"aweme_kitex/pkg/jwt"
 	"aweme_kitex/service"
 )
 
-func RelationActionHandle(user *models.UserClaim, toUser, action string) *models.Response {
+func RelationActionHandle(user *jwt.UserClaim, toUser, action string) *models.Response {
 	if action != "1" && action != "2" {
 		return &models.Response{
 			-1, "action type error",
@@ -23,7 +24,7 @@ func RelationActionHandle(user *models.UserClaim, toUser, action string) *models
 	}
 }
 
-func ShowFollowListHandle(u *models.UserClaim) *models.RelationListhResponse {
+func ShowFollowListHandle(u *jwt.UserClaim) *models.RelationListhResponse {
 	userList, err := service.GetFollowList(u.Id)
 	if err != nil {
 		return &models.RelationListhResponse{
@@ -41,7 +42,7 @@ func ShowFollowListHandle(u *models.UserClaim) *models.RelationListhResponse {
 	}
 }
 
-func ShowFollowerListHandle(u *models.UserClaim) *models.RelationListhResponse {
+func ShowFollowerListHandle(u *jwt.UserClaim) *models.RelationListhResponse {
 	userList, err := service.GetFollowerList(u.Id)
 	if err != nil {
 		return &models.RelationListhResponse{

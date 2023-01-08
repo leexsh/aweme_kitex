@@ -3,7 +3,7 @@ package repository
 import (
 	"aweme_kitex/cfg"
 	"aweme_kitex/models"
-	"aweme_kitex/utils"
+	"aweme_kitex/pkg/logger"
 	"encoding/json"
 	"errors"
 	"sync"
@@ -35,7 +35,7 @@ func (u2 *UserDao) QueryUserByIds(uIds []string) ([]*models.UserRawData, error) 
 	var users []*models.UserRawData
 	err := cfg.DB.Debug().Where("user_id in (?)", uIds).Find(&users).Error
 	if err != nil {
-		utils.Error("query user by Ids err: " + err.Error())
+		logger.Error("query user by Ids err: " + err.Error())
 		return nil, errors.New("query users fail")
 	}
 	return users, nil
@@ -55,7 +55,7 @@ func (*UserDao) CheckUserNotExist(userId string) error {
 		return nil
 	}
 	if err == nil {
-		utils.Errorf("check user not exist fail, err:%s", err.Error())
+		logger.Errorf("check user not exist fail, err:%s", err.Error())
 		return errors.New("user already exists")
 	}
 
@@ -86,7 +86,7 @@ func (*UserDao) QueryUserByUserId(userId string) (*models.UserRawData, error) {
 	// 2. 没有缓存，先写数据库
 	err = cfg.DB.Table("user").Where("user_id = ?", userId).First(&user).Error
 	if err != nil {
-		utils.Error("query user by Id err: " + err.Error())
+		logger.Error("query user by Id err: " + err.Error())
 		return nil, err
 	}
 	{
@@ -104,7 +104,7 @@ func (*UserDao) QueryUserByPassword(userName, password string) (*models.UserRawD
 	var usre *models.UserRawData
 	err := cfg.DB.Table("user").Where("name=? AND password=?", userName, password).First(&usre).Error
 	if err != nil {
-		utils.Error("query user by password err: " + err.Error())
+		logger.Error("query user by password err: " + err.Error())
 		return nil, err
 	}
 	return usre, nil

@@ -3,6 +3,7 @@ package service
 import (
 	"aweme_kitex/models"
 	"aweme_kitex/models/repository"
+	"aweme_kitex/pkg/jwt"
 	"aweme_kitex/utils"
 	"errors"
 	"fmt"
@@ -32,7 +33,7 @@ func newRegisterUserDataFlow(name, password string) *registerUserDataFlow {
 func (r *registerUserDataFlow) do() (string, string, error) {
 	// insert to data
 	userId := utils.GenerateUUID()
-	token, _ := models.GenerateToken(userId, r.userName)
+	token, _ := jwt.GenerateToken(userId, r.userName)
 	newUser := &models.UserRawData{
 		UserId:        userId,
 		Name:          r.userName,
@@ -75,7 +76,7 @@ func (l *loginUserDataFlow) do() (uid string, token string, err error) {
 }
 
 // user info
-func QueryUserInfo(user *models.UserClaim, remoteUid string) (*models.User, error) {
+func QueryUserInfo(user *jwt.UserClaim, remoteUid string) (*models.User, error) {
 	return newUserInfoDataFlow(user, remoteUid).do()
 }
 
@@ -86,7 +87,7 @@ type userInfoDataFlow struct {
 	CurrentUId   string
 }
 
-func newUserInfoDataFlow(user *models.UserClaim, remoteUid string) *userInfoDataFlow {
+func newUserInfoDataFlow(user *jwt.UserClaim, remoteUid string) *userInfoDataFlow {
 	return &userInfoDataFlow{
 		RemoteUser: &models.UserRawData{
 			UserId: remoteUid,

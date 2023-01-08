@@ -2,10 +2,11 @@ package handler
 
 import (
 	"aweme_kitex/models"
+	"aweme_kitex/pkg/jwt"
 	"aweme_kitex/service"
 )
 
-func CreateCommentHandle(user *models.UserClaim, videoId, content string) *models.CommentActionResponse {
+func CreateCommentHandle(user *jwt.UserClaim, videoId, content string) *models.CommentActionResponse {
 	if len(content) > 512 {
 		return &models.CommentActionResponse{
 			Response: models.Response{
@@ -29,7 +30,7 @@ func CreateCommentHandle(user *models.UserClaim, videoId, content string) *model
 	}
 }
 
-func DelCommentHandle(user *models.UserClaim, commentId string) *models.CommentActionResponse {
+func DelCommentHandle(user *jwt.UserClaim, commentId string) *models.CommentActionResponse {
 	commet, err := service.DelComment(user.Id, commentId)
 	if err != nil {
 		return &models.CommentActionResponse{
@@ -46,7 +47,7 @@ func DelCommentHandle(user *models.UserClaim, commentId string) *models.CommentA
 	}
 }
 
-func CommentListHandle(user *models.UserClaim, videoId string) *models.CommentListResponse {
+func CommentListHandle(user *jwt.UserClaim, videoId string) *models.CommentListResponse {
 	res, err := service.ShowCommentList(user.Id, videoId)
 	if err != nil {
 		return &models.CommentListResponse{

@@ -1,7 +1,9 @@
 package cfg
 
 import (
-	"aweme_kitex/utils"
+	"aweme_kitex/models"
+	constants "aweme_kitex/pkg/constant"
+	"aweme_kitex/pkg/logger"
 	"fmt"
 	"net/http"
 	"net/url"
@@ -14,6 +16,7 @@ import (
 	"gopkg.in/ini.v1"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
+	gormopentracing "gorm.io/plugin/opentracing"
 )
 
 var (
@@ -50,9 +53,37 @@ func Init() error {
 			SkipDefaultTransaction: true, // 禁用事务
 		},
 	)
+
 	if err != nil {
 		return err
 	}
+	if err = DB.Use(gormopentracing.New()); err != nil {
+		panic(err)
+	}
+
+	err = DB.AutoMigrate(&models.UserRawData{}, &models.VideoRawData{},
+		&models.FavouriteRaw{}, &models.CommentRaw{}, &models.RelationRaw{})
+	if err != nil {
+		panic(err)
+	}
+
+	sqlDB, err := DB.DB()
+	if err != nil {
+		panic(err)
+	}
+
+	if err := sqlDB.Ping(); err != nil {
+		panic(err)
+	}
+
+	// SetMaxIdleConns 设置空闲连接池中连接的最大数量
+	sqlDB.SetMaxIdleConns(constants.MySQLMaxIdleConns)
+
+	// SetMaxOpenConns 设置打开数据库连接的最大数量
+	sqlDB.SetMaxOpenConns(constants.MySQLMaxOpenConns)
+
+	// SetConnMaxLifetime 设置了连接可复用的最大时间
+	sqlDB.SetConnMaxLifetime(constants.MySQLConnMaxLifetime)
 
 	// 	-----------COS--------
 	cosAddr := config.Section("cos").Key("cosAddr").String()
@@ -73,6 +104,6 @@ func Init() error {
 	})
 
 	pong, err := RedisClient.Ping().Result()
-	utils.Info("pong is: " + pong)
+	logger.Info("pong is: " + pong)
 	return nil
 }

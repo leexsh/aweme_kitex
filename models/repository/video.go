@@ -3,6 +3,7 @@ package repository
 import (
 	"aweme_kitex/cfg"
 	"aweme_kitex/models"
+	"aweme_kitex/pkg/logger"
 	"aweme_kitex/utils"
 	"errors"
 	"mime/multipart"
@@ -39,7 +40,7 @@ func (v *VideoDao) QueryVideoByLatestTime(latestTime int64) ([]*models.VideoRawD
 		return nil, errors.New("not found videos")
 	}
 	if err != nil {
-		utils.Error("query videos by latest time error : " + err.Error())
+		logger.Error("query videos by latest time error : " + err.Error())
 		return nil, errors.New("found videos error")
 	}
 	return videos, nil
@@ -52,7 +53,7 @@ func (v *VideoDao) QueryVideosByUserId(userId string) ([]*models.VideoRawData, e
 		return nil, errors.New("noe found videos")
 	}
 	if err != nil {
-		utils.Error("query videos by userId error : " + err.Error())
+		logger.Error("query videos by userId error : " + err.Error())
 		return nil, err
 	}
 	return videos, nil
@@ -61,7 +62,7 @@ func (v *VideoDao) QueryVideosByUserId(userId string) ([]*models.VideoRawData, e
 // 将视频保存到本地文件夹中
 func (*VideoDao) PublishVideoToPublic(video *multipart.FileHeader, path string, c *gin.Context) error {
 	if err := c.SaveUploadedFile(video, path); err != nil {
-		utils.Error("save videos to local error : " + err.Error())
+		logger.Error("save videos to local error : " + err.Error())
 		return err
 	}
 	return nil
@@ -70,7 +71,7 @@ func (*VideoDao) PublishVideoToPublic(video *multipart.FileHeader, path string, 
 func (*VideoDao) SaveVideoData(videoData *models.VideoRawData) error {
 	err := cfg.DB.Table("video").Debug().Create(videoData).Error
 	if err != nil {
-		utils.Error("create video error : " + err.Error())
+		logger.Error("create video error : " + err.Error())
 		return err
 	}
 	return nil
@@ -80,7 +81,7 @@ func (*VideoDao) QueryVideosByIs(videoId []string) ([]*models.VideoRawData, erro
 	var videos []*models.VideoRawData
 	err := cfg.DB.Table("video").Where("video_id in (?)", videoId).Find(&videos).Error
 	if err != nil {
-		utils.Error("query video by id error : " + err.Error())
+		logger.Error("query video by id error : " + err.Error())
 		return nil, err
 	}
 	return videos, nil

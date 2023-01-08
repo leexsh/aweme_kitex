@@ -3,7 +3,7 @@ package repository
 import (
 	"aweme_kitex/cfg"
 	"aweme_kitex/models"
-	"aweme_kitex/utils"
+	"aweme_kitex/pkg/logger"
 	"sync"
 
 	"gorm.io/gorm"
@@ -28,12 +28,12 @@ func (*CommentDao) CreateComment(comment *models.CommentRaw) error {
 	cfg.DB.Transaction(func(tx *gorm.DB) error {
 		err := tx.Table("comment").Create(comment).Error
 		if err != nil {
-			utils.Error("create comment fail " + err.Error())
+			logger.Error("create comment fail " + err.Error())
 			return err
 		}
 		err = tx.Table("video").Where("video_id = ?", comment.VideoId).Update("comment_count", gorm.Expr("comment_count + ?", 1)).Error
 		if err != nil {
-			utils.Error("AddCommentCount error " + err.Error())
+			logger.Error("AddCommentCount error " + err.Error())
 			return err
 		}
 		return nil
@@ -47,21 +47,21 @@ func (*CommentDao) DeleteComment(commentId string) (*models.CommentRaw, error) {
 	cfg.DB.Transaction(func(tx *gorm.DB) error {
 		err := tx.Table("comment").Where("id = ?", commentId).First(&commentRaw).Error
 		if err == gorm.ErrRecordNotFound {
-			utils.Errorf("not find comment %v, %v", commentRaw, err.Error())
+			logger.Errorf("not find comment %v, %v", commentRaw, err.Error())
 			return err
 		}
 		if err != nil {
-			utils.Error("delete comment fail " + err.Error())
+			logger.Error("delete comment fail " + err.Error())
 			return err
 		}
 		err = tx.Table("comment").Where("comment_id = ?", commentId).Delete(&commentRaw).Error
 		if err != nil {
-			utils.Error("delete comment fail " + err.Error())
+			logger.Error("delete comment fail " + err.Error())
 			return err
 		}
 		err = tx.Table("video").Where("video_id = ?", commentRaw.VideoId).Update("comment_count", gorm.Expr("comment_count - ?", 1)).Error
 		if err != nil {
-			utils.Error("DelCommentCount error " + err.Error())
+			logger.Error("DelCommentCount error " + err.Error())
 			return err
 		}
 		return nil
@@ -74,7 +74,7 @@ func (*CommentDao) QueryCommentByCommentIds(commentIds []string) ([]*models.Comm
 	var comments []*models.CommentRaw
 	err := cfg.DB.Table("comment").Where("comment_id In ?", commentIds).Find(&comments).Error
 	if err != nil {
-		utils.Error("query comment by comment id fail " + err.Error())
+		logger.Error("query comment by comment id fail " + err.Error())
 		return nil, err
 	}
 	return comments, nil
@@ -85,7 +85,7 @@ func (*CommentDao) QueryCommentByVideoId(videoId string) ([]*models.CommentRaw, 
 	var comments []*models.CommentRaw
 	err := cfg.DB.Debug().Table("comment").Order("created_at desc").Where("video_id = ?", videoId).Find(&comments).Error
 	if err != nil {
-		utils.Error("query comment err: " + err.Error())
+		logger.Error("query comment err: " + err.Error())
 		return nil, err
 	}
 	return comments, nil

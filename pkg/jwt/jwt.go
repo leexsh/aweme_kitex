@@ -1,6 +1,7 @@
-package models
+package jwt
 
 import (
+	"aweme_kitex/pkg/errno"
 	"errors"
 	"time"
 
@@ -10,6 +11,11 @@ import (
 var (
 	JwtKey            = "my_aweme_kitex"
 	TokenExpire int64 = 3600 * 24 * 365 * 10
+
+	ErrTokenExpired     = errno.WithCode(errno.TokenExpiredErrCode, "Token expired")
+	ErrTokenNotValidYet = errno.WithCode(errno.TokenValidationErrCode, "Token is not active yet")
+	ErrTokenMalformed   = errno.WithCode(errno.TokenInvalidErrCode, "That's not even a token")
+	ErrTokenInvalid     = errno.WithCode(errno.TokenInvalidErrCode, "Couldn't handle this token")
 )
 
 type UserClaim struct {
