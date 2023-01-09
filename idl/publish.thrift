@@ -1,3 +1,4 @@
+include "base.thrift"
 include "feed.thrift"
 namespace go publish
 
@@ -8,7 +9,7 @@ struct PublishActionRequest {
 }
 
 struct PublishActionResponse {
-    1: feed.BaseResp base_resp
+    1: base.BaseResp base_resp
 }
 
 struct PublishListRequest {
@@ -16,7 +17,7 @@ struct PublishListRequest {
 }
 
 struct PublishListResponse {
-    1: feed.BaseResp base_resp
+    1: base.BaseResp base_resp
     2: list<feed.Video> video_list
 }
 

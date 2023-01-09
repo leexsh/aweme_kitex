@@ -4,6 +4,7 @@ import (
 	"aweme_kitex/models"
 	"aweme_kitex/models/repository"
 	"aweme_kitex/utils"
+	"context"
 	"errors"
 	"fmt"
 	"mime/multipart"
@@ -50,12 +51,12 @@ func (f *publishVideoServiceData) publishVideo() error {
 
 	saveFile := filepath.Join("./public/", finalName)
 	// 1.save public
-	err := repository.NewVideoDaoInstance().PublishVideoToPublic(f.Data, saveFile, f.Gin)
+	err := repository.NewVideoDaoInstance().PublishVideoToPublic(context.Background(), f.Data, saveFile, f.Gin)
 	if err != nil {
 		return err
 	}
 	cosKey := fmt.Sprintf("%s/%s", f.CurrentUserName, finalName)
-	err = repository.NewCOSDaoInstance().PublishVideoToCOS(cosKey, saveFile)
+	err = repository.NewCOSDaoInstance().PublishVideoToCOS(context.Background(), cosKey, saveFile)
 	// 2.upload cos
 	if err != nil {
 		return err
@@ -68,7 +69,7 @@ func (f *publishVideoServiceData) publishVideo() error {
 		Title:   f.Title,
 		PlayUrl: ourl.String(),
 	}
-	err = repository.NewVideoDaoInstance().SaveVideoData(video)
+	err = repository.NewVideoDaoInstance().SaveVideoData(context.Background(), video)
 	if err != nil {
 		return err
 	}
@@ -94,7 +95,7 @@ func newQueryUserVideoList(userId string) *userVideoList {
 }
 
 func (f *userVideoList) prepareVideoInfo() error {
-	videoData, err := repository.NewVideoDaoInstance().QueryVideosByUserId(f.UserId)
+	videoData, err := repository.NewVideoDaoInstance().QueryVideosByUserId(context.Background(), f.UserId)
 	if err != nil {
 		return err
 	}
@@ -106,7 +107,7 @@ func (f *userVideoList) prepareVideoInfo() error {
 		videoIds = append(videoIds, video.VideoId)
 	}
 
-	users, err := repository.NewUserDaoInstance().QueryUserByIds(userIds)
+	users, err := repository.NewUserDaoInstance().QueryUserByIds(context.Background(), userIds)
 	if err != nil {
 		return err
 	}
@@ -122,7 +123,7 @@ func (f *userVideoList) prepareVideoInfo() error {
 	// 获取点赞信息
 	go func() {
 		defer wg.Done()
-		favoriteMap, err := repository.NewFavouriteDaoInstance().QueryFavoursByIds(f.UserId, videoIds)
+		favoriteMap, err := repository.NewFavouriteDaoInstance().QueryFavoursByIds(context.Background(), f.UserId, videoIds)
 		if err != nil {
 			favoriteErr = err
 			return
@@ -132,7 +133,7 @@ func (f *userVideoList) prepareVideoInfo() error {
 	// 获取关注信息
 	go func() {
 		defer wg.Done()
-		relationMap, err := repository.NewRelationDaoInstance().QueryRelationByIds(f.UserId, userIds)
+		relationMap, err := repository.NewRelationDaoInstance().QueryRelationByIds(context.Background(), f.UserId, userIds)
 		if err != nil {
 			relationErr = err
 			return

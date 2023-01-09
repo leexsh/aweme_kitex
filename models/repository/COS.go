@@ -24,9 +24,9 @@ func NewCOSDaoInstance() *COSDao {
 }
 
 // 将本地文件夹中的视频上传到COS
-func (*COSDao) PublishVideoToCOS(cosKey string, saveFile string) error {
+func (*COSDao) PublishVideoToCOS(ctx context.Context, cosKey string, saveFile string) error {
 	_, _, err := cfg.COSClient.Object.Upload(
-		context.Background(), cosKey, saveFile, nil,
+		ctx, cosKey, saveFile, nil,
 	)
 	if err != nil {
 		return err

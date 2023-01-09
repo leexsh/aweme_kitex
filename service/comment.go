@@ -4,6 +4,7 @@ import (
 	"aweme_kitex/models"
 	"aweme_kitex/models/repository"
 	"aweme_kitex/utils"
+	"context"
 	"errors"
 	"fmt"
 	"sync"
@@ -90,12 +91,12 @@ func (c *commentDataFlow) prepareComment(action string) error {
 	go func() {
 		defer wg.Done()
 		if action == "1" {
-			err := repository.NewCommentDaoInstance().CreateComment(commentRaw)
+			err := repository.NewCommentDaoInstance().CreateComment(context.Background(), commentRaw)
 			if err != nil {
 				commentErr = err
 			}
 		} else if action == "2" {
-			comment, err := repository.NewCommentDaoInstance().DeleteComment(c.commentId)
+			comment, err := repository.NewCommentDaoInstance().DeleteComment(context.Background(), c.commentId)
 			if err != nil {
 				commentErr = err
 			}
@@ -104,7 +105,7 @@ func (c *commentDataFlow) prepareComment(action string) error {
 	}()
 	go func() {
 		defer wg.Done()
-		user, err := repository.NewUserDaoInstance().QueryUserByUserId(c.currentUid)
+		user, err := repository.NewUserDaoInstance().QueryUserByUserId(context.Background(), c.currentUid)
 		if err != nil {
 			userErr = err
 		}
@@ -175,7 +176,7 @@ func (c *commentListDataFlow) do() ([]*models.Comment, error) {
 
 // 检查视频id是否正确
 func (f *commentListDataFlow) checkVideoId() error {
-	videos, err := repository.NewVideoDaoInstance().QueryVideosByIs([]string{f.VideoId})
+	videos, err := repository.NewVideoDaoInstance().QueryVideosByIs(context.Background(), []string{f.VideoId})
 	if err != nil {
 		return err
 	}
@@ -187,7 +188,7 @@ func (f *commentListDataFlow) checkVideoId() error {
 
 func (c *commentListDataFlow) prepareListCommentInfo() error {
 	// 获取一系列评论信息
-	comments, err := repository.NewCommentDaoInstance().QueryCommentByVideoId(c.VideoId)
+	comments, err := repository.NewCommentDaoInstance().QueryCommentByVideoId(context.Background(), c.VideoId)
 	if err != nil {
 		return err
 	}
@@ -200,7 +201,7 @@ func (c *commentListDataFlow) prepareListCommentInfo() error {
 	}
 
 	// 获取一系列用户信息
-	users, err := repository.NewUserDaoInstance().QueryUserByIds(userIds)
+	users, err := repository.NewUserDaoInstance().QueryUserByIds(context.Background(), userIds)
 	if err != nil {
 		return err
 	}
@@ -211,7 +212,7 @@ func (c *commentListDataFlow) prepareListCommentInfo() error {
 	c.UserMap = userMap
 
 	// 获取一系列关注信息
-	relationMap, err := repository.NewRelationDaoInstance().QueryRelationByIds(c.userId, userIds)
+	relationMap, err := repository.NewRelationDaoInstance().QueryRelationByIds(context.Background(), c.userId, userIds)
 	if err != nil {
 		return err
 	}

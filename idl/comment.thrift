@@ -1,5 +1,5 @@
 include "user.thrift"
-include "feed.thrift"
+include "base.thrift"
 namespace go comment
 
 struct Comment {
@@ -18,7 +18,7 @@ struct CommentActionRequest {
 }
 
 struct CommentActionResponse{
-    1: feed.BaseResp base_resp
+    1: base.BaseResp base_resp
     3: list<Comment> comment_list
 }
 
@@ -28,6 +28,6 @@ struct CommentListRequest {
 }
 
 struct CommentListResponse {
-    1: feed.BaseResp base_resp
+    1: base.BaseResp base_resp
     2: list<Comment> comment_list
 }

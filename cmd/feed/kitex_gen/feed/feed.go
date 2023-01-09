@@ -3,6 +3,8 @@
 package feed
 
 import (
+	"aweme_kitex/cmd/feed/kitex_gen/base"
+	"aweme_kitex/cmd/feed/kitex_gen/user"
 	"context"
 	"fmt"
 	"github.com/apache/thrift/lib/go/thrift"
@@ -292,14 +294,14 @@ func (p *BaseResp) Field3DeepEqual(src int64) bool {
 }
 
 type Video struct {
-	VideoId        string `thrift:"video_id,1" frugal:"1,default,string" json:"video_id"`
-	Author         string `thrift:"author,2" frugal:"2,default,string" json:"author"`
-	PlayUrl        string `thrift:"play_url,3" frugal:"3,default,string" json:"play_url"`
-	CoverUrl       string `thrift:"cover_url,4" frugal:"4,default,string" json:"cover_url"`
-	FavouriteCount int64  `thrift:"favourite_count,5" frugal:"5,default,i64" json:"favourite_count"`
-	CommentCount   int64  `thrift:"comment_count,6" frugal:"6,default,i64" json:"comment_count"`
-	IsFavourite    bool   `thrift:"is_favourite,7" frugal:"7,default,bool" json:"is_favourite"`
-	Title          string `thrift:"title,8" frugal:"8,default,string" json:"title"`
+	VideoId        string     `thrift:"video_id,1" frugal:"1,default,string" json:"video_id"`
+	Author         *user.User `thrift:"author,2" frugal:"2,default,user.User" json:"author"`
+	PlayUrl        string     `thrift:"play_url,3" frugal:"3,default,string" json:"play_url"`
+	CoverUrl       string     `thrift:"cover_url,4" frugal:"4,default,string" json:"cover_url"`
+	FavouriteCount int64      `thrift:"favourite_count,5" frugal:"5,default,i64" json:"favourite_count"`
+	CommentCount   int64      `thrift:"comment_count,6" frugal:"6,default,i64" json:"comment_count"`
+	IsFavourite    bool       `thrift:"is_favourite,7" frugal:"7,default,bool" json:"is_favourite"`
+	Title          string     `thrift:"title,8" frugal:"8,default,string" json:"title"`
 }
 
 func NewVideo() *Video {
@@ -314,7 +316,12 @@ func (p *Video) GetVideoId() (v string) {
 	return p.VideoId
 }
 
-func (p *Video) GetAuthor() (v string) {
+var Video_Author_DEFAULT *user.User
+
+func (p *Video) GetAuthor() (v *user.User) {
+	if !p.IsSetAuthor() {
+		return Video_Author_DEFAULT
+	}
 	return p.Author
 }
 
@@ -344,7 +351,7 @@ func (p *Video) GetTitle() (v string) {
 func (p *Video) SetVideoId(val string) {
 	p.VideoId = val
 }
-func (p *Video) SetAuthor(val string) {
+func (p *Video) SetAuthor(val *user.User) {
 	p.Author = val
 }
 func (p *Video) SetPlayUrl(val string) {
@@ -377,6 +384,10 @@ var fieldIDToName_Video = map[int16]string{
 	8: "title",
 }
 
+func (p *Video) IsSetAuthor() bool {
+	return p.Author != nil
+}
+
 func (p *Video) Read(iprot thrift.TProtocol) (err error) {
 
 	var fieldTypeId thrift.TType
@@ -407,7 +418,7 @@ func (p *Video) Read(iprot thrift.TProtocol) (err error) {
 				}
 			}
 		case 2:
-			if fieldTypeId == thrift.STRING {
+			if fieldTypeId == thrift.STRUCT {
 				if err = p.ReadField2(iprot); err != nil {
 					goto ReadFieldError
 				}
@@ -516,10 +527,9 @@ func (p *Video) ReadField1(iprot thrift.TProtocol) error {
 }
 
 func (p *Video) ReadField2(iprot thrift.TProtocol) error {
-	if v, err := iprot.ReadString(); err != nil {
+	p.Author = user.NewUser()
+	if err := p.Author.Read(iprot); err != nil {
 		return err
-	} else {
-		p.Author = v
 	}
 	return nil
 }
@@ -653,10 +663,10 @@ WriteFieldEndError:
 }
 
 func (p *Video) writeField2(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("author", thrift.STRING, 2); err != nil {
+	if err = oprot.WriteFieldBegin("author", thrift.STRUCT, 2); err != nil {
 		goto WriteFieldBeginError
 	}
-	if err := oprot.WriteString(p.Author); err != nil {
+	if err := p.Author.Write(oprot); err != nil {
 		return err
 	}
 	if err = oprot.WriteFieldEnd(); err != nil {
@@ -818,9 +828,9 @@ func (p *Video) Field1DeepEqual(src string) bool {
 	}
 	return true
 }
-func (p *Video) Field2DeepEqual(src string) bool {
+func (p *Video) Field2DeepEqual(src *user.User) bool {
 
-	if strings.Compare(p.Author, src) != 0 {
+	if !p.Author.DeepEqual(src) {
 		return false
 	}
 	return true
@@ -1092,9 +1102,9 @@ func (p *FeedRequest) Field2DeepEqual(src string) bool {
 }
 
 type FeedResponse struct {
-	BaseResp  *BaseResp `thrift:"base_resp,1" frugal:"1,default,BaseResp" json:"base_resp"`
-	VideoList []*Video  `thrift:"video_list,2" frugal:"2,default,list<Video>" json:"video_list"`
-	NextTime  int64     `thrift:"next_time,3" frugal:"3,default,i64" json:"next_time"`
+	BaseResp  *base.BaseResp `thrift:"base_resp,1" frugal:"1,default,base.BaseResp" json:"base_resp"`
+	VideoList []*Video       `thrift:"video_list,2" frugal:"2,default,list<Video>" json:"video_list"`
+	NextTime  int64          `thrift:"next_time,3" frugal:"3,default,i64" json:"next_time"`
 }
 
 func NewFeedResponse() *FeedResponse {
@@ -1105,9 +1115,9 @@ func (p *FeedResponse) InitDefault() {
 	*p = FeedResponse{}
 }
 
-var FeedResponse_BaseResp_DEFAULT *BaseResp
+var FeedResponse_BaseResp_DEFAULT *base.BaseResp
 
-func (p *FeedResponse) GetBaseResp() (v *BaseResp) {
+func (p *FeedResponse) GetBaseResp() (v *base.BaseResp) {
 	if !p.IsSetBaseResp() {
 		return FeedResponse_BaseResp_DEFAULT
 	}
@@ -1121,7 +1131,7 @@ func (p *FeedResponse) GetVideoList() (v []*Video) {
 func (p *FeedResponse) GetNextTime() (v int64) {
 	return p.NextTime
 }
-func (p *FeedResponse) SetBaseResp(val *BaseResp) {
+func (p *FeedResponse) SetBaseResp(val *base.BaseResp) {
 	p.BaseResp = val
 }
 func (p *FeedResponse) SetVideoList(val []*Video) {
@@ -1221,7 +1231,7 @@ ReadStructEndError:
 }
 
 func (p *FeedResponse) ReadField1(iprot thrift.TProtocol) error {
-	p.BaseResp = NewBaseResp()
+	p.BaseResp = base.NewBaseResp()
 	if err := p.BaseResp.Read(iprot); err != nil {
 		return err
 	}
@@ -1378,7 +1388,7 @@ func (p *FeedResponse) DeepEqual(ano *FeedResponse) bool {
 	return true
 }
 
-func (p *FeedResponse) Field1DeepEqual(src *BaseResp) bool {
+func (p *FeedResponse) Field1DeepEqual(src *base.BaseResp) bool {
 
 	if !p.BaseResp.DeepEqual(src) {
 		return false

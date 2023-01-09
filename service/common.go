@@ -3,12 +3,13 @@ package service
 import (
 	"aweme_kitex/models"
 	"aweme_kitex/models/repository"
+	"context"
 	"errors"
 )
 
 // 检查视频id是否存在
 func checkVideoId(videoId []string) ([]*models.VideoRawData, error) {
-	videos, err := repository.NewVideoDaoInstance().QueryVideosByIs(videoId)
+	videos, err := repository.NewVideoDaoInstance().QueryVideosByIs(context.Background(), videoId)
 	if err != nil {
 		return nil, err
 	}
@@ -20,7 +21,7 @@ func checkVideoId(videoId []string) ([]*models.VideoRawData, error) {
 
 // 检查commentid
 func checkCommentId(commentIds []string) ([]*models.CommentRaw, error) {
-	comments, err := repository.NewCommentDaoInstance().QueryCommentByCommentIds(commentIds)
+	comments, err := repository.NewCommentDaoInstance().QueryCommentByCommentIds(context.Background(), commentIds)
 	if err != nil {
 		return nil, err
 	}
@@ -32,7 +33,7 @@ func checkCommentId(commentIds []string) ([]*models.CommentRaw, error) {
 
 // 检查用户是否存在
 func checkUserId(uids []string) ([]*models.UserRawData, error) {
-	users, err := repository.NewUserDaoInstance().QueryUserByIds(uids)
+	users, err := repository.NewUserDaoInstance().QueryUserByIds(context.Background(), uids)
 	if err != nil {
 		return nil, err
 	}

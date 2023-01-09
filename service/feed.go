@@ -3,6 +3,7 @@ package service
 import (
 	"aweme_kitex/models"
 	"aweme_kitex/models/repository"
+	"context"
 	"errors"
 	"fmt"
 	"sync"
@@ -50,7 +51,7 @@ func (f *queryVideoDataFlow) Do() ([]*models.Video, int64, error) {
 // prepare video
 func (f *queryVideoDataFlow) prepareVideoInfo() error {
 	// 1.get video
-	videoData, err := repository.NewVideoDaoInstance().QueryVideoByLatestTime(f.LatestTime)
+	videoData, err := repository.NewVideoDaoInstance().QueryVideoByLatestTime(context.Background(), f.LatestTime)
 	if err != nil {
 		return err
 	}
@@ -65,7 +66,7 @@ func (f *queryVideoDataFlow) prepareVideoInfo() error {
 	}
 
 	// 3. get user info
-	users, err := repository.NewUserDaoInstance().QueryUserByIds(authorIds)
+	users, err := repository.NewUserDaoInstance().QueryUserByIds(context.Background(), authorIds)
 	if err != nil {
 		return err
 	}
@@ -86,7 +87,7 @@ func (f *queryVideoDataFlow) prepareVideoInfo() error {
 	// 5.获取点赞信息
 	go func() {
 		defer wg.Done()
-		favoursMap, err := repository.NewFavouriteDaoInstance().QueryFavoursByIds(f.CurrentUserId, videoIds)
+		favoursMap, err := repository.NewFavouriteDaoInstance().QueryFavoursByIds(context.Background(), f.CurrentUserId, videoIds)
 		if err != nil {
 			favourErr = err
 			return
@@ -96,7 +97,7 @@ func (f *queryVideoDataFlow) prepareVideoInfo() error {
 	// 6.获取关注信息
 	go func() {
 		defer wg.Done()
-		relationMap, err := repository.NewRelationDaoInstance().QueryRelationByIds(f.CurrentUserId, authorIds)
+		relationMap, err := repository.NewRelationDaoInstance().QueryRelationByIds(context.Background(), f.CurrentUserId, authorIds)
 		if err != nil {
 			relationErr = err
 			return

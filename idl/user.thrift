@@ -1,4 +1,4 @@
-include "feed.thrift"
+include "base.thrift"
 namespace go user
 struct User {
     1: string user_id
@@ -14,11 +14,10 @@ struct UserRegisterRequest {
 }
 
 struct UserRegisterResponse {
-    1: feed.BaseResp base_resp
+    1: base.BaseResp base_resp
     2: string user_id
     3: string token
 }
-
 
 struct UserLoginRequest {
     1: string user_name
@@ -26,7 +25,7 @@ struct UserLoginRequest {
 }
 
 struct UserLoginResponse {
-    1: feed.BaseResp base_resp
+    1: base.BaseResp base_resp
     2: string user_id
     3: string token
 }
@@ -37,6 +36,6 @@ struct UserInfoRequest {
 }
 
 struct UserInfoResponse {
-    1: feed.BaseResp base_resp
+    1: base.BaseResp base_resp
     2: list<User> user
  }

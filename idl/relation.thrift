@@ -1,5 +1,5 @@
 include "user.thrift"
-include "feed.thrift"
+include "base.thrift"
 namespace go relation
 
 struct RelationActionRequest {
@@ -18,7 +18,7 @@ struct FollowListRequest {
 }
 
 struct FollowListResponse {
-    1: feed.BaseResp base_resp
+    1: base.BaseResp base_resp
     2: list<user.User> user_list
 }
 
@@ -27,7 +27,7 @@ struct FollowerListRequest {
 }
 
 struct FollowerListResponse {
-   1: feed.BaseResp base_resp
+   1: base.BaseResp base_resp
     2: list<user.User> user_list
 }
 

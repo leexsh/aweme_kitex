@@ -286,7 +286,7 @@ func (p *Video) FastRead(buf []byte) (int, error) {
 				}
 			}
 		case 2:
-			if fieldTypeId == thrift.STRING {
+			if fieldTypeId == thrift.STRUCT {
 				l, err = p.FastReadField2(buf[offset:])
 				offset += l
 				if err != nil {
@@ -435,14 +435,13 @@ func (p *Video) FastReadField1(buf []byte) (int, error) {
 func (p *Video) FastReadField2(buf []byte) (int, error) {
 	offset := 0
 
-	if v, l, err := bthrift.Binary.ReadString(buf[offset:]); err != nil {
+	tmp := user.NewUser()
+	if l, err := tmp.FastRead(buf[offset:]); err != nil {
 		return offset, err
 	} else {
 		offset += l
-
-		p.Author = v
-
 	}
+	p.Author = tmp
 	return offset, nil
 }
 
@@ -582,9 +581,8 @@ func (p *Video) fastWriteField1(buf []byte, binaryWriter bthrift.BinaryWriter) i
 
 func (p *Video) fastWriteField2(buf []byte, binaryWriter bthrift.BinaryWriter) int {
 	offset := 0
-	offset += bthrift.Binary.WriteFieldBegin(buf[offset:], "author", thrift.STRING, 2)
-	offset += bthrift.Binary.WriteStringNocopy(buf[offset:], binaryWriter, p.Author)
-
+	offset += bthrift.Binary.WriteFieldBegin(buf[offset:], "author", thrift.STRUCT, 2)
+	offset += p.Author.FastWriteNocopy(buf[offset:], binaryWriter)
 	offset += bthrift.Binary.WriteFieldEnd(buf[offset:])
 	return offset
 }
@@ -654,9 +652,8 @@ func (p *Video) field1Length() int {
 
 func (p *Video) field2Length() int {
 	l := 0
-	l += bthrift.Binary.FieldBeginLength("author", thrift.STRING, 2)
-	l += bthrift.Binary.StringLengthNocopy(p.Author)
-
+	l += bthrift.Binary.FieldBeginLength("author", thrift.STRUCT, 2)
+	l += p.Author.BLength()
 	l += bthrift.Binary.FieldEndLength()
 	return l
 }
@@ -995,7 +992,7 @@ ReadStructEndError:
 func (p *FeedResponse) FastReadField1(buf []byte) (int, error) {
 	offset := 0
 
-	tmp := NewBaseResp()
+	tmp := base.NewBaseResp()
 	if l, err := tmp.FastRead(buf[offset:]); err != nil {
 		return offset, err
 	} else {

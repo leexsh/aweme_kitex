@@ -1,4 +1,5 @@
-include"feed.thrift"
+include "base.thrift"
+include "feed.thrift"
 namespace go favourite
 
 struct Favourite {
@@ -16,7 +17,7 @@ struct FavouriteActionRequest {
 
 
 struct FavouriteActionResponse {
-    1: feed.BaseResp base_resp
+    1: base.BaseResp base_resp
 }
 
 struct FavouriteListRequest {
@@ -24,6 +25,6 @@ struct FavouriteListRequest {
 }
 
 struct FavouriteListResponse {
-    1: feed.BaseResp base_resp
+    1: base.BaseResp base_resp
     2: list<feed.Video> video_list
 }

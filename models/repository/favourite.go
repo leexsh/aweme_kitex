@@ -4,6 +4,7 @@ import (
 	"aweme_kitex/cfg"
 	"aweme_kitex/models"
 	"aweme_kitex/pkg/logger"
+	"context"
 	"errors"
 	"sync"
 
@@ -28,9 +29,9 @@ func NewFavouriteDaoInstance() *FavouriteDao {
 }
 
 // 根据uid 和 videoId 获取喜欢列表
-func (f *FavouriteDao) QueryFavoursByIds(currentUId string, videoIds []string) (map[string]*models.FavouriteRaw, error) {
+func (f *FavouriteDao) QueryFavoursByIds(ctx context.Context, currentUId string, videoIds []string) (map[string]*models.FavouriteRaw, error) {
 	var favours []*models.FavouriteRaw
-	err := cfg.DB.Table("favourite").Where("user_id=? AND video_id IN ?", currentUId, videoIds).Find(&favours).Error
+	err := cfg.DB.WithContext(ctx).Table("favourite").Where("user_id=? AND video_id IN ?", currentUId, videoIds).Find(&favours).Error
 	if err == gorm.ErrRecordNotFound {
 		return nil, errors.New("favourite not found")
 	}
@@ -46,9 +47,9 @@ func (f *FavouriteDao) QueryFavoursByIds(currentUId string, videoIds []string) (
 }
 
 // 创建一条点赞
-func (f *FavouriteDao) CreateFavour(favour *models.FavouriteRaw, videoId string) error {
+func (f *FavouriteDao) CreateFavour(ctx context.Context, favour *models.FavouriteRaw, videoId string) error {
 	cfg.DB.Transaction(func(tx *gorm.DB) error {
-		err := tx.Table("video").Where("video_id = ?", videoId).Update("favorite_count", gorm.Expr("favorite_count + ?", 1)).Error
+		err := tx.Table("video").WithContext(ctx).Where("video_id = ?", videoId).Update("favorite_count", gorm.Expr("favorite_count + ?", 1)).Error
 		if err != nil {
 			logger.Error("AddFavoriteCount error " + err.Error())
 			return err
@@ -66,10 +67,10 @@ func (f *FavouriteDao) CreateFavour(favour *models.FavouriteRaw, videoId string)
 }
 
 // del
-func (f *FavouriteDao) DelFavour(userId, videoId string) error {
+func (f *FavouriteDao) DelFavour(ctx context.Context, userId, videoId string) error {
 	cfg.DB.Transaction(func(tx *gorm.DB) error {
 		var favorite *models.FavouriteRaw
-		err := tx.Table("favorite").Where("user_id = ? AND video_id = ?", userId, videoId).Delete(&favorite).Error
+		err := tx.Table("favorite").WithContext(ctx).Where("user_id = ? AND video_id = ?", userId, videoId).Delete(&favorite).Error
 		if err != nil {
 			logger.Error("delete favorite record fail " + err.Error())
 			return err
@@ -86,9 +87,9 @@ func (f *FavouriteDao) DelFavour(userId, videoId string) error {
 }
 
 // quiery videos by uid
-func (f *FavouriteDao) QueryFavoursVideoIdByUid(uid string) ([]string, error) {
+func (f *FavouriteDao) QueryFavoursVideoIdByUid(ctx context.Context, uid string) ([]string, error) {
 	var favours []*models.FavouriteRaw
-	err := cfg.DB.Debug().Table("favourite").Where("user_id=?", uid).Find(&favours).Error
+	err := cfg.DB.Debug().Table("favourite").WithContext(ctx).Where("user_id=?", uid).Find(&favours).Error
 	if err != nil {
 		logger.Error("query favourite video err: " + err.Error())
 		return nil, err

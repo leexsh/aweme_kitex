@@ -3,6 +3,7 @@ package service
 import (
 	"aweme_kitex/models"
 	"aweme_kitex/models/repository"
+	"context"
 )
 
 /*
@@ -51,7 +52,7 @@ func (r *relationActionDataFlow) do() error {
 }
 
 func (r *relationActionDataFlow) createRelation() error {
-	err := repository.NewRelationDaoInstance().CreateRelation(r.userId, r.toUserId)
+	err := repository.NewRelationDaoInstance().CreateRelation(context.Background(), r.userId, r.toUserId)
 	if err != nil {
 		return err
 	}
@@ -59,7 +60,7 @@ func (r *relationActionDataFlow) createRelation() error {
 }
 
 func (r *relationActionDataFlow) deleteRelation() error {
-	err := repository.NewRelationDaoInstance().DeleteRelation(r.userId, r.toUserId)
+	err := repository.NewRelationDaoInstance().DeleteRelation(context.Background(), r.userId, r.toUserId)
 	if err != nil {
 		return nil
 	}
@@ -101,7 +102,7 @@ func (f *relationListDataFlow) getFollow() ([]*models.User, error) {
 }
 
 func (r *relationListDataFlow) prepareFollowInfo() error {
-	relations, err := repository.NewRelationDaoInstance().QueryFollowByUid(r.UserId)
+	relations, err := repository.NewRelationDaoInstance().QueryFollowByUid(context.Background(), r.UserId)
 	if err != nil {
 		return err
 	}
@@ -109,12 +110,12 @@ func (r *relationListDataFlow) prepareFollowInfo() error {
 	for _, relation := range relations {
 		toUids = append(toUids, relation.ToUserId)
 	}
-	toUsers, err := repository.NewUserDaoInstance().QueryUserByIds(toUids)
+	toUsers, err := repository.NewUserDaoInstance().QueryUserByIds(context.Background(), toUids)
 	if err != nil {
 		return err
 	}
 	r.UserRaw = toUsers
-	relationMap, err := repository.NewRelationDaoInstance().QueryRelationByIds(r.UserId, toUids)
+	relationMap, err := repository.NewRelationDaoInstance().QueryRelationByIds(context.Background(), r.UserId, toUids)
 	r.RelationMap = relationMap
 	return nil
 }
@@ -155,7 +156,7 @@ func (f *relationListDataFlow) getFollower() ([]*models.User, error) {
 
 func (r *relationListDataFlow) prepareFollowerInfo() error {
 	// 查询目标用户的被关注记录
-	relations, err := repository.NewRelationDaoInstance().QueryFollowerById(r.UserId)
+	relations, err := repository.NewRelationDaoInstance().QueryFollowerById(context.Background(), r.UserId)
 	if err != nil {
 		return err
 	}
@@ -167,14 +168,14 @@ func (r *relationListDataFlow) prepareFollowerInfo() error {
 	}
 
 	// 获取关注方的信息
-	users, err := repository.NewUserDaoInstance().QueryUserByIds(userIds)
+	users, err := repository.NewUserDaoInstance().QueryUserByIds(context.Background(), userIds)
 	if err != nil {
 		return err
 	}
 	r.UserRaw = users
 
 	// 获取当前用户与关注方的关注记录
-	relationMap, err := repository.NewRelationDaoInstance().QueryRelationByIds(r.UserId, userIds)
+	relationMap, err := repository.NewRelationDaoInstance().QueryRelationByIds(context.Background(), r.UserId, userIds)
 	if err != nil {
 		return err
 	}
