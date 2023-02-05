@@ -7,7 +7,6 @@ import (
 	"aweme_kitex/pkg/jwt"
 	"aweme_kitex/pkg/logger"
 	"aweme_kitex/pkg/tracer"
-	"go/constant"
 	"net/http"
 	"time"
 
@@ -88,7 +87,7 @@ func main() {
 	relation.GET("/follow/list/", handlers.FollowList)
 	relation.GET("/follower/list/", handlers.FollowerList)
 
-	if err := http.ListenAndServe(constant.ApiAddress, r); err != nil {
+	if err := http.ListenAndServe(constants.ApiAddress, r); err != nil {
 		logger.Fatal(err)
 	}
 }

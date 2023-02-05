@@ -31,3 +31,9 @@ struct CommentListResponse {
     1: base.BaseResp base_resp
     2: list<Comment> comment_list
 }
+
+service CommentService {
+    CommentActionResponse CreateComment (1: CommentActionRequest req)
+    CommentActionResponse  DelComment(1: CommentActionRequest req)
+    CommentListResponse CommentList(1: CommentListRequest req)
+}

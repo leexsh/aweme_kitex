@@ -1,7 +1,7 @@
 package main
 
 import (
-	user "aweme_kitex/cmd/user/kitex_gen/user/userservice"
+	favourite "aweme_kitex/cmd/favourite/kitex_gen/favourite/favouriteservice"
 	"aweme_kitex/pkg/bound"
 	constants "aweme_kitex/pkg/constant"
 	"aweme_kitex/pkg/middleware"
@@ -17,7 +17,7 @@ import (
 )
 
 func Init() {
-	tracer.InitJaeger(constants.UserServiceName)
+	tracer.InitJaeger(constants.FeedServiceName)
 }
 
 func main() {
@@ -25,13 +25,13 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
-	addr, err := net.ResolveTCPAddr("tcp", constants.UserAddress)
+	addr, err := net.ResolveTCPAddr("tcp", constants.FavoriteAddress)
 	if err != nil {
 		panic(err)
 	}
 	Init()
-	svr := user.NewServer(new(UserServiceImpl),
-		server.WithServerBasicInfo(&rpcinfo.EndpointBasicInfo{ServiceName: constants.UserServiceName}), // server name
+	svr := favourite.NewServer(new(FavouriteServiceImpl),
+		server.WithServerBasicInfo(&rpcinfo.EndpointBasicInfo{ServiceName: constants.FavoriteServiceName}), // server name
 		server.WithMiddleware(middleware.CommonMiddleware),
 		server.WithMiddleware(middleware.ServerMiddleware),
 		server.WithServiceAddr(addr),                                       // address
@@ -41,6 +41,8 @@ func main() {
 		server.WithBoundHandler(bound.NewCpuLimitHandler()),                // BoundHandler
 		server.WithRegistry(r),                                             // registry
 	)
+
+	// svr := feed.NewServer(new(FeedServiceImpl))
 
 	err = svr.Run()
 

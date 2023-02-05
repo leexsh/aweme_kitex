@@ -28,3 +28,8 @@ struct FavouriteListResponse {
     1: base.BaseResp base_resp
     2: list<feed.Video> video_list
 }
+
+service FavouriteService {
+     FavouriteActionResponse FavouriteAction(1: FavouriteActionRequest req)
+     FavouriteListResponse FavouriteList(1: FavouriteListRequest req)
+}
