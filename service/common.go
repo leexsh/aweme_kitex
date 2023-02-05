@@ -2,14 +2,14 @@ package service
 
 import (
 	"aweme_kitex/models"
-	"aweme_kitex/models/repository"
+	"aweme_kitex/models/dal"
 	"context"
 	"errors"
 )
 
 // 检查视频id是否存在
 func checkVideoId(videoId []string) ([]*models.VideoRawData, error) {
-	videos, err := repository.NewVideoDaoInstance().QueryVideosByIs(context.Background(), videoId)
+	videos, err := dal.NewVideoDaoInstance().QueryVideosByIs(context.Background(), videoId)
 	if err != nil {
 		return nil, err
 	}
@@ -21,7 +21,7 @@ func checkVideoId(videoId []string) ([]*models.VideoRawData, error) {
 
 // 检查commentid
 func checkCommentId(commentIds []string) ([]*models.CommentRaw, error) {
-	comments, err := repository.NewCommentDaoInstance().QueryCommentByCommentIds(context.Background(), commentIds)
+	comments, err := dal.NewCommentDaoInstance().QueryCommentByCommentIds(context.Background(), commentIds)
 	if err != nil {
 		return nil, err
 	}
@@ -33,7 +33,7 @@ func checkCommentId(commentIds []string) ([]*models.CommentRaw, error) {
 
 // 检查用户是否存在
 func checkUserId(uids []string) ([]*models.UserRawData, error) {
-	users, err := repository.NewUserDaoInstance().QueryUserByIds(context.Background(), uids)
+	users, err := dal.NewUserDaoInstance().QueryUserByIds(context.Background(), uids)
 	if err != nil {
 		return nil, err
 	}

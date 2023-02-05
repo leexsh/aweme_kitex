@@ -2,7 +2,7 @@ package service
 
 import (
 	"aweme_kitex/models"
-	"aweme_kitex/models/repository"
+	"aweme_kitex/models/dal"
 	"aweme_kitex/pkg/jwt"
 	"aweme_kitex/utils"
 	"context"
@@ -47,12 +47,12 @@ func (f *favouriteActionDataFlow) do() error {
 			VideoId: f.videoId,
 		}
 		f.FavouriteData = favour
-		err := repository.NewFavouriteDaoInstance().CreateFavour(context.Background(), favour, f.videoId)
+		err := dal.NewFavouriteDaoInstance().CreateFavour(context.Background(), favour, f.videoId)
 		if err != nil {
 			return err
 		}
 	} else if f.action == "2" {
-		err := repository.NewFavouriteDaoInstance().DelFavour(context.Background(), f.CurrentUid, f.videoId)
+		err := dal.NewFavouriteDaoInstance().DelFavour(context.Background(), f.CurrentUid, f.videoId)
 		if err != nil {
 			return err
 		}
@@ -94,12 +94,12 @@ func (f *favouriteListDataFlow) do() ([]*models.Video, error) {
 }
 
 func (f *favouriteListDataFlow) prepareVideoInfo() error {
-	videosIds, err := repository.NewFavouriteDaoInstance().QueryFavoursVideoIdByUid(context.Background(), f.currentUId)
+	videosIds, err := dal.NewFavouriteDaoInstance().QueryFavoursVideoIdByUid(context.Background(), f.currentUId)
 	if err != nil {
 		return err
 	}
 	// get videos
-	videoData, err := repository.NewVideoDaoInstance().QueryVideosByIs(context.Background(), videosIds)
+	videoData, err := dal.NewVideoDaoInstance().QueryVideosByIs(context.Background(), videosIds)
 	if err != nil {
 		return err
 	}
@@ -111,7 +111,7 @@ func (f *favouriteListDataFlow) prepareVideoInfo() error {
 	}
 
 	// get video authors
-	users, err := repository.NewUserDaoInstance().QueryUserByIds(context.Background(), uids)
+	users, err := dal.NewUserDaoInstance().QueryUserByIds(context.Background(), uids)
 	if err != nil {
 		return err
 	}
@@ -126,7 +126,7 @@ func (f *favouriteListDataFlow) prepareVideoInfo() error {
 	var favErr, relationErr error
 	go func() {
 		defer wg.Done()
-		favoursMap, err := repository.NewFavouriteDaoInstance().QueryFavoursByIds(context.Background(), f.currentUId, videosIds)
+		favoursMap, err := dal.NewFavouriteDaoInstance().QueryFavoursByIds(context.Background(), f.currentUId, videosIds)
 		if err != nil {
 			favErr = err
 		}
@@ -134,7 +134,7 @@ func (f *favouriteListDataFlow) prepareVideoInfo() error {
 	}()
 	go func() {
 		defer wg.Done()
-		relationMap, err := repository.NewRelationDaoInstance().QueryRelationByIds(context.Background(), f.currentUId, videosIds)
+		relationMap, err := dal.NewRelationDaoInstance().QueryRelationByIds(context.Background(), f.currentUId, videosIds)
 		if err != nil {
 			relationErr = err
 		}

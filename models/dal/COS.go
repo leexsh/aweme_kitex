@@ -1,4 +1,4 @@
-package repository
+package dal
 
 import (
 	"aweme_kitex/cfg"
@@ -38,3 +38,7 @@ func (*COSDao) PublishVideoToCOS(ctx context.Context, cosKey string, saveFile st
 func (*COSDao) GetCOSVideoURL(cosKey string) *url.URL {
 	return cfg.COSClient.Object.GetObjectURL(cosKey)
 }
+
+// 上传封面到Oss
+
+// 从oss上获取封面地址

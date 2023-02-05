@@ -1,4 +1,4 @@
-package repository
+package dal
 
 import (
 	"encoding/json"

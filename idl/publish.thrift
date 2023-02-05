@@ -21,3 +21,7 @@ struct PublishListResponse {
     2: list<feed.Video> video_list
 }
 
+service PublishService {
+    PublishActionResponse PublishAction(1: PublishActionRequest req)
+    PublishListResponse PublishList(1: PublishListRequest req)
+}

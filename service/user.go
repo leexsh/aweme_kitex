@@ -2,7 +2,7 @@ package service
 
 import (
 	"aweme_kitex/models"
-	"aweme_kitex/models/repository"
+	"aweme_kitex/models/dal"
 	"aweme_kitex/pkg/jwt"
 	"aweme_kitex/utils"
 	"context"
@@ -45,7 +45,7 @@ func (r *registerUserDataFlow) do() (string, string, error) {
 	}
 	// todo 写数据库和缓存
 	fmt.Println(newUser)
-	err := repository.NewUserDaoInstance().UploadUserData(context.Background(), newUser)
+	err := dal.NewUserDaoInstance().UploadUserData(context.Background(), newUser)
 	return userId, token, err
 }
 
@@ -68,7 +68,7 @@ func newLoginUserDataFlow(name, password string) *loginUserDataFlow {
 	}
 }
 func (l *loginUserDataFlow) do() (uid string, token string, err error) {
-	user, err := repository.NewUserDaoInstance().QueryUserByPassword(context.Background(), l.userName, utils.Md5(l.password))
+	user, err := dal.NewUserDaoInstance().QueryUserByPassword(context.Background(), l.userName, utils.Md5(l.password))
 	if user != nil {
 		l.token = user.Token
 		l.userId = user.UserId
@@ -111,7 +111,7 @@ func (u *userInfoDataFlow) do() (*models.User, error) {
 
 func (u *userInfoDataFlow) prepareInfo() error {
 	// uids := []string{u.RemoteUser.UserId}
-	user, err := repository.NewUserDaoInstance().QueryUserByUserId(context.Background(), u.RemoteUser.UserId)
+	user, err := dal.NewUserDaoInstance().QueryUserByUserId(context.Background(), u.RemoteUser.UserId)
 	if err != nil {
 		return err
 	}
@@ -120,7 +120,7 @@ func (u *userInfoDataFlow) prepareInfo() error {
 	// }
 	// u.RemoteUser = users[0]
 	u.RemoteUser = user
-	relationMap, err := repository.NewRelationDaoInstance().QueryRelationByIds(context.Background(), u.CurrentUId, []string{u.RemoteUser.UserId})
+	relationMap, err := dal.NewRelationDaoInstance().QueryRelationByIds(context.Background(), u.CurrentUId, []string{u.RemoteUser.UserId})
 	_, ok := relationMap[u.CurrentUId]
 	if !ok {
 		u.isfollow = false
