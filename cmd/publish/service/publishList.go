@@ -7,12 +7,22 @@ import (
 	"aweme_kitex/models"
 	"aweme_kitex/models/dal"
 	serviceRPC "aweme_kitex/service/rpc"
+	"context"
 	"sync"
 
 	"github.com/pkg/errors"
 )
 
-func (s *PublishService) PublishList(req *publish.PublishListRequest) ([]*feed.Video, error) {
+type PublishListService struct {
+	ctx context.Context
+}
+
+// NewPublishService new PublishService
+func NewPublishListService(ctx context.Context) *PublishListService {
+	return &PublishListService{ctx: ctx}
+}
+
+func (s *PublishListService) PublishList(req *publish.PublishListRequest) ([]*feed.Video, error) {
 	user, err := controller.CheckToken(req.Token)
 	if err != nil {
 		return nil, err

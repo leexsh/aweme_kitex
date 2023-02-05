@@ -36,7 +36,7 @@ func (s *PublishServiceImpl) PublishAction(ctx context.Context, req *publish.Pub
 // PublishList implements the PublishServiceImpl interface.
 func (s *PublishServiceImpl) PublishList(ctx context.Context, req *publish.PublishListRequest) (resp *publish.PublishListResponse, err error) {
 	resp = new(publish.PublishListResponse)
-	videoList, err := service.NewPublishService(ctx).PublishList(req)
+	videoList, err := service.NewPublishListService(ctx).PublishList(req)
 	if err != nil {
 		resp.BaseResp.StatusCode = -1
 		resp.BaseResp.StatusMsg = err.Error()

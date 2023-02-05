@@ -39,3 +39,9 @@ struct UserInfoResponse {
     1: base.BaseResp base_resp
     2: list<User> user
  }
+
+ service UserService {
+     UserRegisterResponse Register(1: UserRegisterRequest req)
+     UserLoginResponse Login(1: UserLoginRequest req)
+     UserInfoResponse UserInfo(1: UserInfoRequest req)
+ }
