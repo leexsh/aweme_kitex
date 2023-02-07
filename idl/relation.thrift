@@ -9,8 +9,7 @@ struct RelationActionRequest {
 }
 
 struct RelationActionResponse {
-    1: i32 status_code
-    2: string status_msg
+    1: base.BaseResp base_resp
 }
 
 struct FollowListRequest {
@@ -27,7 +26,12 @@ struct FollowerListRequest {
 }
 
 struct FollowerListResponse {
-   1: base.BaseResp base_resp
+    1: base.BaseResp base_resp
     2: list<user.User> user_list
 }
 
+service RelationService {
+    RelationActionResponse RelationAction(1: RelationActionRequest req)
+    FollowListResponse FollowList(1: FollowListRequest req)
+    FollowerListResponse FollowerList(1: FollowerListRequest req)
+}

@@ -15,6 +15,12 @@ const (
 	TokenInvalidErrCode       = 10207
 	UserNameValidationErrCode = 10208
 	PasswordValidationErrCode = 10209
+	VideoDataGetErrCode       = 10301
+	VideoDataCopyErrCode      = 10302
+	// Comment-related incoming parameter error
+	CommentTextErrCode = 10401
+	// Relation-related incoming parameter error
+	ActionTypeErrCode = 10501
 )
 
 var (
@@ -29,4 +35,7 @@ var (
 	TokenInvalidErr       = NewErr(TokenInvalidErrCode, "Token Invalid")
 	UserNameValidationErr = NewErr(UserNameValidationErrCode, "Username is invalid")
 	PasswordValidationErr = NewErr(PasswordValidationErrCode, "Password is invalid")
+	VideoDataGetErr       = NewErr(VideoDataGetErrCode, "Could not get video data")
+	VideoDataCopyErr      = NewErr(VideoDataCopyErrCode, "Could not copy video data")
+	ActionTypeErr         = NewErr(ActionTypeErrCode, "action type is invalid")
 )
