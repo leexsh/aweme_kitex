@@ -22,7 +22,7 @@ var relationClient relation.Client
 func initRelationRpc() {
 	r, err := etcd.NewEtcdResolver([]string{constants.EtcdAddress})
 	if err != nil {
-		logger.Error("feed service register error")
+		logger.Error("feed service_user register error")
 		return
 	}
 	client, err := relation.NewClient(
@@ -37,7 +37,7 @@ func initRelationRpc() {
 		client2.WithResolver(r),
 	)
 	if err != nil {
-		logger.Error("feed service register error")
+		logger.Error("feed service_user register error")
 	}
 	relationClient = client
 }

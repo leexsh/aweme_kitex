@@ -6,21 +6,52 @@ import (
 	"aweme_kitex/controller"
 	"aweme_kitex/handler"
 	"aweme_kitex/pkg/errno"
+	"aweme_kitex/pkg/jwt"
+	"bytes"
 	"context"
+	"io"
 
 	"github.com/gin-gonic/gin"
 )
 
 func Publish(c *gin.Context) {
 	token := c.Query("token")
+	_, err := jwt.AnalyzeToken(token)
+	if err != nil {
+		SendResponse(c, errno.TokenInvalidErr, nil)
+		return
+	}
 	title := c.Query("title")
-	user, err := controller.CheckToken(token)
-	data, err := c.FormFile("data")
+	if length := len(title); length <= 0 || length > 128 {
+		SendResponse(c, errno.ParamErr, nil)
+		return
+	}
+
+	data, _, err := c.Request.FormFile("data")
 	if err != nil {
 		SendResponse(c, errno.ConvertErr(err), nil)
 		return
 	}
-	c.JSON(200, handler.PublishVideoHandle(user.Id, user.Name, title, data, c))
+	defer data.Close()
+	// 处理视频数据
+	buf := bytes.NewBuffer(nil)
+	if _, err := io.Copy(buf, data); err != nil {
+		SendResponse(c, errno.VideoDataCopyErr, nil)
+		return
+	}
+	video := buf.Bytes()
+
+	req := &publish.PublishActionRequest{
+		Token: token,
+		Data:  video,
+		Title: title,
+	}
+	err = rpc.PublishVideoData(context.Background(), req)
+	if err != nil {
+		SendResponse(c, errno.ConvertErr(err), nil)
+		return
+	}
+	SendResponse(c, errno.Success, nil)
 }
 
 func PublishList(c *gin.Context) {

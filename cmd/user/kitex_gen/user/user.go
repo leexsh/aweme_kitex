@@ -1437,8 +1437,8 @@ func (p *UserLoginResponse) Field3DeepEqual(src string) bool {
 }
 
 type UserInfoRequest struct {
-	UserName string `thrift:"user_name,1" frugal:"1,default,string" json:"user_name"`
-	Password string `thrift:"password,2" frugal:"2,default,string" json:"password"`
+	Token  string `thrift:"token,1" frugal:"1,default,string" json:"token"`
+	UserId string `thrift:"user_id,2" frugal:"2,default,string" json:"user_id"`
 }
 
 func NewUserInfoRequest() *UserInfoRequest {
@@ -1449,23 +1449,23 @@ func (p *UserInfoRequest) InitDefault() {
 	*p = UserInfoRequest{}
 }
 
-func (p *UserInfoRequest) GetUserName() (v string) {
-	return p.UserName
+func (p *UserInfoRequest) GetToken() (v string) {
+	return p.Token
 }
 
-func (p *UserInfoRequest) GetPassword() (v string) {
-	return p.Password
+func (p *UserInfoRequest) GetUserId() (v string) {
+	return p.UserId
 }
-func (p *UserInfoRequest) SetUserName(val string) {
-	p.UserName = val
+func (p *UserInfoRequest) SetToken(val string) {
+	p.Token = val
 }
-func (p *UserInfoRequest) SetPassword(val string) {
-	p.Password = val
+func (p *UserInfoRequest) SetUserId(val string) {
+	p.UserId = val
 }
 
 var fieldIDToName_UserInfoRequest = map[int16]string{
-	1: "user_name",
-	2: "password",
+	1: "token",
+	2: "user_id",
 }
 
 func (p *UserInfoRequest) Read(iprot thrift.TProtocol) (err error) {
@@ -1541,7 +1541,7 @@ func (p *UserInfoRequest) ReadField1(iprot thrift.TProtocol) error {
 	if v, err := iprot.ReadString(); err != nil {
 		return err
 	} else {
-		p.UserName = v
+		p.Token = v
 	}
 	return nil
 }
@@ -1550,7 +1550,7 @@ func (p *UserInfoRequest) ReadField2(iprot thrift.TProtocol) error {
 	if v, err := iprot.ReadString(); err != nil {
 		return err
 	} else {
-		p.Password = v
+		p.UserId = v
 	}
 	return nil
 }
@@ -1589,10 +1589,10 @@ WriteStructEndError:
 }
 
 func (p *UserInfoRequest) writeField1(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("user_name", thrift.STRING, 1); err != nil {
+	if err = oprot.WriteFieldBegin("token", thrift.STRING, 1); err != nil {
 		goto WriteFieldBeginError
 	}
-	if err := oprot.WriteString(p.UserName); err != nil {
+	if err := oprot.WriteString(p.Token); err != nil {
 		return err
 	}
 	if err = oprot.WriteFieldEnd(); err != nil {
@@ -1606,10 +1606,10 @@ WriteFieldEndError:
 }
 
 func (p *UserInfoRequest) writeField2(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("password", thrift.STRING, 2); err != nil {
+	if err = oprot.WriteFieldBegin("user_id", thrift.STRING, 2); err != nil {
 		goto WriteFieldBeginError
 	}
-	if err := oprot.WriteString(p.Password); err != nil {
+	if err := oprot.WriteString(p.UserId); err != nil {
 		return err
 	}
 	if err = oprot.WriteFieldEnd(); err != nil {
@@ -1635,10 +1635,10 @@ func (p *UserInfoRequest) DeepEqual(ano *UserInfoRequest) bool {
 	} else if p == nil || ano == nil {
 		return false
 	}
-	if !p.Field1DeepEqual(ano.UserName) {
+	if !p.Field1DeepEqual(ano.Token) {
 		return false
 	}
-	if !p.Field2DeepEqual(ano.Password) {
+	if !p.Field2DeepEqual(ano.UserId) {
 		return false
 	}
 	return true
@@ -1646,14 +1646,14 @@ func (p *UserInfoRequest) DeepEqual(ano *UserInfoRequest) bool {
 
 func (p *UserInfoRequest) Field1DeepEqual(src string) bool {
 
-	if strings.Compare(p.UserName, src) != 0 {
+	if strings.Compare(p.Token, src) != 0 {
 		return false
 	}
 	return true
 }
 func (p *UserInfoRequest) Field2DeepEqual(src string) bool {
 
-	if strings.Compare(p.Password, src) != 0 {
+	if strings.Compare(p.UserId, src) != 0 {
 		return false
 	}
 	return true

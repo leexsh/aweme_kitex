@@ -1240,7 +1240,7 @@ func (p *UserInfoRequest) FastReadField1(buf []byte) (int, error) {
 	} else {
 		offset += l
 
-		p.UserName = v
+		p.Token = v
 
 	}
 	return offset, nil
@@ -1254,7 +1254,7 @@ func (p *UserInfoRequest) FastReadField2(buf []byte) (int, error) {
 	} else {
 		offset += l
 
-		p.Password = v
+		p.UserId = v
 
 	}
 	return offset, nil
@@ -1291,8 +1291,8 @@ func (p *UserInfoRequest) BLength() int {
 
 func (p *UserInfoRequest) fastWriteField1(buf []byte, binaryWriter bthrift.BinaryWriter) int {
 	offset := 0
-	offset += bthrift.Binary.WriteFieldBegin(buf[offset:], "user_name", thrift.STRING, 1)
-	offset += bthrift.Binary.WriteStringNocopy(buf[offset:], binaryWriter, p.UserName)
+	offset += bthrift.Binary.WriteFieldBegin(buf[offset:], "token", thrift.STRING, 1)
+	offset += bthrift.Binary.WriteStringNocopy(buf[offset:], binaryWriter, p.Token)
 
 	offset += bthrift.Binary.WriteFieldEnd(buf[offset:])
 	return offset
@@ -1300,8 +1300,8 @@ func (p *UserInfoRequest) fastWriteField1(buf []byte, binaryWriter bthrift.Binar
 
 func (p *UserInfoRequest) fastWriteField2(buf []byte, binaryWriter bthrift.BinaryWriter) int {
 	offset := 0
-	offset += bthrift.Binary.WriteFieldBegin(buf[offset:], "password", thrift.STRING, 2)
-	offset += bthrift.Binary.WriteStringNocopy(buf[offset:], binaryWriter, p.Password)
+	offset += bthrift.Binary.WriteFieldBegin(buf[offset:], "user_id", thrift.STRING, 2)
+	offset += bthrift.Binary.WriteStringNocopy(buf[offset:], binaryWriter, p.UserId)
 
 	offset += bthrift.Binary.WriteFieldEnd(buf[offset:])
 	return offset
@@ -1309,8 +1309,8 @@ func (p *UserInfoRequest) fastWriteField2(buf []byte, binaryWriter bthrift.Binar
 
 func (p *UserInfoRequest) field1Length() int {
 	l := 0
-	l += bthrift.Binary.FieldBeginLength("user_name", thrift.STRING, 1)
-	l += bthrift.Binary.StringLengthNocopy(p.UserName)
+	l += bthrift.Binary.FieldBeginLength("token", thrift.STRING, 1)
+	l += bthrift.Binary.StringLengthNocopy(p.Token)
 
 	l += bthrift.Binary.FieldEndLength()
 	return l
@@ -1318,8 +1318,8 @@ func (p *UserInfoRequest) field1Length() int {
 
 func (p *UserInfoRequest) field2Length() int {
 	l := 0
-	l += bthrift.Binary.FieldBeginLength("password", thrift.STRING, 2)
-	l += bthrift.Binary.StringLengthNocopy(p.Password)
+	l += bthrift.Binary.FieldBeginLength("user_id", thrift.STRING, 2)
+	l += bthrift.Binary.StringLengthNocopy(p.UserId)
 
 	l += bthrift.Binary.FieldEndLength()
 	return l

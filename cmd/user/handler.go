@@ -2,13 +2,13 @@ package main
 
 import (
 	user "aweme_kitex/cmd/user/kitex_gen/user"
-	service_user "aweme_kitex/cmd/user/service"
+	service_user "aweme_kitex/cmd/user/service_user"
 	"aweme_kitex/pkg/jwt"
 	"context"
 	"time"
 )
 
-// UserServiceImpl implements the last service interface defined in the IDL.
+// UserServiceImpl implements the last service_user interface defined in the IDL.
 type UserServiceImpl struct{}
 
 // Register implements the UserServiceImpl interface.

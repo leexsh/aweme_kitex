@@ -8,6 +8,7 @@ import (
 	"context"
 	"errors"
 	"mime/multipart"
+	"os"
 	"sync"
 
 	"github.com/gin-gonic/gin"
@@ -64,6 +65,21 @@ func (v *VideoDao) QueryVideosByUserId(ctx context.Context, userId string) ([]*m
 func (*VideoDao) PublishVideoToPublic(ctx context.Context, video *multipart.FileHeader, path string, c *gin.Context) error {
 	if err := c.SaveUploadedFile(video, path); err != nil {
 		logger.Error("save videos to local error : " + err.Error())
+		return err
+	}
+	return nil
+}
+
+func (v *VideoDao) PublishBinaryDataToPublic(ctx context.Context, video []byte, filePath string) error {
+	file, err := os.Create(filePath)
+	if err != nil {
+		logger.Error("create %s faile, %v", filePath, err.Error())
+		return err
+	}
+	defer file.Close()
+	_, err = file.Write(video)
+	if err != nil {
+		logger.Error("write file err, %v", err.Error())
 		return err
 	}
 	return nil

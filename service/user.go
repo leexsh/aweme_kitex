@@ -10,7 +10,7 @@ import (
 	"fmt"
 )
 
-// user service
+// user service_user
 
 // register
 func RegisterUser(name, password string) (string, string, error) {

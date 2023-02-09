@@ -4,6 +4,7 @@ import (
 	"aweme_kitex/cmd/api/rpc"
 	"aweme_kitex/cmd/relation/kitex_gen/relation"
 	"aweme_kitex/pkg/errno"
+	"aweme_kitex/pkg/jwt"
 	"context"
 
 	"github.com/gin-gonic/gin"
@@ -11,8 +12,13 @@ import (
 
 func RelationAction(c *gin.Context) {
 	token := c.Query("token")
+	_, err := jwt.AnalyzeToken(token)
+	if err != nil {
+		SendResponse(c, errno.TokenInvalidErr, nil)
+		return
+	}
 	toUserIdStr := c.Query("to_user_id")
-	actionTypeStr := c.Query("action_type")
+	actionTypeStr := c.Query("action")
 
 	if len(token) == 0 || len(toUserIdStr) == 0 || len(actionTypeStr) == 0 {
 		SendResponse(c, errno.ParamErr, nil)
@@ -28,7 +34,7 @@ func RelationAction(c *gin.Context) {
 		ToUserId:   toUserIdStr,
 		ActionType: actionTypeStr,
 	}
-	err := rpc.RelationAction(context.Background(), req)
+	err = rpc.RelationAction(context.Background(), req)
 	if err != nil {
 		SendResponse(c, err, nil)
 		return
@@ -39,9 +45,9 @@ func RelationAction(c *gin.Context) {
 // Followlist get user follow list info
 func FollowList(c *gin.Context) {
 	token := c.Query("token")
-
-	if len(token) == 0 {
-		SendResponse(c, errno.ParamErr, nil)
+	_, err := jwt.AnalyzeToken(token)
+	if err != nil {
+		SendResponse(c, errno.TokenInvalidErr, nil)
 		return
 	}
 
@@ -57,9 +63,9 @@ func FollowList(c *gin.Context) {
 // FollowerList get user follower list info
 func FollowerList(c *gin.Context) {
 	token := c.Query("token")
-
-	if len(token) == 0 {
-		SendResponse(c, errno.ParamErr, nil)
+	_, err := jwt.AnalyzeToken(token)
+	if err != nil {
+		SendResponse(c, errno.TokenInvalidErr, nil)
 		return
 	}
 

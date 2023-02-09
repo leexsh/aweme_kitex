@@ -15,7 +15,7 @@ func main() {
 	routers.Include(routers.Video, routers.Follow, routers.User, routers.Comment, routers.Favourite, routers.Feed)
 	r := routers.Init()
 	if err := r.Run(); err != nil {
-		logger.Error("startup service failed, err" + err.Error())
+		logger.Error("startup service_user failed, err" + err.Error())
 	}
 
 	return

@@ -5,7 +5,7 @@ import (
 	"context"
 )
 
-// RelationServiceImpl implements the last service interface defined in the IDL.
+// RelationServiceImpl implements the last service_user interface defined in the IDL.
 type RelationServiceImpl struct{}
 
 // RelationAction implements the RelationServiceImpl interface.

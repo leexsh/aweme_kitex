@@ -22,7 +22,7 @@ var favouriteClient favourite.Client
 func initFavouriteRpc() {
 	r, err := etcd.NewEtcdResolver([]string{constants.EtcdAddress})
 	if err != nil {
-		logger.Error("feed service register error")
+		logger.Error("feed service_user register error")
 		return
 	}
 	client, err := favourite.NewClient(
@@ -37,7 +37,7 @@ func initFavouriteRpc() {
 		client2.WithResolver(r),
 	)
 	if err != nil {
-		logger.Error("feed service register error")
+		logger.Error("feed service_user register error")
 	}
 	favouriteClient = client
 }

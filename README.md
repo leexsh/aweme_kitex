@@ -43,6 +43,9 @@ model/app.ini               数据库配置
   
 
    - __etcd: registry_etcd__
+
+
+   - __ffmpeg: github.com/u2takey/ffmpeg-go__
 ## 3. 踩坑记录
 1. os.getenv("MYSQL_PASSWD")读取失败 
    - 原因：将MYSQL_PASSWD只配置到了当前用户的.bash中，goland运行的时候，读取不到，读到"";

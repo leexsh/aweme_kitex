@@ -2,7 +2,7 @@ package errno
 
 const (
 	SuccessCode = 0
-	// service error
+	// service_user error
 	ServiceErrCode = 10001
 	// General incoming parameter error
 	ParamErrCode = 10101

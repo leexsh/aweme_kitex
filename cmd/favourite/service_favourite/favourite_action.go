@@ -17,7 +17,7 @@ func NewFavoriteActionService(ctx context.Context) *FavoriteActionService {
 }
 
 func (s *FavoriteActionService) FavoriteAction(req *favourite.FavouriteActionRequest) error {
-	uc, err := s.CheckToken(req.Token)
+	uc, err := jwt.AnalyzeToken(req.Token)
 	if err != nil {
 		return err
 	}
@@ -26,12 +26,4 @@ func (s *FavoriteActionService) FavoriteAction(req *favourite.FavouriteActionReq
 		return err
 	}
 	return nil
-}
-
-func (s *FavoriteActionService) CheckToken(token string) (*jwt.UserClaim, error) {
-	uc, err := jwt.AnalyzeToken(token)
-	if err != nil {
-		return nil, err
-	}
-	return uc, nil
 }

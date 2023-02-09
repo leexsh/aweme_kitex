@@ -21,7 +21,7 @@ var feedClient feedservice.Client
 func initFeedRpc() {
 	r, err := etcd.NewEtcdResolver([]string{constants.EtcdAddress})
 	if err != nil {
-		logger.Error("feed service register error")
+		logger.Error("feed service_user register error")
 		return
 	}
 	client, err := feedservice.NewClient(
@@ -36,7 +36,7 @@ func initFeedRpc() {
 		client2.WithResolver(r),
 	)
 	if err != nil {
-		logger.Error("feed service register error")
+		logger.Error("feed service_user register error")
 	}
 	feedClient = client
 }

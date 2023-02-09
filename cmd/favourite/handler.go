@@ -7,7 +7,7 @@ import (
 	"time"
 )
 
-// FavouriteServiceImpl implements the last service interface defined in the IDL.
+// FavouriteServiceImpl implements the last service_user interface defined in the IDL.
 type FavouriteServiceImpl struct{}
 
 // FavouriteAction implements the FavouriteServiceImpl interface.

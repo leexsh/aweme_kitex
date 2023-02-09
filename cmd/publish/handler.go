@@ -3,12 +3,12 @@ package main
 import (
 	"aweme_kitex/cmd/publish/kitex_gen/base"
 	publish "aweme_kitex/cmd/publish/kitex_gen/publish"
-	"aweme_kitex/cmd/publish/service"
+	"aweme_kitex/cmd/publish/service_publish"
 	"context"
 	"time"
 )
 
-// PublishServiceImpl implements the last service interface defined in the IDL.
+// PublishServiceImpl implements the last service_user interface defined in the IDL.
 type PublishServiceImpl struct{}
 
 // PublishAction implements the PublishServiceImpl interface.
@@ -22,7 +22,7 @@ func (s *PublishServiceImpl) PublishAction(ctx context.Context, req *publish.Pub
 		}
 		return resp, nil
 	}
-	err = service.NewPublishService(ctx).Publish(req)
+	err = service_publish.NewPublishService(ctx).Publish(req)
 	if err != nil {
 		resp.BaseResp.StatusCode = -1
 		resp.BaseResp.StatusMsg = err.Error()
@@ -36,7 +36,7 @@ func (s *PublishServiceImpl) PublishAction(ctx context.Context, req *publish.Pub
 // PublishList implements the PublishServiceImpl interface.
 func (s *PublishServiceImpl) PublishList(ctx context.Context, req *publish.PublishListRequest) (resp *publish.PublishListResponse, err error) {
 	resp = new(publish.PublishListResponse)
-	videoList, err := service.NewPublishListService(ctx).PublishList(req)
+	videoList, err := service_publish.NewPublishListService(ctx).PublishList(req)
 	if err != nil {
 		resp.BaseResp.StatusCode = -1
 		resp.BaseResp.StatusMsg = err.Error()

@@ -21,7 +21,7 @@ var commentClient comment.Client
 func initCommentRpc() {
 	r, err := etcd.NewEtcdResolver([]string{constants.EtcdAddress})
 	if err != nil {
-		logger.Error("feed service register error")
+		logger.Error("feed service_user register error")
 		return
 	}
 	client, err := comment.NewClient(
@@ -36,7 +36,7 @@ func initCommentRpc() {
 		client2.WithResolver(r),
 	)
 	if err != nil {
-		logger.Error("feed service register error")
+		logger.Error("feed service_user register error")
 	}
 	commentClient = client
 }

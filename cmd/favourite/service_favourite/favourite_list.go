@@ -19,7 +19,7 @@ func NewFavoriteListService(ctx context.Context) *FavoriteListService {
 }
 
 func (s *FavoriteListService) FavoriteList(req *favourite.FavouriteListRequest) ([]*feed.Video, error) {
-	uc, err := s.CheckToken(req.Token)
+	uc, err := jwt.AnalyzeToken(req.Token)
 	if err != nil {
 		return nil, err
 	}
@@ -48,12 +48,4 @@ func (s *FavoriteListService) FavoriteList(req *favourite.FavouriteListRequest) 
 		videoList = append(videoList, fvideo)
 	}
 	return videoList, nil
-}
-
-func (s *FavoriteListService) CheckToken(token string) (*jwt.UserClaim, error) {
-	uc, err := jwt.AnalyzeToken(token)
-	if err != nil {
-		return nil, err
-	}
-	return uc, nil
 }

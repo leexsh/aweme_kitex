@@ -31,8 +31,8 @@ struct UserLoginResponse {
 }
 
 struct UserInfoRequest {
-    1: string user_name
-    2: string password
+    1: string token
+    2: string user_id
 }
 
 struct UserInfoResponse {

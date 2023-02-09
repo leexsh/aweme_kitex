@@ -19,7 +19,7 @@ func NewCreateCommentService(ctx context.Context) *CreateCommentService {
 
 // CreateComment add comment
 func (s *CreateCommentService) CreateComment(req *comment.CommentActionRequest) (*comment.Comment, error) {
-	uc, err := s.CheckToken(req.Token)
+	uc, err := jwt.AnalyzeToken(req.Token)
 	if err != nil {
 		return nil, err
 	}
@@ -38,12 +38,4 @@ func (s *CreateCommentService) CreateComment(req *comment.CommentActionRequest) 
 	}
 	return curComment, nil
 
-}
-
-func (s *CreateCommentService) CheckToken(token string) (*jwt.UserClaim, error) {
-	uc, err := jwt.AnalyzeToken(token)
-	if err != nil {
-		return nil, err
-	}
-	return uc, nil
 }

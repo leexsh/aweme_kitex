@@ -6,9 +6,11 @@ import (
 	"aweme_kitex/models"
 	constants "aweme_kitex/pkg/constant"
 	"aweme_kitex/pkg/errno"
+	"aweme_kitex/pkg/jwt"
+	"aweme_kitex/utils"
 	"context"
 	"net/http"
-	"time"
+	"strconv"
 
 	"github.com/gin-gonic/gin"
 )
@@ -16,11 +18,21 @@ import (
 func Feed(c *gin.Context) {
 	var FeedVar FeedRequest
 	token := c.DefaultQuery("token", "")
-	defaultTime := time.Now().UnixMilli()
+	_, err := jwt.AnalyzeToken(token)
+	if err != nil {
+		SendResponse(c, errno.TokenInvalidErr, nil)
+		return
+	}
+	defaultTimeStr := strconv.Itoa(int(utils.GetUnix()))
+	latestTime, err := strconv.ParseInt(defaultTimeStr, 10, 64)
+	if err != nil {
+		SendResponse(c, errno.ParamErr, nil)
+		return
+	}
 	FeedVar.Token = token
-	FeedVar.LatestTime = defaultTime
+	FeedVar.LatestTime = latestTime
 	req := &feed.FeedRequest{
-		LatestTime: defaultTime,
+		LatestTime: latestTime,
 		Token:      token,
 	}
 	video, nextTime, err := rpc.Feed(context.Background(), req)

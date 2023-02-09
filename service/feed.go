@@ -9,7 +9,7 @@ import (
 	"sync"
 )
 
-// ------------service--------------------
+// ------------service_user--------------------
 // 该层负责鉴权  向repository获取视频数据和封装数据
 
 func QueryVideoData(latestTime int64, userId string) ([]*models.Video, int64, error) {

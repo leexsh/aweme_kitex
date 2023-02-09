@@ -5,6 +5,7 @@ import (
 	"aweme_kitex/cmd/favourite/kitex_gen/favourite"
 	constants "aweme_kitex/pkg/constant"
 	"aweme_kitex/pkg/errno"
+	"aweme_kitex/pkg/jwt"
 	"context"
 
 	"github.com/gin-gonic/gin"
@@ -13,15 +14,20 @@ import (
 // FavoriteAction implement like and unlike operations
 func FavoriteAction(c *gin.Context) {
 	token := c.Query("token")
-	videoIdStr := c.Query("video_id")
-	actionTypeStr := c.Query("action_type")
+	_, err := jwt.AnalyzeToken(token)
+	if err != nil {
+		SendResponse(c, errno.TokenInvalidErr, nil)
+		return
+	}
+	videoIdStr := c.Query("videoId")
+	actionTypeStr := c.Query("actionType")
 
 	favouriteReq := &favourite.FavouriteActionRequest{
 		Token:      token,
 		VideoId:    videoIdStr,
 		ActionType: actionTypeStr,
 	}
-	err := rpc.FavoriteAction(context.Background(), favouriteReq)
+	err = rpc.FavoriteAction(context.Background(), favouriteReq)
 	if err != nil {
 		SendResponse(c, errno.ConvertErr(err), nil)
 		return
@@ -33,7 +39,11 @@ func FavoriteAction(c *gin.Context) {
 // FavoriteList get favorite list info
 func FavoriteList(c *gin.Context) {
 	token := c.Query("token")
-
+	_, err := jwt.AnalyzeToken(token)
+	if err != nil {
+		SendResponse(c, errno.TokenInvalidErr, nil)
+		return
+	}
 	favouriteListReq := &favourite.FavouriteListRequest{Token: token}
 	videoList, err := rpc.FavoriteList(context.Background(), favouriteListReq)
 	if err != nil {

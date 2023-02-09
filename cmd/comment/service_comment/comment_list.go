@@ -17,7 +17,7 @@ func NewCommentListService(ctx context.Context) *CommentListService {
 	return &CommentListService{ctx: ctx}
 }
 func (s *CommentListService) CommentList(req *comment.CommentListRequest) ([]*comment.Comment, error) {
-	uc, err := s.CheckToken(req.Token)
+	uc, err := jwt.AnalyzeToken(req.Token)
 	if err != nil {
 		return nil, err
 	}
@@ -40,12 +40,4 @@ func (s *CommentListService) CommentList(req *comment.CommentListRequest) ([]*co
 	}
 
 	return commentList, nil
-}
-
-func (s *CommentListService) CheckToken(token string) (*jwt.UserClaim, error) {
-	uc, err := jwt.AnalyzeToken(token)
-	if err != nil {
-		return nil, err
-	}
-	return uc, nil
 }

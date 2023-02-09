@@ -8,7 +8,7 @@ import (
 	"unicode/utf8"
 )
 
-// CommentServiceImpl implements the last service interface defined in the IDL.
+// CommentServiceImpl implements the last service_user interface defined in the IDL.
 type CommentServiceImpl struct{}
 
 // CreateComment implements the CommentServiceImpl interface.
