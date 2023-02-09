@@ -3,78 +3,11 @@ package service
 import (
 	"aweme_kitex/models"
 	"aweme_kitex/models/dal"
-	"aweme_kitex/utils"
 	"context"
 	"errors"
 	"fmt"
-	"mime/multipart"
-	"path/filepath"
 	"sync"
-
-	"github.com/gin-gonic/gin"
 )
-
-// -------------publish
-func PublishVideoService(userId, userName, title string, data *multipart.FileHeader, c *gin.Context) error {
-	return newPublishVideoServiceData(userId, userName, title, data, c).Do()
-}
-
-func newPublishVideoServiceData(userId, userName, title string, data *multipart.FileHeader, c *gin.Context) *publishVideoServiceData {
-	return &publishVideoServiceData{
-		Data:            data,
-		Title:           title,
-		CurrentUserId:   userId,
-		CurrentUserName: userName,
-		Gin:             c,
-	}
-}
-
-type publishVideoServiceData struct {
-	Data  *multipart.FileHeader
-	Title string
-	Gin   *gin.Context
-
-	CurrentUserId   string
-	CurrentUserName string
-	Video           *models.VideoRawData
-}
-
-func (f *publishVideoServiceData) Do() error {
-	if err := f.publishVideo(); err != nil {
-		return err
-	}
-	return nil
-}
-func (f *publishVideoServiceData) publishVideo() error {
-	fileName := filepath.Base(f.Data.Filename)
-	finalName := fmt.Sprintf("%s_%s", f.CurrentUserName, fileName)
-
-	saveFile := filepath.Join("./public/", finalName)
-	// 1.save public
-	err := dal.NewVideoDaoInstance().PublishVideoToPublic(context.Background(), f.Data, saveFile, f.Gin)
-	if err != nil {
-		return err
-	}
-	cosKey := fmt.Sprintf("%s/%s", f.CurrentUserName, finalName)
-	err = dal.NewCOSDaoInstance().PublishVideoToCOS(context.Background(), cosKey, saveFile)
-	// 2.upload cos
-	if err != nil {
-		return err
-	}
-
-	ourl := dal.NewCOSDaoInstance().GetCOSVideoURL(cosKey)
-	video := &models.VideoRawData{
-		VideoId: utils.GenerateUUID(),
-		UserId:  f.CurrentUserId,
-		Title:   f.Title,
-		PlayUrl: ourl.String(),
-	}
-	err = dal.NewVideoDaoInstance().SaveVideoData(context.Background(), video)
-	if err != nil {
-		return err
-	}
-	return nil
-}
 
 // -------------------- published list
 type userVideoList struct {
