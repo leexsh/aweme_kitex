@@ -4,7 +4,6 @@ import (
 	user2 "aweme_kitex/cmd/publish/kitex_gen/user"
 	"aweme_kitex/cmd/user/kitex_gen/user"
 	"aweme_kitex/pkg/jwt"
-	"aweme_kitex/service"
 	"context"
 	"errors"
 )
@@ -21,7 +20,7 @@ func NewUserInfoService(ctx context.Context) *UserInfoService {
 
 func (s *UserInfoService) UserInfo(req *user.UserInfoRequest) (user *user2.User, err error) {
 	uc, err := jwt.AnalyzeToken(req.Token)
-	res, err := service.QueryUserInfo(uc, req.UserId)
+	res, err := QueryUserInfo(uc, req.UserId)
 	if err != nil {
 		return nil, err
 	}

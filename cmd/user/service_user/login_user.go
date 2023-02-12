@@ -2,7 +2,6 @@ package service_user
 
 import (
 	"aweme_kitex/cmd/user/kitex_gen/user"
-	"aweme_kitex/service"
 	"context"
 )
 
@@ -19,7 +18,7 @@ func NewLoginUserService(ctx context.Context) *LoginUserService {
 
 // RegisterUser register user info
 func (s *LoginUserService) LoginUser(req *user.UserLoginRequest) (string, string, error) {
-	userId, token, err := service.LoginUser(req.UserName, req.Password)
+	userId, token, err := LoginUser(req.UserName, req.Password)
 	if err != nil {
 		return "", "", err
 	}

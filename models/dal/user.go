@@ -111,3 +111,15 @@ func (*UserDao) QueryUserByPassword(ctx context.Context, userName, password stri
 	return usre, nil
 
 }
+
+// 检查用户是否存在
+func (u *UserDao) CheckUserId(ctx context.Context, uids []string) ([]*models.UserRawData, error) {
+	users, err := u.QueryUserByIds(ctx, uids)
+	if err != nil {
+		return nil, err
+	}
+	if len(users) == 0 {
+		return nil, errors.New("userId not exist")
+	}
+	return users, nil
+}

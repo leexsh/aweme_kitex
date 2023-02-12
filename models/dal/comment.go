@@ -5,6 +5,7 @@ import (
 	"aweme_kitex/models"
 	"aweme_kitex/pkg/logger"
 	"context"
+	"errors"
 	"sync"
 
 	"gorm.io/gorm"
@@ -88,6 +89,18 @@ func (*CommentDao) QueryCommentByVideoId(ctx context.Context, videoId string) ([
 	if err != nil {
 		logger.Error("query comment err: " + err.Error())
 		return nil, err
+	}
+	return comments, nil
+}
+
+// 检查commentid
+func (c *CommentDao) CheckCommentId(ctx context.Context, commentIds []string) ([]*models.CommentRaw, error) {
+	comments, err := c.QueryCommentByCommentIds(ctx, commentIds)
+	if err != nil {
+		return nil, err
+	}
+	if len(comments) == 0 {
+		return nil, errors.New("commentId not exist")
 	}
 	return comments, nil
 }

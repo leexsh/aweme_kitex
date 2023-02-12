@@ -1,4 +1,4 @@
-package service
+package service_user
 
 import (
 	"aweme_kitex/models"

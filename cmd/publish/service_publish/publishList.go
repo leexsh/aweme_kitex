@@ -5,9 +5,12 @@ import (
 	"aweme_kitex/cmd/publish/kitex_gen/publish"
 	"aweme_kitex/cmd/publish/kitex_gen/user"
 	"aweme_kitex/models"
+	"aweme_kitex/models/dal"
 	"aweme_kitex/pkg/jwt"
-	"aweme_kitex/service"
 	"context"
+	"errors"
+	"fmt"
+	"sync"
 )
 
 type PublishListService struct {
@@ -21,33 +24,135 @@ func NewPublishListService(ctx context.Context) *PublishListService {
 
 func (s *PublishListService) PublishList(req *publish.PublishListRequest) ([]*feed.Video, error) {
 	uc, _ := jwt.AnalyzeToken(req.Token)
-	videos, err := service.QueryUserVideos(uc.Id)
-	if err != nil {
-		return nil, err
-	}
-	return s.packVideoInfo(videos), nil
+	return queryUserVideos(s.ctx, uc.Id)
 }
 
-func (s *PublishListService) packVideoInfo(videos []*models.Video) []*feed.Video {
-	videoList := make([]*feed.Video, 0)
-	for _, v := range videos {
-		video := &feed.Video{
-			VideoId: v.Id,
-			Author: &user.User{
-				UserId:        v.Author.UserId,
-				Name:          v.Author.Name,
-				FollowCount:   v.Author.FollowCount,
-				FollowerCount: v.Author.FollowerCount,
-				IsFollow:      v.Author.IsFollow,
-			},
-			PlayUrl:        v.PlayUrl,
-			CoverUrl:       v.CoverUrl,
-			FavouriteCount: v.FavouriteCount,
-			CommentCount:   v.CommentCount,
-			IsFavourite:    v.IsFavourite,
-			Title:          v.Title,
-		}
-		videoList = append(videoList, video)
+func queryUserVideos(ctx context.Context, userId string) ([]*feed.Video, error) {
+	return newQueryUserVideoList(ctx, userId).do()
+}
+
+type userVideoList struct {
+	ctx    context.Context
+	UserId string
+
+	VideoList    []*feed.Video
+	VideoData    []*models.VideoRawData
+	UserMap      map[string]*models.UserRawData
+	FavouriteMap map[string]*models.FavouriteRaw
+	RelationMap  map[string]*models.RelationRaw
+}
+
+func newQueryUserVideoList(ctx context.Context, userId string) *userVideoList {
+	return &userVideoList{
+		ctx:    ctx,
+		UserId: userId,
 	}
-	return videoList
+}
+
+func (f *userVideoList) prepareVideoInfo() error {
+	videoData, err := dal.NewVideoDaoInstance().QueryVideosByUserId(f.ctx, f.UserId)
+	if err != nil {
+		return err
+	}
+	f.VideoData = videoData
+
+	videoIds := make([]string, 0)
+	userIds := []string{f.UserId}
+	for _, video := range f.VideoData {
+		videoIds = append(videoIds, video.VideoId)
+	}
+
+	users, err := dal.NewUserDaoInstance().QueryUserByIds(f.ctx, userIds)
+	if err != nil {
+		return err
+	}
+	userMap := make(map[string]*models.UserRawData)
+	for _, user := range users {
+		userMap[user.UserId] = user
+	}
+	f.UserMap = userMap
+
+	var wg sync.WaitGroup
+	wg.Add(2)
+	var favoriteErr, relationErr error
+	// 获取点赞信息
+	go func() {
+		defer wg.Done()
+		favoriteMap, err := dal.NewFavouriteDaoInstance().QueryFavoursByIds(f.ctx, f.UserId, videoIds)
+		if err != nil {
+			favoriteErr = err
+			return
+		}
+		f.FavouriteMap = favoriteMap
+	}()
+	// 获取关注信息
+	go func() {
+		defer wg.Done()
+		relationMap, err := dal.NewRelationDaoInstance().QueryRelationByIds(f.ctx, f.UserId, userIds)
+		if err != nil {
+			relationErr = err
+			return
+		}
+		f.RelationMap = relationMap
+	}()
+	wg.Wait()
+	if favoriteErr != nil {
+		return favoriteErr
+	}
+	if relationErr != nil {
+		return relationErr
+	}
+	return nil
+}
+
+func (f *userVideoList) packVideoInfo() error {
+	videoList := make([]*feed.Video, 0)
+	for _, video := range f.VideoData {
+		videoUser, ok := f.UserMap[video.UserId]
+		if !ok {
+			return errors.New("has no video user info for " + fmt.Sprint(video.UserId))
+		}
+
+		var isFavorite bool = false
+		var isFollow bool = false
+
+		_, ok = f.FavouriteMap[video.VideoId]
+		if ok {
+			isFavorite = true
+		}
+		_, ok = f.RelationMap[video.UserId]
+		if ok {
+			isFollow = true
+		}
+		curVideo := &feed.Video{
+			VideoId: video.VideoId,
+			Author: &user.User{
+				UserId:        videoUser.UserId,
+				Name:          videoUser.Name,
+				FollowCount:   videoUser.FollowCount,
+				FollowerCount: videoUser.FollowerCount,
+				IsFollow:      isFollow,
+			},
+			PlayUrl:        video.PlayUrl,
+			CoverUrl:       video.CoverUrl,
+			FavouriteCount: video.FavouriteCount,
+			CommentCount:   video.CommentCount,
+			IsFavourite:    isFavorite,
+			Title:          video.Title,
+		}
+		videoList = append(videoList, curVideo)
+	}
+
+	f.VideoList = videoList
+	return nil
+}
+
+func (f *userVideoList) do() ([]*feed.Video, error) {
+	if err := f.prepareVideoInfo(); err != nil {
+		return nil, err
+	}
+	if err := f.packVideoInfo(); err != nil {
+		return nil, err
+	}
+	return f.VideoList, nil
 }

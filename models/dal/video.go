@@ -103,3 +103,14 @@ func (*VideoDao) QueryVideosByIs(ctx context.Context, videoId []string) ([]*mode
 	}
 	return videos, nil
 }
+
+func (v *VideoDao) CheckVideoId(ctx context.Context, videoId []string) ([]*models.VideoRawData, error) {
+	videos, err := v.QueryVideosByIs(ctx, videoId)
+	if err != nil {
+		return nil, err
+	}
+	if len(videos) == 0 {
+		return nil, errors.New("video not exist")
+	}
+	return videos, nil
+}
