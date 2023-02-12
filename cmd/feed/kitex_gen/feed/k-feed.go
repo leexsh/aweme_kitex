@@ -3,6 +3,8 @@
 package feed
 
 import (
+	"aweme_kitex/cmd/feed/kitex_gen/base"
+	"aweme_kitex/cmd/feed/kitex_gen/user"
 	"bytes"
 	"fmt"
 	"reflect"

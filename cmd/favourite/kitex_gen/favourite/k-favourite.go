@@ -3,6 +3,8 @@
 package favourite
 
 import (
+	"aweme_kitex/cmd/favourite/kitex_gen/base"
+	"aweme_kitex/cmd/favourite/kitex_gen/feed"
 	"bytes"
 	"fmt"
 	"reflect"

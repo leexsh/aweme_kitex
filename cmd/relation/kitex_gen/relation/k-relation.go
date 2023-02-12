@@ -3,6 +3,8 @@
 package relation
 
 import (
+	"aweme_kitex/cmd/relation/kitex_gen/base"
+	"aweme_kitex/cmd/relation/kitex_gen/user"
 	"bytes"
 	"fmt"
 	"reflect"

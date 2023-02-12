@@ -3,12 +3,12 @@
 package user
 
 import (
+	"aweme_kitex/cmd/favourite/kitex_gen/base"
 	"bytes"
 	"fmt"
+	"github.com/apache/thrift/lib/go/thrift"
 	"reflect"
 	"strings"
-
-	"github.com/apache/thrift/lib/go/thrift"
 
 	"github.com/cloudwego/kitex/pkg/protocol/bthrift"
 )
@@ -624,7 +624,6 @@ ReadStructEndError:
 
 func (p *UserRegisterResponse) FastReadField1(buf []byte) (int, error) {
 	offset := 0
-
 	tmp := base.NewBaseResp()
 	if l, err := tmp.FastRead(buf[offset:]); err != nil {
 		return offset, err

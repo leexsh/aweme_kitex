@@ -1,5 +1,6 @@
 include "base.thrift"
 namespace go user
+
 struct User {
     1: string user_id // 用户标识
     2: string name; // 用户名称

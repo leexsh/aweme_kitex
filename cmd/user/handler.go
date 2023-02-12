@@ -2,17 +2,17 @@ package main
 
 import (
 	user "aweme_kitex/cmd/user/kitex_gen/user"
-	service_user "aweme_kitex/cmd/user/service_user"
-	"aweme_kitex/pkg/jwt"
+	"aweme_kitex/cmd/user/service_user"
 	"context"
 	"time"
 )
 
-// UserServiceImpl implements the last service_user interface defined in the IDL.
+// UserServiceImpl implements the last service interface defined in the IDL.
 type UserServiceImpl struct{}
 
 // Register implements the UserServiceImpl interface.
 func (s *UserServiceImpl) Register(ctx context.Context, req *user.UserRegisterRequest) (resp *user.UserRegisterResponse, err error) {
+	// TODO: Your code here...
 	resp = new(user.UserRegisterResponse)
 	if len(req.UserName) == 0 || len(req.Password) == 0 {
 		resp.BaseResp.ServiceTime = time.Now().Unix()
@@ -36,6 +36,7 @@ func (s *UserServiceImpl) Register(ctx context.Context, req *user.UserRegisterRe
 
 // Login implements the UserServiceImpl interface.
 func (s *UserServiceImpl) Login(ctx context.Context, req *user.UserLoginRequest) (resp *user.UserLoginResponse, err error) {
+	// TODO: Your code here...
 	resp = new(user.UserLoginResponse)
 	if len(req.UserName) == 0 || len(req.Password) == 0 {
 		resp.BaseResp.ServiceTime = time.Now().Unix()
@@ -75,12 +76,5 @@ func (s *UserServiceImpl) UserInfo(ctx context.Context, req *user.UserInfoReques
 	resp.User[0].FollowCount = user.FollowerCount
 	resp.User[0].FollowerCount = user.FollowCount
 	return resp, nil
-}
-
-func CheckToken(token string) (*jwt.UserClaim, error) {
-	uc, err := jwt.AnalyzeToken(token)
-	if err != nil {
-		return nil, err
-	}
-	return uc, nil
+	return
 }

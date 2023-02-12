@@ -3,6 +3,8 @@
 package publish
 
 import (
+	"aweme_kitex/cmd/publish/kitex_gen/base"
+	"aweme_kitex/cmd/publish/kitex_gen/feed"
 	"bytes"
 	"fmt"
 	"reflect"

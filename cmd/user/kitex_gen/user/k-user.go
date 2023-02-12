@@ -3,6 +3,7 @@
 package user
 
 import (
+	"aweme_kitex/cmd/user/kitex_gen/base"
 	"bytes"
 	"fmt"
 	"reflect"
@@ -624,7 +625,6 @@ ReadStructEndError:
 
 func (p *UserRegisterResponse) FastReadField1(buf []byte) (int, error) {
 	offset := 0
-
 	tmp := base.NewBaseResp()
 	if l, err := tmp.FastRead(buf[offset:]); err != nil {
 		return offset, err

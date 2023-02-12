@@ -3,6 +3,7 @@
 package user
 
 import (
+	"aweme_kitex/cmd/comment/kitex_gen/base"
 	"bytes"
 	"fmt"
 	"reflect"
