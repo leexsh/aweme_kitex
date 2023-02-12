@@ -4,7 +4,7 @@ import (
 	"aweme_kitex/cfg"
 	"aweme_kitex/models"
 	"aweme_kitex/pkg/logger"
-	"aweme_kitex/utils"
+	"aweme_kitex/pkg/utils"
 	"context"
 	"errors"
 	"sync"

@@ -5,7 +5,8 @@ import (
 	"aweme_kitex/cmd/comment/kitex_gen/user"
 	"aweme_kitex/models"
 	"aweme_kitex/models/dal"
-	"aweme_kitex/utils"
+	constants "aweme_kitex/pkg/constant"
+	"aweme_kitex/pkg/utils"
 	"context"
 	"sync"
 )
@@ -44,7 +45,7 @@ func (c *commentDataFlow) createComment() (*comment.Comment, error) {
 	if _, err := dal.NewVideoDaoInstance().CheckVideoId(c.ctx, []string{c.videoId}); err != nil {
 		return nil, err
 	}
-	if err := c.prepareComment("1"); err != nil {
+	if err := c.prepareComment(constants.AddComment); err != nil {
 		return nil, err
 	}
 	if err := c.packageComment(); err != nil {
@@ -60,7 +61,7 @@ func (c *commentDataFlow) delComment() (*comment.Comment, error) {
 	if _, err := dal.NewVideoDaoInstance().CheckVideoId(c.ctx, []string{c.videoId}); err != nil {
 		return nil, err
 	}
-	if err := c.prepareComment("2"); err != nil {
+	if err := c.prepareComment(constants.DelComment); err != nil {
 		return nil, err
 	}
 	commet := &comment.Comment{

@@ -4,6 +4,7 @@ import (
 	"aweme_kitex/cmd/api/handlers"
 	"aweme_kitex/cmd/api/rpc"
 	constants "aweme_kitex/pkg/constant"
+	"aweme_kitex/pkg/errno"
 	"aweme_kitex/pkg/jwt"
 	"aweme_kitex/pkg/logger"
 	"aweme_kitex/pkg/tracer"
@@ -23,7 +24,7 @@ func main() {
 	Init()
 	r := gin.New()
 
-	authMiddleware, err := jwt2.New(&jwt2.GinJWTMiddleware{
+	authMiddleware, _ := jwt2.New(&jwt2.GinJWTMiddleware{
 		Key:     []byte(jwt.JwtKey),
 		Timeout: time.Hour * 24 * 365 * 10,
 		PayloadFunc: func(data interface{}) jwt2.MapClaims {
@@ -34,36 +35,22 @@ func main() {
 			}
 			return jwt2.MapClaims{}
 		},
-		Authenticator: func(c *gin.Context) (interface{}, error) {
-			var loginVar handlers.UserLoginParam
-			if err := c.ShouldBind(&loginVar); err != nil {
-				return "", jwt2.ErrMissingLoginValues
+		LoginResponse: func(c *gin.Context, code int, message string, time time.Time) {
+			uc, err := jwt.AnalyzeToken(message)
+			if err != nil {
+				panic(err)
 			}
-			if len(loginVar.UserName) == 0 || len(loginVar.Password) == 0 {
-				return "", jwt2.ErrMissingLoginValues
-			}
-			// return rpc.CheckUser(context.Background(), &userService.CheckUserRequest{Username: loginVar.Username, Password: loginVar.Password})
-			return nil, nil
+			handlers.SendUserResponse(c, errno.Success, uc.Id, message)
 		},
 		TokenLookup:   "header: Authorization, query: token, cookie: jwt",
 		TokenHeadName: "Bearer",
 		TimeFunc:      time.Now,
-	})
-	if err != nil {
-		logger.Fatal("JWT Error:" + err.Error())
-	}
-
-	r.NoRoute(authMiddleware.MiddlewareFunc(), func(c *gin.Context) {
-		claims := jwt2.ExtractClaims(c)
-		logger.Infof("NoRoute claims: %#v\n", claims)
-		c.JSON(404, gin.H{"code": "PAGE_NOT_FOUND", "message": "Page not found"})
 	})
 
 	aweme := r.Group("/aweme")
 	aweme.GET("/feed/", handlers.Feed)
 
 	publish := aweme.Group("/publish")
-	publish.Use(authMiddleware.MiddlewareFunc())
 	publish.POST("/action/", handlers.Publish)
 	publish.GET("/list/", handlers.PublishList)
 
@@ -73,12 +60,10 @@ func main() {
 	user.POST("/login/", authMiddleware.LoginHandler)
 
 	favorite := aweme.Group("/favorite")
-	favorite.Use(authMiddleware.MiddlewareFunc())
 	favorite.POST("/action/", handlers.FavoriteAction)
 	favorite.GET("/list/", handlers.FavoriteList)
 
 	comment := aweme.Group("/comment")
-	comment.Use(authMiddleware.MiddlewareFunc())
 	comment.POST("/action/", handlers.CommentAction)
 	comment.GET("/list/", handlers.CommentList)
 

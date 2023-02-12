@@ -35,4 +35,14 @@ const (
 	MySQLMaxIdleConns    = 10        // 空闲连接池中连接的最大数量
 	MySQLMaxOpenConns    = 100       // 打开数据库连接的最大数量
 	MySQLConnMaxLifetime = time.Hour // 连接可复用的最大时间
+
+	// favorite actiontype,1是点赞，2是取消点赞
+	Like   = "1"
+	Unlike = "2"
+	// comment actiontype,1是增加评论，2是删除评论
+	AddComment = "1"
+	DelComment = "2"
+	// relation actiontypr,1是关注，2是取消关注
+	Follow   = "1"
+	UnFollow = "2"
 )

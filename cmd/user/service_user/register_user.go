@@ -6,7 +6,7 @@ import (
 	"aweme_kitex/models/dal"
 	"aweme_kitex/pkg/errno"
 	"aweme_kitex/pkg/jwt"
-	"aweme_kitex/utils"
+	"aweme_kitex/pkg/utils"
 	"context"
 )
 

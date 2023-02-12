@@ -4,8 +4,9 @@ import (
 	"aweme_kitex/cmd/favourite/kitex_gen/favourite"
 	"aweme_kitex/models"
 	"aweme_kitex/models/dal"
+	constants "aweme_kitex/pkg/constant"
 	"aweme_kitex/pkg/jwt"
-	"aweme_kitex/utils"
+	"aweme_kitex/pkg/utils"
 	"context"
 	"errors"
 )
@@ -56,13 +57,13 @@ func newFavouriteActionData(ctx context.Context, userId, videoId, action string)
 }
 
 func (f *favouriteActionDataFlow) do() error {
-	if _, err := dal.NewVideoDaoInstance().CheckVideoId([]string{f.videoId}); err != nil {
+	if _, err := dal.NewVideoDaoInstance().CheckVideoId(f.ctx, []string{f.videoId}); err != nil {
 		return err
 	}
-	if f.action != "1" && f.action != "2" {
+	if f.action != constants.Like && f.action != constants.Unlike {
 		return errors.New("invalid action type")
 	}
-	if f.action == "1" {
+	if f.action == constants.Like {
 		favour := &models.FavouriteRaw{
 			Id:      utils.GenerateUUID(),
 			UserId:  f.CurrentUid,
@@ -73,7 +74,7 @@ func (f *favouriteActionDataFlow) do() error {
 		if err != nil {
 			return err
 		}
-	} else if f.action == "2" {
+	} else if f.action == constants.Unlike {
 		err := dal.NewFavouriteDaoInstance().DelFavour(f.ctx, f.CurrentUid, f.videoId)
 		if err != nil {
 			return err

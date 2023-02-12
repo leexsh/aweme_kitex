@@ -3,6 +3,7 @@ package service_relation
 import (
 	"aweme_kitex/cmd/relation/kitex_gen/relation"
 	"aweme_kitex/models/dal"
+	constants "aweme_kitex/pkg/constant"
 	"aweme_kitex/pkg/jwt"
 	"context"
 )
@@ -49,12 +50,12 @@ func (r *relationActionDataFlow) do() error {
 	if _, err := dal.NewUserDaoInstance().CheckUserId(r.ctx, []string{r.toUserId}); err != nil {
 		return err
 	}
-	if r.actionType == "1" {
+	if r.actionType == constants.Follow {
 		err := r.createRelation()
 		if err != nil {
 			return err
 		}
-	} else if r.actionType == "2" {
+	} else if r.actionType == constants.UnFollow {
 		if err := r.deleteRelation(); err != nil {
 			return err
 		}

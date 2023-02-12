@@ -16,7 +16,7 @@ func CommentAction(c *gin.Context) {
 	token := c.Query("token")
 	_, err := jwt.AnalyzeToken(token)
 	if err != nil {
-		SendResponse(c, errno.TokenInvalidErr, nil)
+		SendResponse(c, errno.TokenInvalidErr)
 		return
 	}
 	videoId := c.Query("videoId")
@@ -26,7 +26,7 @@ func CommentAction(c *gin.Context) {
 		commentText := c.Query("content")
 
 		if len := utf8.RuneCountInString(commentText); len > 512 {
-			SendResponse(c, errno.PasswordValidationErr, nil)
+			SendResponse(c, errno.PasswordValidationErr)
 			return
 		}
 		req := &comment.CommentActionRequest{
@@ -38,11 +38,10 @@ func CommentAction(c *gin.Context) {
 		comment, err := rpc.CreateComment(context.Background(), req)
 
 		if err != nil {
-			SendResponse(c, errno.ConvertErr(err), nil)
+			SendResponse(c, errno.ConvertErr(err))
 			return
 		}
-		SendResponse(c, errno.Success, map[string]interface{}{"comment": comment})
-
+		SendCommentActionResponse(c, errno.Success, comment)
 	} else if actionType == "2" {
 		commentIdStr := c.Query("commentId")
 
@@ -54,13 +53,13 @@ func CommentAction(c *gin.Context) {
 		}
 		comment, err := rpc.DeleteComment(context.Background(), req)
 		if err != nil {
-			SendResponse(c, errno.ConvertErr(err), nil)
+			SendResponse(c, errno.ConvertErr(err))
 			return
 		}
-		SendResponse(c, errno.Success, map[string]interface{}{"comment": comment})
+		SendCommentActionResponse(c, errno.Success, comment)
 
 	} else {
-		SendResponse(c, errno.ParamErr, nil)
+		SendResponse(c, errno.ParamErr)
 	}
 }
 
@@ -69,7 +68,7 @@ func CommentList(c *gin.Context) {
 	token := c.Query("token")
 	_, err := jwt.AnalyzeToken(token)
 	if err != nil {
-		SendResponse(c, errno.TokenInvalidErr, nil)
+		SendResponse(c, errno.TokenInvalidErr)
 		return
 	}
 	videoId := c.Query("videoId")
@@ -78,9 +77,8 @@ func CommentList(c *gin.Context) {
 
 	commentList, err := rpc.CommentList(context.Background(), req)
 	if err != nil {
-		SendResponse(c, errno.ConvertErr(err), nil)
+		SendResponse(c, errno.ConvertErr(err))
 		return
 	}
-
-	SendResponse(c, errno.Success, map[string]interface{}{"commentList": commentList})
+	SendCommentListResponse(c, errno.Success, commentList)
 }
