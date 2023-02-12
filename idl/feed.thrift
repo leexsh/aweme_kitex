@@ -9,14 +9,14 @@ struct BaseResp {
 }
 
 struct Video {
-    1: string video_id
-    2: user.User author
-    3: string play_url
-    4: string cover_url
-    5: i64 favourite_count
-    6: i64 comment_count
-    7: bool is_favourite
-    8: string title
+    1: string video_id // video id
+    2: user.User author // 用户信息
+    3: string play_url // 播放地址
+    4: string cover_url // 封面地址
+    5: i64 favourite_count // 点赞数量
+    6: i64 comment_count // 评论数量
+    7: bool is_favourite // 是否已经点赞
+    8: string title // 标题
 }
 
 struct FeedRequest {

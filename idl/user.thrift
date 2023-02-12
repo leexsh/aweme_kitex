@@ -1,11 +1,11 @@
 include "base.thrift"
 namespace go user
 struct User {
-    1: string user_id
-    2: string name;
-    3: i64 follow_count
-    4: i64 follower_count
-    5: bool is_follow
+    1: string user_id // 用户标识
+    2: string name; // 用户名称
+    3: i64 follow_count // 关注数量
+    4: i64 follower_count // 粉丝数量
+    5: bool is_follow // 是否关注
 }
 
 struct UserRegisterRequest {

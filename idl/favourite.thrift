@@ -3,10 +3,10 @@ include "feed.thrift"
 namespace go favourite
 
 struct Favourite {
-    1: required string favourite_id
+    1: required string favourite_id // 收藏id
     2: string user_id
     3: string video_id
-    4: string action_type
+    4: string action_type // 请求类型
 }
 
 struct FavouriteActionRequest {
