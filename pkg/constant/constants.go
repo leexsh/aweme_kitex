@@ -19,6 +19,7 @@ const (
 	RelationServiceName = "relation"
 
 	// MySQLDefaultDSN = "gorm:gorm@tcp(localhost:9910)/gorm?chazrset=utf8&parseTime=True&loc=local"
+	// EtcdAddress     = "121.5.114.14:2379"
 	EtcdAddress     = "127.0.0.1:2379"
 	ApiAddress      = "127.0.0.1:8080" // Api层 地址
 	FeedAddress     = "127.0.0.1:8081" // Feed 服务地址

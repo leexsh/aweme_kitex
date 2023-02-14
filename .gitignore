@@ -1,4 +1,4 @@
 env
 .idea/
 public/
-pkg/utils/log/
+public/log/
