@@ -63,11 +63,57 @@
 | jaeger-client-go | v2.30.0 | tracer组件(参考网上相关资料)   
 | godotenv         | v1.40.0 | [env组件](https://www.cnblogs.com/zhangmingcheng/p/15802038.html)   
 ## 4. 调用关系
-![调用关系图](caller.jpg)
+![调用关系图](./caller.jpg)
+
 <center>功能结构图 (from 飞书文档)</center>
 
+<img src="https://github.com/leexsh/aweme_kitex/blob/main/caller.jpg">
+<center>功能结构图同上 (from 飞书文档)</center>
 
 ## 5. 代码运行
+
+#### 运行feed微服务
+```shell
+    cd cmd/feed
+    sh build.sh
+    sh output/bootstrap.sh
+```
+
+#### 运行publihs微服务
+```shell
+    cd cmd/publish
+    sh build.sh
+    sh output/bootstrap.sh
+```
+
+#### 运行user微服务
+```shell
+    cd cmd/user
+    sh build.sh
+    sh output/bootstrap.sh
+```
+
+#### 运行favourite微服务
+```shell
+    cd cmd/favourite
+    sh build.sh
+    sh output/bootstrap.sh
+```
+
+#### 运行relation微服务
+```shell
+    cd cmd/relation
+    sh build.sh
+    sh output/bootstrap.sh
+```
+
+#### 运行comment微服务
+```shell
+    cd cmd/comment
+    sh build.sh
+    sh output/bootstrap.sh
+```
+
 ## 6. 踩坑记录
 1. os.getenv("MYSQL_PASSWD")读取失败 
    - 原因：将MYSQL_PASSWD只配置到了当前用户的.bash中，goland运行的时候，读取不到，读到"";
