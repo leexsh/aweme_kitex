@@ -49,7 +49,7 @@ func (*CommentDao) DeleteComment(ctx context.Context, commentId string) (*models
 	cfg.DB.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
 		err := tx.Table("comment").Where("id = ?", commentId).First(&commentRaw).Error
 		if err == gorm.ErrRecordNotFound {
-			logger.Errorf("not find comment %v, %v", commentRaw, err.Error())
+			logger.Error("not find comment %v, %v", commentRaw, err.Error())
 			return err
 		}
 		if err != nil {

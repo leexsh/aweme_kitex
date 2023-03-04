@@ -56,7 +56,7 @@ func (*UserDao) CheckUserNotExist(ctx context.Context, userId string) error {
 		return nil
 	}
 	if err == nil {
-		logger.Errorf("check user not exist fail, err:%s", err.Error())
+		logger.Error("check user not exist fail, err:%s", err.Error())
 		return errors.New("user already exists")
 	}
 

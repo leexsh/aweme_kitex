@@ -4,9 +4,9 @@ import (
 	feed "aweme_kitex/cmd/feed/kitex_gen/feed/feedservice"
 	"aweme_kitex/pkg/bound"
 	constants "aweme_kitex/pkg/constant"
+	"aweme_kitex/pkg/logger"
 	"aweme_kitex/pkg/middleware"
 	"aweme_kitex/pkg/tracer"
-	"log"
 	"net"
 
 	"github.com/cloudwego/kitex/pkg/limit"
@@ -14,9 +14,11 @@ import (
 	"github.com/cloudwego/kitex/server"
 	etcd "github.com/kitex-contrib/registry-etcd"
 	trace "github.com/kitex-contrib/tracer-opentracing"
+	"github.com/sirupsen/logrus"
 )
 
 func Init() {
+	logger.DoInit("", "feed_log", logrus.DebugLevel)
 	tracer.InitJaeger(constants.FeedServiceName)
 }
 
@@ -47,6 +49,6 @@ func main() {
 	err = svr.Run()
 
 	if err != nil {
-		log.Println(err.Error())
+		logger.Info(err.Error())
 	}
 }

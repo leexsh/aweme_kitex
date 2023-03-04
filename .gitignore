@@ -2,3 +2,9 @@ env
 .idea/
 public/
 public/log/
+cmd/comment/output
+cmd/favourite/output
+cmd/feed/output
+cmd/publish/output
+cmd/user/output
+cmd/relation/output

@@ -10,7 +10,7 @@
 - 7.使用**OSS**进行视频对象存储，上传视频和封面
 - 8.使用**JWT**鉴权，**MD5**密码加密，**ffmpeg**处理视频
 - 9.进行了**部分单元测试**，api**自动化测试**，[Postman](https://api.postman.com/collections/22021660-83a8235f-4e00-48e7-ab5f-88c62b61c47c?access_key=PMAT-01GS5K8MV2RF39KMPE3MG5QTV9)
-- 10.使用zap进行log记录
+- 10.使用logrus进行log本地记录，支持日志写入kafka
 ## 2.服务名称
 
 | 服务名   | 用途                               | 框架                    | 协议  | 注册中心 | 链路追踪 | 数据存储            | 日志    |
@@ -22,7 +22,7 @@
 | favorite | 点赞RPC微服务                      | `kitex` `gorm`          | `thrift` | `etcd`   | `jaeger` | `mysql`         | `zap` |
 | comment  | 评论RPC微服务                      | `kitex` `gorm`          | `thrift` | `etcd`   | `jaeger` | `mysql`         | `zap` |
 | relation | 关注RPC微服务                      | `kitex` `gorm`          | `thrift` | `etcd`   | `jaeger` | `mysql`         | `zap` |
-## 3.文件说明
+## 3.文件说明<br>
 | 目录               | 说明                                                    |
 |------------------|-------------------------------------------------------|
 | cfg              | 项目配置相关信息，包含了mysql、COS、redis的初始化等                      | 
@@ -47,21 +47,23 @@
 | .env             | 项目的环境变量(脱敏)                                                
 
 ## 4.组件
-| 名称               | 版本      | 说明                                                    |
-|------------------|---------|-------------------------------------------------------|
-| go               | v1.18   |    
-| kitex            | v0.4.4  | [RPC框架](https://www.cloudwego.io/zh/docs/kitex/)   
-| gin              | v1.8.1  | [http服务框架](https://gin-gonic.com/zh-cn/)   
-| gorm             | v1.24.1 | [项目orm](https://www.kancloud.cn/sliver_horn/gorm/1861153)   
-| go-redis         | v6.15.9 | redis组件
-| jwt-go           | v3.20   | jwt组件   
-| go-uuid          | v1.0.3  | generate uuid   
-| zap              | v1.24.0 | [log组件](https://segmentfault.com/a/1190000022461706)   
-| cos-go-sdk-v5    | v7.40.0 | [腾讯云对象存储组件](https://cloud.tencent.com/document/product/436/31215)   
-| ffmpeg-go        | v0.4.1  | ffmpeg组件(github.com/u2takey/ffmpeg-go)   
-| registry-etcd    | v1.18   | [etcd](https://blog.csdn.net/weixin_41760738/article/details/115768806)   ```etcd -listen-client-urls="http://0.0.0.0:2379" --advertise-client-urls="http://0.0.0.0:2379"```  
+| 名称              | 版本 | 说明                                                    |
+|-----------------|---|-------------------------------------------------------|
+| go              | v1.18 |    
+| kitex           | v0.4.4 | [RPC框架](https://www.cloudwego.io/zh/docs/kitex/)   
+| gin             | v1.8.1 | [http服务框架](https://gin-gonic.com/zh-cn/)   
+| gorm            | v1.24.1 | [项目orm](https://www.kancloud.cn/sliver_horn/gorm/1861153)   
+| go-redis        | v6.15.9 | redis组件
+| jwt-go          | v3.20 | jwt组件   
+| go-uuid         | v1.0.3 | generate uuid   
+| logrus          | v1.24.0 | [log组件](https://)   
+| kafka           | v1.24.0 | [log组件](https://)   
+| logkafka-hook   | v1.1.0 | log hook组件支持写入kafka
+| cos-go-sdk-v5   | v7.40.0 | [腾讯云对象存储组件](https://cloud.tencent.com/document/product/436/31215)   
+| ffmpeg-go       | v0.4.1 | ffmpeg组件(github.com/u2takey/ffmpeg-go)   
+| registry-etcd   | v1.18 | [etcd](https://blog.csdn.net/weixin_41760738/article/details/115768806)   ```etcd -listen-client-urls="http://0.0.0.0:2379" --advertise-client-urls="http://0.0.0.0:2379"```  
 | jaeger-client-go | v2.30.0 | tracer组件(参考网上相关资料)   
-| godotenv         | v1.40.0 | [env组件](https://www.cnblogs.com/zhangmingcheng/p/15802038.html)   
+| godotenv        | v1.40.0 | [env组件](https://www.cnblogs.com/zhangmingcheng/p/15802038.html)   
 ## 4. 调用关系
 ![调用关系图](./caller.jpg)
 

@@ -14,7 +14,7 @@ func ServerMiddleware(next endpoint.Endpoint) endpoint.Endpoint {
 	return func(ctx context.Context, req, resp interface{}) (err error) {
 		ri := rpcinfo.GetRPCInfo(ctx)
 		// get client information
-		logger.Infof("client address: %v\n", ri.From().Address())
+		logger.Info("client address: %v\n", ri.From().Address())
 		if err = next(ctx, req, resp); err != nil {
 			return err
 		}

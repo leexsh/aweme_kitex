@@ -13,11 +13,13 @@ import (
 
 	jwt2 "github.com/appleboy/gin-jwt/v2"
 	"github.com/gin-gonic/gin"
+	"github.com/sirupsen/logrus"
 )
 
 func Init() {
 	tracer.InitJaeger(constants.ApiServiceName)
 	rpc.InitRPC()
+	logger.DoInit("", "aweme_log", logrus.DebugLevel)
 }
 
 func main() {
