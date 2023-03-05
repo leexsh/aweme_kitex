@@ -1,11 +1,12 @@
 package service_user
 
 import (
-	user2 "aweme_kitex/cmd/publish/kitex_gen/user"
 	"aweme_kitex/cmd/user/kitex_gen/user"
-	"aweme_kitex/pkg/jwt"
+	"aweme_kitex/cmd/user/service_user/db"
+	"aweme_kitex/models"
 	"context"
 	"errors"
+	"strconv"
 )
 
 type UserInfoService struct {
@@ -18,20 +19,50 @@ func NewUserInfoService(ctx context.Context) *UserInfoService {
 	}
 }
 
-func (s *UserInfoService) UserInfo(req *user.UserInfoRequest) (user *user2.User, err error) {
-	uc, err := jwt.AnalyzeToken(req.Token)
-	res, err := QueryUserInfo(uc, req.UserId)
+func (s *UserInfoService) packUserInfo(u *models.UserRawData) (*user.User, error) {
+	if u == nil {
+		return nil, errors.New("user is nil")
+	}
+	return &user.User{
+		UserId:        u.UserId,
+		Name:          u.Name,
+		FollowCount:   u.FollowCount,
+		FollowerCount: u.FollowerCount,
+	}, nil
+}
+
+func (s *UserInfoService) UserInfo(req *user.UserInfoRequest) (user *user.User, err error) {
+	u, err := db.NewUserDaoInstance().QueryUserByUserId(s.ctx, req.UserId)
 	if err != nil {
 		return nil, err
 	}
-	if user == nil {
-		return nil, errors.New("not found user, please register")
+	return s.packUserInfo(u)
+}
+
+func (s *UserInfoService) SingleUserInfo(uid string) (user *user.User, err error) {
+
+	followNum, _ := db.RedisClient.HGet(s.ctx, uid, db.FollowNum).Result()
+	followerNum, _ := db.RedisClient.HGet(s.ctx, uid, db.FollowerNum).Result()
+	name, _ := db.RedisClient.Get(s.ctx, uid).Result()
+	// 1.Redis exist
+	if len(name) > 0 && len(followNum) > 0 && len(followerNum) > 0 {
+		fInt, _ := strconv.ParseInt(followNum, 10, 64)
+		ferInt, _ := strconv.ParseInt(followerNum, 10, 64)
+
+		user.UserId = uid
+		user.Name = name
+		user.FollowCount = fInt
+		user.FollowerCount = ferInt
+		return
+	} else {
+		// 2. redis不存在，查询sql，并写入redis
+		u, err := db.NewUserDaoInstance().QueryUserByUserId(s.ctx, uid)
+		if err != nil {
+			return nil, err
+		}
+		db.AddName(s.ctx, u.UserId, u.Name)
+		db.UpdateCount(s.ctx, u.UserId, u.FollowCount, u.FollowerCount)
+		return s.packUserInfo(u)
 	}
-	user = new(user2.User)
-	user.UserId = res.UserId
-	user.Name = res.Name
-	user.FollowerCount = res.FollowerCount
-	user.FollowCount = res.FollowCount
-	user.IsFollow = res.IsFollow
-	return user, nil
+	return
 }

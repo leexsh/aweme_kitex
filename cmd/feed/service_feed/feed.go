@@ -3,6 +3,8 @@ package service_feed
 import (
 	feed "aweme_kitex/cmd/feed/kitex_gen/feed"
 	"aweme_kitex/cmd/feed/kitex_gen/user"
+	"aweme_kitex/cmd/relation/service_relation/db"
+	db2 "aweme_kitex/cmd/user/service_user/db"
 	"aweme_kitex/models"
 	"aweme_kitex/models/dal"
 	"aweme_kitex/pkg/jwt"
@@ -84,7 +86,7 @@ func (f *queryVideoDataFlow) prepareVideoInfo() error {
 	}
 
 	// 3. get user info
-	users, err := dal.NewUserDaoInstance().QueryUserByIds(f.ctx, authorIds)
+	users, err := db2.NewUserDaoInstance().QueryUserByIds(f.ctx, authorIds)
 	if err != nil {
 		return err
 	}
@@ -115,7 +117,7 @@ func (f *queryVideoDataFlow) prepareVideoInfo() error {
 	// 6.获取关注信息
 	go func() {
 		defer wg.Done()
-		relationMap, err := dal.NewRelationDaoInstance().QueryRelationByIds(f.ctx, f.CurrentUserId, authorIds)
+		relationMap, err := db.NewRelationDaoInstance().QueryRelationByIds(f.ctx, f.CurrentUserId, authorIds)
 		if err != nil {
 			relationErr = err
 			return

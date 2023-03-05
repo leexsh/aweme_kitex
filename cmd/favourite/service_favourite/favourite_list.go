@@ -4,6 +4,8 @@ import (
 	"aweme_kitex/cmd/favourite/kitex_gen/favourite"
 	"aweme_kitex/cmd/favourite/kitex_gen/feed"
 	"aweme_kitex/cmd/favourite/kitex_gen/user"
+	"aweme_kitex/cmd/relation/service_relation/db"
+	db2 "aweme_kitex/cmd/user/service_user/db"
 	"aweme_kitex/models"
 	"aweme_kitex/models/dal"
 	"aweme_kitex/pkg/jwt"
@@ -86,7 +88,7 @@ func (f *favouriteListDataFlow) prepareVideoInfo() error {
 	}
 
 	// get video authors
-	users, err := dal.NewUserDaoInstance().QueryUserByIds(f.ctx, uids)
+	users, err := db2.NewUserDaoInstance().QueryUserByIds(f.ctx, uids)
 	if err != nil {
 		return err
 	}
@@ -109,7 +111,7 @@ func (f *favouriteListDataFlow) prepareVideoInfo() error {
 	}()
 	go func() {
 		defer wg.Done()
-		relationMap, err := dal.NewRelationDaoInstance().QueryRelationByIds(f.ctx, f.currentUId, videosIds)
+		relationMap, err := db.NewRelationDaoInstance().QueryRelationByIds(f.ctx, f.currentUId, videosIds)
 		if err != nil {
 			relationErr = err
 		}

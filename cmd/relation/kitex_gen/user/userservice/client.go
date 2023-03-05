@@ -14,9 +14,11 @@ type Client interface {
 	Register(ctx context.Context, req *user.UserRegisterRequest, callOptions ...callopt.Option) (r *user.UserRegisterResponse, err error)
 	Login(ctx context.Context, req *user.UserLoginRequest, callOptions ...callopt.Option) (r *user.UserLoginResponse, err error)
 	UserInfo(ctx context.Context, req *user.UserInfoRequest, callOptions ...callopt.Option) (r *user.UserInfoResponse, err error)
+	GetUserInfoByUserId(ctx context.Context, req *user.SingleUserInfoRequest, callOptions ...callopt.Option) (r *user.SingleUserInfoResponse, err error)
+	ChangeFollowStatus(ctx context.Context, req *user.ChangeFollowStatusRequest, callOptions ...callopt.Option) (err error)
 }
 
-// NewClient creates a client for the service_user defined in IDL.
+// NewClient creates a client for the service defined in IDL.
 func NewClient(destService string, opts ...client.Option) (Client, error) {
 	var options []client.Option
 	options = append(options, client.WithDestService(destService))
@@ -32,7 +34,7 @@ func NewClient(destService string, opts ...client.Option) (Client, error) {
 	}, nil
 }
 
-// MustNewClient creates a client for the service_user defined in IDL. It panics if any error occurs.
+// MustNewClient creates a client for the service defined in IDL. It panics if any error occurs.
 func MustNewClient(destService string, opts ...client.Option) Client {
 	kc, err := NewClient(destService, opts...)
 	if err != nil {
@@ -58,4 +60,14 @@ func (p *kUserServiceClient) Login(ctx context.Context, req *user.UserLoginReque
 func (p *kUserServiceClient) UserInfo(ctx context.Context, req *user.UserInfoRequest, callOptions ...callopt.Option) (r *user.UserInfoResponse, err error) {
 	ctx = client.NewCtxWithCallOptions(ctx, callOptions)
 	return p.kClient.UserInfo(ctx, req)
+}
+
+func (p *kUserServiceClient) GetUserInfoByUserId(ctx context.Context, req *user.SingleUserInfoRequest, callOptions ...callopt.Option) (r *user.SingleUserInfoResponse, err error) {
+	ctx = client.NewCtxWithCallOptions(ctx, callOptions)
+	return p.kClient.GetUserInfoByUserId(ctx, req)
+}
+
+func (p *kUserServiceClient) ChangeFollowStatus(ctx context.Context, req *user.ChangeFollowStatusRequest, callOptions ...callopt.Option) (err error) {
+	ctx = client.NewCtxWithCallOptions(ctx, callOptions)
+	return p.kClient.ChangeFollowStatus(ctx, req)
 }

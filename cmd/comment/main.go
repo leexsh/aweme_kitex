@@ -1,6 +1,7 @@
 package main
 
 import (
+	"aweme_kitex/cfg"
 	comment "aweme_kitex/cmd/comment/kitex_gen/comment/commentservice"
 	"aweme_kitex/pkg/bound"
 	constants "aweme_kitex/pkg/constant"
@@ -18,6 +19,7 @@ import (
 )
 
 func Init() {
+	cfg.Init()
 	logger.DoInit("", "comment_log", logrus.DebugLevel)
 	tracer.InitJaeger(constants.FeedServiceName)
 }

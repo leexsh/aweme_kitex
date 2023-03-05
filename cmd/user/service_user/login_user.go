@@ -2,6 +2,8 @@ package service_user
 
 import (
 	"aweme_kitex/cmd/user/kitex_gen/user"
+	"aweme_kitex/cmd/user/service_user/db"
+	"aweme_kitex/pkg/utils"
 	"context"
 )
 
@@ -18,9 +20,17 @@ func NewLoginUserService(ctx context.Context) *LoginUserService {
 
 // RegisterUser register user info
 func (s *LoginUserService) LoginUser(req *user.UserLoginRequest) (string, string, error) {
-	userId, token, err := LoginUser(req.UserName, req.Password)
+	userId, token, err := s.do(req.UserName, req.Password)
 	if err != nil {
 		return "", "", err
 	}
 	return userId, token, err
+}
+
+func (s *LoginUserService) do(name, password string) (uid string, token string, err error) {
+	usr, err := db.NewUserDaoInstance().QueryUserByPassword(s.ctx, name, utils.Md5(password))
+	if err != nil {
+		return "", "", err
+	}
+	return usr.UserId, usr.Token, err
 }

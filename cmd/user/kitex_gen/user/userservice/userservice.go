@@ -19,9 +19,11 @@ func NewServiceInfo() *kitex.ServiceInfo {
 	serviceName := "UserService"
 	handlerType := (*user.UserService)(nil)
 	methods := map[string]kitex.MethodInfo{
-		"Register": kitex.NewMethodInfo(registerHandler, newUserServiceRegisterArgs, newUserServiceRegisterResult, false),
-		"Login":    kitex.NewMethodInfo(loginHandler, newUserServiceLoginArgs, newUserServiceLoginResult, false),
-		"UserInfo": kitex.NewMethodInfo(userInfoHandler, newUserServiceUserInfoArgs, newUserServiceUserInfoResult, false),
+		"Register":            kitex.NewMethodInfo(registerHandler, newUserServiceRegisterArgs, newUserServiceRegisterResult, false),
+		"Login":               kitex.NewMethodInfo(loginHandler, newUserServiceLoginArgs, newUserServiceLoginResult, false),
+		"UserInfo":            kitex.NewMethodInfo(userInfoHandler, newUserServiceUserInfoArgs, newUserServiceUserInfoResult, false),
+		"GetUserInfoByUserId": kitex.NewMethodInfo(getUserInfoByUserIdHandler, newUserServiceGetUserInfoByUserIdArgs, newUserServiceGetUserInfoByUserIdResult, false),
+		"ChangeFollowStatus":  kitex.NewMethodInfo(changeFollowStatusHandler, newUserServiceChangeFollowStatusArgs, newUserServiceChangeFollowStatusResult, false),
 	}
 	extra := map[string]interface{}{
 		"PackageName": "user",
@@ -91,6 +93,42 @@ func newUserServiceUserInfoResult() interface{} {
 	return user.NewUserServiceUserInfoResult()
 }
 
+func getUserInfoByUserIdHandler(ctx context.Context, handler interface{}, arg, result interface{}) error {
+	realArg := arg.(*user.UserServiceGetUserInfoByUserIdArgs)
+	realResult := result.(*user.UserServiceGetUserInfoByUserIdResult)
+	success, err := handler.(user.UserService).GetUserInfoByUserId(ctx, realArg.Req)
+	if err != nil {
+		return err
+	}
+	realResult.Success = success
+	return nil
+}
+func newUserServiceGetUserInfoByUserIdArgs() interface{} {
+	return user.NewUserServiceGetUserInfoByUserIdArgs()
+}
+
+func newUserServiceGetUserInfoByUserIdResult() interface{} {
+	return user.NewUserServiceGetUserInfoByUserIdResult()
+}
+
+func changeFollowStatusHandler(ctx context.Context, handler interface{}, arg, result interface{}) error {
+	realArg := arg.(*user.UserServiceChangeFollowStatusArgs)
+
+	err := handler.(user.UserService).ChangeFollowStatus(ctx, realArg.Req)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+func newUserServiceChangeFollowStatusArgs() interface{} {
+	return user.NewUserServiceChangeFollowStatusArgs()
+}
+
+func newUserServiceChangeFollowStatusResult() interface{} {
+	return user.NewUserServiceChangeFollowStatusResult()
+}
+
 type kClient struct {
 	c client.Client
 }
@@ -129,4 +167,24 @@ func (p *kClient) UserInfo(ctx context.Context, req *user.UserInfoRequest) (r *u
 		return
 	}
 	return _result.GetSuccess(), nil
+}
+
+func (p *kClient) GetUserInfoByUserId(ctx context.Context, req *user.SingleUserInfoRequest) (r *user.SingleUserInfoResponse, err error) {
+	var _args user.UserServiceGetUserInfoByUserIdArgs
+	_args.Req = req
+	var _result user.UserServiceGetUserInfoByUserIdResult
+	if err = p.c.Call(ctx, "GetUserInfoByUserId", &_args, &_result); err != nil {
+		return
+	}
+	return _result.GetSuccess(), nil
+}
+
+func (p *kClient) ChangeFollowStatus(ctx context.Context, req *user.ChangeFollowStatusRequest) (err error) {
+	var _args user.UserServiceChangeFollowStatusArgs
+	_args.Req = req
+	var _result user.UserServiceChangeFollowStatusResult
+	if err = p.c.Call(ctx, "ChangeFollowStatus", &_args, &_result); err != nil {
+		return
+	}
+	return nil
 }

@@ -4,6 +4,8 @@ import (
 	"aweme_kitex/cmd/publish/kitex_gen/feed"
 	"aweme_kitex/cmd/publish/kitex_gen/publish"
 	"aweme_kitex/cmd/publish/kitex_gen/user"
+	"aweme_kitex/cmd/relation/service_relation/db"
+	db2 "aweme_kitex/cmd/user/service_user/db"
 	"aweme_kitex/models"
 	"aweme_kitex/models/dal"
 	"aweme_kitex/pkg/jwt"
@@ -62,7 +64,7 @@ func (f *userVideoList) prepareVideoInfo() error {
 		videoIds = append(videoIds, video.VideoId)
 	}
 
-	users, err := dal.NewUserDaoInstance().QueryUserByIds(f.ctx, userIds)
+	users, err := db2.NewUserDaoInstance().QueryUserByIds(f.ctx, userIds)
 	if err != nil {
 		return err
 	}
@@ -88,7 +90,7 @@ func (f *userVideoList) prepareVideoInfo() error {
 	// 获取关注信息
 	go func() {
 		defer wg.Done()
-		relationMap, err := dal.NewRelationDaoInstance().QueryRelationByIds(f.ctx, f.UserId, userIds)
+		relationMap, err := db.NewRelationDaoInstance().QueryRelationByIds(f.ctx, f.UserId, userIds)
 		if err != nil {
 			relationErr = err
 			return

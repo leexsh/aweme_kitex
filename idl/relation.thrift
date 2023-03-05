@@ -30,8 +30,22 @@ struct FollowerListResponse {
     2: list<user.User> user_list
 }
 
+// 查询两个用户关系的请求
+struct QueryRelationRequest {
+    1: string userId
+    2: string to_userId
+    3: bool is_follow
+}
+
+// 查询两个用户关系的相应
+struct QueryRelationResponse {
+    1: base.BaseResp base_resp
+    2: bool is_follow
+}
+
 service RelationService {
     RelationActionResponse RelationAction(1: RelationActionRequest req)
     FollowListResponse FollowList(1: FollowListRequest req)
     FollowerListResponse FollowerList(1: FollowerListRequest req)
+    QueryRelationResponse QueryRelation(1: QueryRelationRequest req)
 }

@@ -22,6 +22,7 @@ func NewServiceInfo() *kitex.ServiceInfo {
 		"RelationAction": kitex.NewMethodInfo(relationActionHandler, newRelationServiceRelationActionArgs, newRelationServiceRelationActionResult, false),
 		"FollowList":     kitex.NewMethodInfo(followListHandler, newRelationServiceFollowListArgs, newRelationServiceFollowListResult, false),
 		"FollowerList":   kitex.NewMethodInfo(followerListHandler, newRelationServiceFollowerListArgs, newRelationServiceFollowerListResult, false),
+		"QueryRelation":  kitex.NewMethodInfo(queryRelationHandler, newRelationServiceQueryRelationArgs, newRelationServiceQueryRelationResult, false),
 	}
 	extra := map[string]interface{}{
 		"PackageName": "relation",
@@ -91,6 +92,24 @@ func newRelationServiceFollowerListResult() interface{} {
 	return relation.NewRelationServiceFollowerListResult()
 }
 
+func queryRelationHandler(ctx context.Context, handler interface{}, arg, result interface{}) error {
+	realArg := arg.(*relation.RelationServiceQueryRelationArgs)
+	realResult := result.(*relation.RelationServiceQueryRelationResult)
+	success, err := handler.(relation.RelationService).QueryRelation(ctx, realArg.Req)
+	if err != nil {
+		return err
+	}
+	realResult.Success = success
+	return nil
+}
+func newRelationServiceQueryRelationArgs() interface{} {
+	return relation.NewRelationServiceQueryRelationArgs()
+}
+
+func newRelationServiceQueryRelationResult() interface{} {
+	return relation.NewRelationServiceQueryRelationResult()
+}
+
 type kClient struct {
 	c client.Client
 }
@@ -126,6 +145,16 @@ func (p *kClient) FollowerList(ctx context.Context, req *relation.FollowerListRe
 	_args.Req = req
 	var _result relation.RelationServiceFollowerListResult
 	if err = p.c.Call(ctx, "FollowerList", &_args, &_result); err != nil {
+		return
+	}
+	return _result.GetSuccess(), nil
+}
+
+func (p *kClient) QueryRelation(ctx context.Context, req *relation.QueryRelationRequest) (r *relation.QueryRelationResponse, err error) {
+	var _args relation.RelationServiceQueryRelationArgs
+	_args.Req = req
+	var _result relation.RelationServiceQueryRelationResult
+	if err = p.c.Call(ctx, "QueryRelation", &_args, &_result); err != nil {
 		return
 	}
 	return _result.GetSuccess(), nil

@@ -3,6 +3,8 @@ package service_comment
 import (
 	"aweme_kitex/cmd/comment/kitex_gen/comment"
 	"aweme_kitex/cmd/comment/kitex_gen/user"
+	"aweme_kitex/cmd/relation/service_relation/db"
+	db2 "aweme_kitex/cmd/user/service_user/db"
 	"aweme_kitex/models"
 	"aweme_kitex/models/dal"
 	"aweme_kitex/pkg/jwt"
@@ -84,7 +86,7 @@ func (c *commentListDataFlow) prepareListCommentInfo() error {
 	}
 
 	// 获取一系列用户信息
-	users, err := dal.NewUserDaoInstance().QueryUserByIds(c.ctx, userIds)
+	users, err := db2.NewUserDaoInstance().QueryUserByIds(c.ctx, userIds)
 	if err != nil {
 		return err
 	}
@@ -95,7 +97,7 @@ func (c *commentListDataFlow) prepareListCommentInfo() error {
 	c.UserMap = userMap
 
 	// 获取一系列关注信息
-	relationMap, err := dal.NewRelationDaoInstance().QueryRelationByIds(c.ctx, c.userId, userIds)
+	relationMap, err := db.NewRelationDaoInstance().QueryRelationByIds(c.ctx, c.userId, userIds)
 	if err != nil {
 		return err
 	}

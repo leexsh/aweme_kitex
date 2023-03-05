@@ -2,8 +2,11 @@ package service_relation
 
 import (
 	"aweme_kitex/cmd/relation/kitex_gen/user"
+	relationRPC "aweme_kitex/cmd/relation/rpc"
+	"aweme_kitex/cmd/relation/service_relation/db"
+	user2 "aweme_kitex/cmd/user/kitex_gen/user"
+	db2 "aweme_kitex/cmd/user/service_user/db"
 	"aweme_kitex/models"
-	"aweme_kitex/models/dal"
 	"context"
 )
 
@@ -30,20 +33,18 @@ type relationListDataFlow struct {
 	UserId   string
 	UserList []*user.User
 
-	UserRaw     []*models.UserRawData
+	UserRaw     []*user2.User
 	RelationMap map[string]*models.RelationRaw
 }
 
 func newRelationListDataFlow(ctx context.Context, userId string) *relationListDataFlow {
 	return &relationListDataFlow{
 		UserId: userId,
+		ctx:    ctx,
 	}
 }
 
 func (r *relationListDataFlow) getFollow() ([]*user.User, error) {
-	if _, err := dal.NewUserDaoInstance().CheckUserId(r.ctx, []string{r.UserId}); err != nil {
-		return nil, err
-	}
 	if err := r.prepareFollowInfo(); err != nil {
 		return nil, err
 	}
@@ -54,7 +55,7 @@ func (r *relationListDataFlow) getFollow() ([]*user.User, error) {
 }
 
 func (r *relationListDataFlow) prepareFollowInfo() error {
-	relations, err := dal.NewRelationDaoInstance().QueryFollowByUid(r.ctx, r.UserId)
+	relations, err := db.NewRelationDaoInstance().QueryFollowByUid(r.ctx, r.UserId)
 	if err != nil {
 		return err
 	}
@@ -62,12 +63,15 @@ func (r *relationListDataFlow) prepareFollowInfo() error {
 	for _, relation := range relations {
 		toUids = append(toUids, relation.ToUserId)
 	}
-	toUsers, err := dal.NewUserDaoInstance().QueryUserByIds(r.ctx, toUids)
+	us, err := relationRPC.GetUserInfo(r.ctx, &user2.SingleUserInfoRequest{
+		UserIds: toUids,
+	})
+	// toUsers, err := db.NewUserDaoInstance().QueryUserByIds(r.ctx, toUids)
 	if err != nil {
 		return err
 	}
-	r.UserRaw = toUsers
-	relationMap, err := dal.NewRelationDaoInstance().QueryRelationByIds(r.ctx, r.UserId, toUids)
+	r.UserRaw = us
+	relationMap, err := db.NewRelationDaoInstance().QueryRelationByIds(r.ctx, r.UserId, toUids)
 	r.RelationMap = relationMap
 	return nil
 }
@@ -96,7 +100,7 @@ func (r *relationListDataFlow) packageFollowInfo() error {
 }
 
 func (r *relationListDataFlow) getFollower() ([]*user.User, error) {
-	if _, err := dal.NewUserDaoInstance().CheckUserId(r.ctx, []string{r.UserId}); err != nil {
+	if _, err := db2.NewUserDaoInstance().CheckUserId(r.ctx, []string{r.UserId}); err != nil {
 		return nil, err
 	}
 	if err := r.prepareFollowerInfo(); err != nil {
@@ -109,8 +113,9 @@ func (r *relationListDataFlow) getFollower() ([]*user.User, error) {
 }
 
 func (r *relationListDataFlow) prepareFollowerInfo() error {
+	// 1.尝试使用redis获取
 	// 查询目标用户的被关注记录
-	relations, err := dal.NewRelationDaoInstance().QueryFollowerById(r.ctx, r.UserId)
+	relations, err := db.NewRelationDaoInstance().QueryFollowerById(r.ctx, r.UserId)
 	if err != nil {
 		return err
 	}
@@ -122,14 +127,13 @@ func (r *relationListDataFlow) prepareFollowerInfo() error {
 	}
 
 	// 获取关注方的信息
-	users, err := dal.NewUserDaoInstance().QueryUserByIds(r.ctx, userIds)
-	if err != nil {
-		return err
-	}
-	r.UserRaw = users
+	us, err := relationRPC.GetUserInfo(r.ctx, &user2.SingleUserInfoRequest{
+		UserIds: userIds,
+	})
+	r.UserRaw = us
 
 	// 获取当前用户与关注方的关注记录
-	relationMap, err := dal.NewRelationDaoInstance().QueryRelationByIds(r.ctx, r.UserId, userIds)
+	relationMap, err := db.NewRelationDaoInstance().QueryRelationByIds(r.ctx, r.UserId, userIds)
 	if err != nil {
 		return err
 	}

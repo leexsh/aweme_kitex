@@ -14,9 +14,10 @@ type Client interface {
 	RelationAction(ctx context.Context, req *relation.RelationActionRequest, callOptions ...callopt.Option) (r *relation.RelationActionResponse, err error)
 	FollowList(ctx context.Context, req *relation.FollowListRequest, callOptions ...callopt.Option) (r *relation.FollowListResponse, err error)
 	FollowerList(ctx context.Context, req *relation.FollowerListRequest, callOptions ...callopt.Option) (r *relation.FollowerListResponse, err error)
+	QueryRelation(ctx context.Context, req *relation.QueryRelationRequest, callOptions ...callopt.Option) (r *relation.QueryRelationResponse, err error)
 }
 
-// NewClient creates a client for the service_user defined in IDL.
+// NewClient creates a client for the service defined in IDL.
 func NewClient(destService string, opts ...client.Option) (Client, error) {
 	var options []client.Option
 	options = append(options, client.WithDestService(destService))
@@ -32,7 +33,7 @@ func NewClient(destService string, opts ...client.Option) (Client, error) {
 	}, nil
 }
 
-// MustNewClient creates a client for the service_user defined in IDL. It panics if any error occurs.
+// MustNewClient creates a client for the service defined in IDL. It panics if any error occurs.
 func MustNewClient(destService string, opts ...client.Option) Client {
 	kc, err := NewClient(destService, opts...)
 	if err != nil {
@@ -58,4 +59,9 @@ func (p *kRelationServiceClient) FollowList(ctx context.Context, req *relation.F
 func (p *kRelationServiceClient) FollowerList(ctx context.Context, req *relation.FollowerListRequest, callOptions ...callopt.Option) (r *relation.FollowerListResponse, err error) {
 	ctx = client.NewCtxWithCallOptions(ctx, callOptions)
 	return p.kClient.FollowerList(ctx, req)
+}
+
+func (p *kRelationServiceClient) QueryRelation(ctx context.Context, req *relation.QueryRelationRequest, callOptions ...callopt.Option) (r *relation.QueryRelationResponse, err error) {
+	ctx = client.NewCtxWithCallOptions(ctx, callOptions)
+	return p.kClient.QueryRelation(ctx, req)
 }

@@ -14,11 +14,11 @@ func Register(c *gin.Context) {
 	username := c.Query("username")
 	password := c.Query("password")
 	if len := len(username); len <= 0 || len > 32 {
-		SendResponse(c, errno.ParamErr, nil)
+		SendResponse(c, errno.ParamErr)
 		return
 	}
 	if len := len(password); len <= 0 || len > 32 {
-		SendResponse(c, errno.ParamErr, nil)
+		SendResponse(c, errno.ParamErr)
 		return
 	}
 	userId, token, err := rpc.RegisterUser(context.Background(), &user.UserRegisterRequest{
@@ -26,28 +26,27 @@ func Register(c *gin.Context) {
 		Password: password,
 	})
 	if err != nil {
-		SendResponse(c, errno.ConvertErr(err), nil)
+		SendResponse(c, errno.ConvertErr(err))
 	}
-	SendResponse(c, errno.Success, map[string]interface{}{"token": token, "userId": userId})
+	SendUserResponse(c, errno.Success, userId, token)
 }
 
 func Login(c *gin.Context) {
 	username := c.Query("username")
 	password := c.Query("password")
 	if len := len(username); len <= 0 || len > 32 {
-		SendResponse(c, errno.ParamErr, nil)
+		SendResponse(c, errno.ParamErr)
 		return
 	}
 	if len := len(password); len <= 0 || len > 32 {
-		SendResponse(c, errno.ParamErr, nil)
+		SendResponse(c, errno.ParamErr)
 		return
 	}
 	userId, token, err := rpc.LoginUser(context.Background(), &user.UserLoginRequest{username, password})
 	if err != nil {
-		SendResponse(c, errno.ConvertErr(err), nil)
+		SendResponse(c, errno.ConvertErr(err))
 	}
-	SendResponse(c, errno.Success, map[string]interface{}{"token": token, "userId": userId})
-
+	SendUserResponse(c, errno.Success, userId, token)
 }
 
 // UserInfo get user info
@@ -55,12 +54,12 @@ func UserInfo(c *gin.Context) {
 	token := c.DefaultQuery("token", "")
 	_, err := jwt.AnalyzeToken(token)
 	if err != nil {
-		SendResponse(c, errno.TokenInvalidErr, nil)
+		SendResponse(c, errno.TokenInvalidErr)
 		return
 	}
 	userid := c.Query("userid")
 	if len := len(userid); len <= 0 || len > 32 {
-		SendResponse(c, errno.ParamErr, nil)
+		SendResponse(c, errno.ParamErr)
 		return
 	}
 	req := &user.UserInfoRequest{
@@ -69,8 +68,8 @@ func UserInfo(c *gin.Context) {
 	}
 	user, err := rpc.UserInfo(context.Background(), req)
 	if err != nil {
-		SendResponse(c, errno.ConvertErr(err), nil)
+		SendResponse(c, errno.ConvertErr(err))
 	}
-	SendResponse(c, errno.Success, map[string]interface{}{"user": user})
+	SendUserInfoResponse(c, errno.Success, map[string]interface{}{"user": user})
 
 }

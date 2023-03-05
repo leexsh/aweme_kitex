@@ -3,13 +3,11 @@ package cfg
 import (
 	"aweme_kitex/models"
 	constants "aweme_kitex/pkg/constant"
-	"aweme_kitex/pkg/logger"
 	"fmt"
 	"net/http"
 	"net/url"
 	"os"
 
-	"github.com/go-redis/redis"
 	"github.com/joho/godotenv"
 	_ "github.com/joho/godotenv"
 	"github.com/tencentyun/cos-go-sdk-v5"
@@ -20,10 +18,8 @@ import (
 )
 
 var (
-	DB          *gorm.DB
-	COSClient   *cos.Client
-	RedisClient *redis.Client
-	err         error
+	DB        *gorm.DB
+	COSClient *cos.Client
 )
 
 func Init() error {
@@ -96,14 +92,5 @@ func Init() error {
 		},
 	})
 
-	// -------------redis----------
-	RedisClient = redis.NewClient(&redis.Options{
-		Addr:     "121.5.114.14:6379",
-		Password: "123456", // no password set
-		DB:       0,        // use default DB
-	})
-
-	pong, err := RedisClient.Ping().Result()
-	logger.Info("pong is: " + pong)
 	return nil
 }

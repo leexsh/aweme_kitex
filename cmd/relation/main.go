@@ -2,6 +2,9 @@ package main
 
 import (
 	relation "aweme_kitex/cmd/relation/kitex_gen/relation/relationservice"
+	"aweme_kitex/cmd/relation/rpc"
+	"aweme_kitex/cmd/relation/service_relation/db"
+	"aweme_kitex/cmd/relation/service_relation/kafka"
 	"aweme_kitex/pkg/bound"
 	constants "aweme_kitex/pkg/constant"
 	"aweme_kitex/pkg/logger"
@@ -18,6 +21,9 @@ import (
 )
 
 func Init() {
+	db.InitRedis()
+	relationRPC.Init()
+	kafka.InitKafka()
 	logger.DoInit("", "relation_log", logrus.DebugLevel)
 	tracer.InitJaeger(constants.PublishServiceName)
 }

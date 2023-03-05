@@ -3,7 +3,6 @@ package constants
 import "time"
 
 const (
-	SecretKey   = "secret key"
 	IdentiryKey = "id"
 
 	VideoList = "video_list"
@@ -18,6 +17,7 @@ const (
 	CommentServiceName  = "comment"
 	RelationServiceName = "relation"
 
+	// ETCD
 	EtcdAddress     = "127.0.0.1:2379"
 	ApiAddress      = "127.0.0.1:8080" // Api层 地址
 	FeedAddress     = "127.0.0.1:8081" // Feed 服务地址
@@ -26,6 +26,13 @@ const (
 	FavoriteAddress = "127.0.0.1:8084" // Favorite服务地址
 	CommentAddress  = "127.0.0.1:8085" // Comment服务地址
 	RelationAddress = "127.0.0.1:8086" // Relation服务地址
+
+	// KafKa
+	KafkaAddress              = "127.0.0.1:9092" // kafka地址
+	KafKaRelationAddTopic     = "relation_add"
+	KafKaRelationDelTopic     = "relation_del"
+	KafKaUserAddRelationTopic = "user_relation_add"
+	KafKaUserDelRelationTopic = "user_relation_del"
 
 	CPURateLimit = 80.0
 	DefaultLimit = 10
@@ -48,4 +55,13 @@ const (
 	// relation actiontypr,1是关注，2是取消关注
 	Follow   = "1"
 	UnFollow = "2"
+
+	// Redis
+	RedisExpireTime = time.Hour * 48
+	SleepTime       = time.Millisecond * 500
+	RedisFollower   = 0
+	RedisFollow     = 1
+	RedisRelation1  = 2
+	RedisUser       = 3
+	RedisCount2     = 4
 )

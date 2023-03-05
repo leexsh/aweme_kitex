@@ -3,6 +3,7 @@ package service_comment
 import (
 	"aweme_kitex/cmd/comment/kitex_gen/comment"
 	"aweme_kitex/cmd/comment/kitex_gen/user"
+	"aweme_kitex/cmd/user/service_user/db"
 	"aweme_kitex/models"
 	"aweme_kitex/models/dal"
 	constants "aweme_kitex/pkg/constant"
@@ -108,7 +109,7 @@ func (c *commentDataFlow) prepareComment(action string) error {
 	}()
 	go func() {
 		defer wg.Done()
-		user, err := dal.NewUserDaoInstance().QueryUserByUserId(c.ctx, c.currentUid)
+		user, err := db.NewUserDaoInstance().QueryUserByUserId(c.ctx, c.currentUid)
 		if err != nil {
 			userErr = err
 		}

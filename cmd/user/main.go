@@ -1,7 +1,11 @@
 package main
 
 import (
+	"aweme_kitex/cfg"
 	user "aweme_kitex/cmd/user/kitex_gen/user/userservice"
+	userRPC "aweme_kitex/cmd/user/rpc"
+	"aweme_kitex/cmd/user/service_user/db"
+	userKafka "aweme_kitex/cmd/user/service_user/kafka"
 	"aweme_kitex/pkg/bound"
 	constants "aweme_kitex/pkg/constant"
 	"aweme_kitex/pkg/logger"
@@ -18,6 +22,13 @@ import (
 )
 
 func Init() {
+	// redis init
+	db.InitRedis()
+	// kafka init
+	userKafka.InitKafka()
+	// rpc init
+	userRPC.Init()
+	cfg.Init()
 	logger.DoInit("", "user_log", logrus.DebugLevel)
 	tracer.InitJaeger(constants.UserServiceName)
 }

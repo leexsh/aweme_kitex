@@ -41,8 +41,30 @@ struct UserInfoResponse {
     2: list<User> user
  }
 
+struct SingleUserInfoRequest {
+    1: list<string> user_ids
+}
+
+struct SingleUserInfoResponse {
+    1: base.BaseResp base_resp
+    2: list<User> users
+}
+
+struct ChangeFollowStatusRequest {
+    1: string user_id
+    2: string to_user_id
+    3: bool isFollow
+}
+
  service UserService {
+     // 用户注册
      UserRegisterResponse Register(1: UserRegisterRequest req)
+     // 用户登录
      UserLoginResponse Login(1: UserLoginRequest req)
+     // 登录后获取用户信息
      UserInfoResponse UserInfo(1: UserInfoRequest req)
+     // 获取单个用户信息
+     SingleUserInfoResponse GetUserInfoByUserId(1: SingleUserInfoRequest req)
+     // 修改关注/被关注数目
+     void ChangeFollowStatus(1: ChangeFollowStatusRequest req)
  }

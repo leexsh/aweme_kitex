@@ -14,6 +14,8 @@ type Client interface {
 	Register(ctx context.Context, req *user.UserRegisterRequest, callOptions ...callopt.Option) (r *user.UserRegisterResponse, err error)
 	Login(ctx context.Context, req *user.UserLoginRequest, callOptions ...callopt.Option) (r *user.UserLoginResponse, err error)
 	UserInfo(ctx context.Context, req *user.UserInfoRequest, callOptions ...callopt.Option) (r *user.UserInfoResponse, err error)
+	GetUserInfoByUserId(ctx context.Context, req *user.SingleUserInfoRequest, callOptions ...callopt.Option) (r *user.SingleUserInfoResponse, err error)
+	ChangeFollowStatus(ctx context.Context, req *user.ChangeFollowStatusRequest, callOptions ...callopt.Option) (err error)
 }
 
 // NewClient creates a client for the service defined in IDL.
@@ -58,4 +60,14 @@ func (p *kUserServiceClient) Login(ctx context.Context, req *user.UserLoginReque
 func (p *kUserServiceClient) UserInfo(ctx context.Context, req *user.UserInfoRequest, callOptions ...callopt.Option) (r *user.UserInfoResponse, err error) {
 	ctx = client.NewCtxWithCallOptions(ctx, callOptions)
 	return p.kClient.UserInfo(ctx, req)
+}
+
+func (p *kUserServiceClient) GetUserInfoByUserId(ctx context.Context, req *user.SingleUserInfoRequest, callOptions ...callopt.Option) (r *user.SingleUserInfoResponse, err error) {
+	ctx = client.NewCtxWithCallOptions(ctx, callOptions)
+	return p.kClient.GetUserInfoByUserId(ctx, req)
+}
+
+func (p *kUserServiceClient) ChangeFollowStatus(ctx context.Context, req *user.ChangeFollowStatusRequest, callOptions ...callopt.Option) (err error) {
+	ctx = client.NewCtxWithCallOptions(ctx, callOptions)
+	return p.kClient.ChangeFollowStatus(ctx, req)
 }

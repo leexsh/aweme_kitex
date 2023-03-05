@@ -2,10 +2,16 @@ package service_relation
 
 import (
 	"aweme_kitex/cmd/relation/kitex_gen/relation"
-	"aweme_kitex/models/dal"
+	relationRPC "aweme_kitex/cmd/relation/rpc"
+	relation_db "aweme_kitex/cmd/relation/service_relation/db"
+	"aweme_kitex/cmd/relation/service_relation/kafka"
+	user2 "aweme_kitex/cmd/user/kitex_gen/user"
+	"aweme_kitex/cmd/user/service_user/db"
 	constants "aweme_kitex/pkg/constant"
 	"aweme_kitex/pkg/jwt"
 	"context"
+	"strings"
+	"time"
 )
 
 type RelationActionService struct {
@@ -47,7 +53,7 @@ type relationActionDataFlow struct {
 }
 
 func (r *relationActionDataFlow) do() error {
-	if _, err := dal.NewUserDaoInstance().CheckUserId(r.ctx, []string{r.toUserId}); err != nil {
+	if _, err := db.NewUserDaoInstance().CheckUserId(r.ctx, []string{r.toUserId}); err != nil {
 		return err
 	}
 	if r.actionType == constants.Follow {
@@ -64,17 +70,50 @@ func (r *relationActionDataFlow) do() error {
 }
 
 func (r *relationActionDataFlow) createRelation() error {
-	err := dal.NewRelationDaoInstance().CreateRelation(r.ctx, r.userId, r.toUserId)
+	// 1.use user rpc  去修改关注数目
+	err := relationRPC.ChangeFollowCount(r.ctx, &user2.ChangeFollowStatusRequest{
+		UserId:   r.userId,
+		ToUserId: r.toUserId,
+		IsFollow: true,
+	})
 	if err != nil {
 		return err
 	}
+	// 2. 修改本地数据关系
+	// 2.1 修改redis
+	relation_db.AddRelation(r.ctx, r.userId, r.toUserId)
+	sb := strings.Builder{}
+	sb.WriteString(r.userId)
+	sb.WriteString("&")
+	sb.WriteString(r.toUserId)
+	// 2.2 写入kafka供给消费
+	kafka.ProduceAddRelation(constants.KafKaRelationAddTopic, sb.String())
+	// 2.3 sleep
+	time.Sleep(constants.SleepTime)
+	// 2.4 del redis
+	relation_db.DelRelation(r.ctx, r.userId, r.toUserId)
 	return nil
 }
 
 func (r *relationActionDataFlow) deleteRelation() error {
-	err := dal.NewRelationDaoInstance().DeleteRelation(r.ctx, r.userId, r.toUserId)
+	// 1.use user rpc  修改关注数目
+	err := relationRPC.ChangeFollowCount(r.ctx, &user2.ChangeFollowStatusRequest{
+		UserId:   r.userId,
+		ToUserId: r.toUserId,
+		IsFollow: false,
+	})
 	if err != nil {
-		return nil
+		return err
 	}
+	// 2. 修改本地数据关系
+	// 2.1 修改redis
+	sb := strings.Builder{}
+	sb.WriteString(r.userId)
+	sb.WriteString("&")
+	sb.WriteString(r.toUserId)
+	// 2.2 写入kafka供给消费
+	kafka.ProduceAddRelation(constants.KafKaRelationDelTopic, sb.String())
+	// 2.3 del redis
+	relation_db.DelRelation(r.ctx, r.userId, r.toUserId)
 	return nil
 }

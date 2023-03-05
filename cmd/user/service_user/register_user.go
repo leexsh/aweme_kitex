@@ -2,10 +2,10 @@ package service_user
 
 import (
 	"aweme_kitex/cmd/user/kitex_gen/user"
+	"aweme_kitex/cmd/user/service_user/db"
 	"aweme_kitex/models"
-	"aweme_kitex/models/dal"
-	"aweme_kitex/pkg/errno"
 	"aweme_kitex/pkg/jwt"
+	"aweme_kitex/pkg/logger"
 	"aweme_kitex/pkg/utils"
 	"context"
 )
@@ -23,25 +23,26 @@ func NewRegisterUserService(ctx context.Context) *RegisterUserService {
 
 // RegisterUser register user info
 func (s *RegisterUserService) RegisterUser(req *user.UserRegisterRequest) (string, string, error) {
-	user, err := dal.NewUserDaoInstance().QueryUserByUserId(s.ctx, req.UserName)
+	userId, token, err := s.do(req.UserName, req.Password)
 	if err != nil {
 		return "", "", err
 	}
-	if len(user.UserId) != 0 {
-		return "", "", errno.UserAlreadyExistErr
-	}
+	return userId, token, err
+}
 
+func (s *RegisterUserService) do(name, password string) (string, string, error) {
+	// insert to data
 	userId := utils.GenerateUUID()
-	token, _ := jwt.GenerateToken(userId, req.UserName)
+	token, _ := jwt.GenerateToken(userId, name)
 	newUser := &models.UserRawData{
 		UserId:        userId,
-		Name:          req.UserName,
-		Password:      utils.Md5(req.Password),
+		Name:          name,
+		Password:      utils.Md5(password),
 		Token:         token,
 		FollowCount:   0,
 		FollowerCount: 0,
 	}
-	err = dal.NewUserDaoInstance().UploadUserData(context.Background(), newUser)
-
-	return userId, token, nil
+	logger.Info("Register success userName is %s", name)
+	err := db.NewUserDaoInstance().UploadUserData(context.Background(), newUser)
+	return userId, token, err
 }
