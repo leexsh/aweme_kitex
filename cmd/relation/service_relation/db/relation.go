@@ -1,4 +1,4 @@
-package dal
+package db
 
 import (
 	"aweme_kitex/cfg"
@@ -8,8 +8,6 @@ import (
 	"context"
 	"errors"
 	"sync"
-
-	"gorm.io/gorm"
 )
 
 // -------------用户关系-------------------
@@ -53,46 +51,12 @@ func (r *RelationDao) CreateRelation(ctx context.Context, userId, toUserId strin
 		ToUserId: toUserId,
 		Status:   1,
 	}
-	cfg.DB.Transaction(func(tx *gorm.DB) error {
-		err := tx.Debug().WithContext(ctx).Table("user").Where("user_id=?", userId).Update("follow_count", gorm.Expr("follow_count + ?", 1)).Error
-		if err != nil {
-			logger.Error("create relation err: " + err.Error())
-			return err
-		}
-		err = tx.Debug().Table("user").Where("user_id=?", toUserId).Update("follower_count", gorm.Expr("follower_count + ?", 1)).Error
-		if err != nil {
-			return err
-		}
-		err = tx.Debug().Table("relation").Create(relation).Error
-		if err != nil {
-			return err
-		}
-		return nil
-	})
-	return nil
+	return cfg.DB.WithContext(ctx).Debug().Table("relation").Create(relation).Error
 }
 
 func (r *RelationDao) DeleteRelation(ctx context.Context, userId, toUserId string) error {
 	var relationRaw *models.RelationRaw
-	cfg.DB.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
-		err := tx.Table("user").Where("user_id = ?", userId).Update("follow_count", gorm.Expr("follow_count - ?", 1)).Error
-		if err != nil {
-			logger.Error("delete relation by Id err: " + err.Error())
-			return err
-		}
-
-		err = tx.Table("user").Where("user_id = ?", toUserId).Update("follower_count", gorm.Expr("follower_count - ?", 1)).Error
-		if err != nil {
-			return err
-		}
-
-		err = tx.Table("relation").Where("user_id = ? AND to_user_id = ?", userId, toUserId).Delete(&relationRaw).Error
-		if err != nil {
-			return err
-		}
-		return nil
-	})
-	return nil
+	return cfg.DB.WithContext(ctx).Debug().Table("relation").Where("user_id = ? AND to_user_id = ?", userId, toUserId).Delete(&relationRaw).Error
 }
 
 // get follow by uid
