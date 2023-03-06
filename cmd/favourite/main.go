@@ -3,6 +3,7 @@ package main
 import (
 	"aweme_kitex/cfg"
 	favourite "aweme_kitex/cmd/favourite/kitex_gen/favourite/favouriteservice"
+	favRPC "aweme_kitex/cmd/favourite/rpc"
 	"aweme_kitex/pkg/bound"
 	constants "aweme_kitex/pkg/constant"
 	"aweme_kitex/pkg/logger"
@@ -20,6 +21,7 @@ import (
 
 func Init() {
 	cfg.Init()
+	favRPC.InitRPC()
 	logger.DoInit("", "favourite_log", logrus.DebugLevel)
 	tracer.InitJaeger(constants.FeedServiceName)
 }

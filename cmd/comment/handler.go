@@ -3,8 +3,8 @@ package main
 import (
 	comment "aweme_kitex/cmd/comment/kitex_gen/comment"
 	"aweme_kitex/cmd/comment/service_comment"
+	commentPack "aweme_kitex/cmd/comment/service_comment/pack"
 	"context"
-	"time"
 	"unicode/utf8"
 )
 
@@ -13,76 +13,39 @@ type CommentServiceImpl struct{}
 
 // CreateComment implements the CommentServiceImpl interface.
 func (s *CommentServiceImpl) CreateComment(ctx context.Context, req *comment.CommentActionRequest) (resp *comment.CommentActionResponse, err error) {
-	// TODO: Your code here...
-	resp = new(comment.CommentActionResponse)
-	if len(req.Token) == 0 || utf8.RuneCountInString(*req.CommentContent) > 20 {
-		resp.BaseResp.ServiceTime = time.Now().Unix()
-		resp.BaseResp.StatusCode = -1
-		resp.BaseResp.StatusMsg = "params error"
-		return resp, nil
+	if utf8.RuneCountInString(*req.CommentContent) > 20 {
+		return commentPack.PackCommentAction(-1, "params error", nil), nil
 	}
 
-	comment, err := service_comment.NewCreateCommentService(ctx).CreateComment(req)
+	comm, err := service_comment.NewCreateCommentService(ctx).CreateComment(req)
 	if err != nil {
-		resp.BaseResp.ServiceTime = time.Now().Unix()
-		resp.BaseResp.StatusCode = -1
-		resp.BaseResp.StatusMsg = err.Error()
-		return resp, nil
+		return commentPack.PackCommentAction(-1, err.Error(), nil), nil
 	}
-	resp.BaseResp.ServiceTime = time.Now().Unix()
-	resp.BaseResp.StatusCode = 0
-	resp.BaseResp.StatusMsg = "create comment success"
-	resp.CommentList[0] = comment
-	return resp, nil
+	return commentPack.PackCommentAction(0, "create comment success", []*comment.Comment{comm}), nil
 }
 
 // DelComment implements the CommentServiceImpl interface.
 func (s *CommentServiceImpl) DelComment(ctx context.Context, req *comment.CommentActionRequest) (resp *comment.CommentActionResponse, err error) {
-	// TODO: Your code here...
-	resp = new(comment.CommentActionResponse)
-	if len(req.Token) == 0 || utf8.RuneCountInString(*req.CommentContent) > 20 {
-		resp.BaseResp.ServiceTime = time.Now().Unix()
-		resp.BaseResp.StatusCode = -1
-		resp.BaseResp.StatusMsg = "params error"
-		return resp, nil
+	if utf8.RuneCountInString(*req.CommentContent) > 20 {
+		return commentPack.PackCommentAction(-1, "params error", nil), nil
 	}
 
-	commet, err := service_comment.NewDeleteCommentService(ctx).DelComment(req)
+	comm, err := service_comment.NewDeleteCommentService(ctx).DelComment(req)
 	if err != nil {
-		resp.BaseResp.ServiceTime = time.Now().Unix()
-		resp.BaseResp.StatusCode = -1
-		resp.BaseResp.StatusMsg = err.Error()
-		return resp, nil
+		return commentPack.PackCommentAction(-1, err.Error(), nil), nil
 	}
-	resp.BaseResp.ServiceTime = time.Now().Unix()
-	resp.BaseResp.StatusCode = 0
-	resp.BaseResp.StatusMsg = "create comment success"
-	resp.CommentList[0] = commet
-	return resp, nil
+	return commentPack.PackCommentAction(0, "create comment success", []*comment.Comment{comm}), nil
 }
 
 // CommentList implements the CommentServiceImpl interface.
 func (s *CommentServiceImpl) CommentList(ctx context.Context, req *comment.CommentListRequest) (resp *comment.CommentListResponse, err error) {
-	// TODO: Your code here...
-	resp = new(comment.CommentListResponse)
-
-	if len(req.Token) == 0 || len(req.VideoId) == 0 {
-		resp.BaseResp.ServiceTime = time.Now().Unix()
-		resp.BaseResp.StatusCode = -1
-		resp.BaseResp.StatusMsg = "params error"
-		return resp, nil
+	if len(req.VideoId) == 0 {
+		return commentPack.PackCommentList(-1, "params error", nil), nil
 	}
 
 	commentList, err := service_comment.NewCommentListService(ctx).CommentList(req)
 	if err != nil {
-		resp.BaseResp.ServiceTime = time.Now().Unix()
-		resp.BaseResp.StatusCode = -1
-		resp.BaseResp.StatusMsg = err.Error()
-		return resp, nil
+		return commentPack.PackCommentList(-1, err.Error(), nil), nil
 	}
-	resp.BaseResp.ServiceTime = time.Now().Unix()
-	resp.BaseResp.StatusCode = 0
-	resp.BaseResp.StatusMsg = "get comment List success"
-	resp.CommentList = commentList
-	return
+	return commentPack.PackCommentList(0, "create comment success", commentList), nil
 }

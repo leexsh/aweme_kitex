@@ -33,6 +33,10 @@ const (
 	KafKaRelationDelTopic     = "relation_del"
 	KafKaUserAddRelationTopic = "user_relation_add"
 	KafKaUserDelRelationTopic = "user_relation_del"
+	KafKaFavouriteAddTopic    = "favourite_add"
+	KafKaFavouriteDelTopic    = "favourite_del"
+	KafKaVideoCommentAddTopic = "video_comment_add"
+	KafKaVideoCommentDelTopic = "video_comment_del"
 
 	CPURateLimit = 80.0
 	DefaultLimit = 10

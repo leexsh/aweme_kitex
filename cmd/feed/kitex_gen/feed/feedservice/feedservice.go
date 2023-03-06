@@ -19,7 +19,8 @@ func NewServiceInfo() *kitex.ServiceInfo {
 	serviceName := "FeedService"
 	handlerType := (*feed.FeedService)(nil)
 	methods := map[string]kitex.MethodInfo{
-		"Feed": kitex.NewMethodInfo(feedHandler, newFeedServiceFeedArgs, newFeedServiceFeedResult, false),
+		"Feed":             kitex.NewMethodInfo(feedHandler, newFeedServiceFeedArgs, newFeedServiceFeedResult, false),
+		"ChangeCommentCnt": kitex.NewMethodInfo(changeCommentCntHandler, newFeedServiceChangeCommentCntArgs, newFeedServiceChangeCommentCntResult, false),
 	}
 	extra := map[string]interface{}{
 		"PackageName": "feed",
@@ -53,6 +54,24 @@ func newFeedServiceFeedResult() interface{} {
 	return feed.NewFeedServiceFeedResult()
 }
 
+func changeCommentCntHandler(ctx context.Context, handler interface{}, arg, result interface{}) error {
+	realArg := arg.(*feed.FeedServiceChangeCommentCntArgs)
+	realResult := result.(*feed.FeedServiceChangeCommentCntResult)
+	success, err := handler.(feed.FeedService).ChangeCommentCnt(ctx, realArg.Req)
+	if err != nil {
+		return err
+	}
+	realResult.Success = success
+	return nil
+}
+func newFeedServiceChangeCommentCntArgs() interface{} {
+	return feed.NewFeedServiceChangeCommentCntArgs()
+}
+
+func newFeedServiceChangeCommentCntResult() interface{} {
+	return feed.NewFeedServiceChangeCommentCntResult()
+}
+
 type kClient struct {
 	c client.Client
 }
@@ -68,6 +87,16 @@ func (p *kClient) Feed(ctx context.Context, req *feed.FeedRequest) (r *feed.Feed
 	_args.Req = req
 	var _result feed.FeedServiceFeedResult
 	if err = p.c.Call(ctx, "Feed", &_args, &_result); err != nil {
+		return
+	}
+	return _result.GetSuccess(), nil
+}
+
+func (p *kClient) ChangeCommentCnt(ctx context.Context, req *feed.ChangeCommentCountRequest) (r *feed.ChangeCommentCountResponse, err error) {
+	var _args feed.FeedServiceChangeCommentCntArgs
+	_args.Req = req
+	var _result feed.FeedServiceChangeCommentCntResult
+	if err = p.c.Call(ctx, "ChangeCommentCnt", &_args, &_result); err != nil {
 		return
 	}
 	return _result.GetSuccess(), nil

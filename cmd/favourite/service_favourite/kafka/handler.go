@@ -1,7 +1,8 @@
-package kafka
+package favKafka
 
 import (
-	"aweme_kitex/cmd/relation/service_relation/db"
+	"aweme_kitex/models"
+	"aweme_kitex/models/dal"
 	constants "aweme_kitex/pkg/constant"
 	"aweme_kitex/pkg/logger"
 	"context"
@@ -52,7 +53,7 @@ func ProduceAddRelation(topic, val string) error {
 	return nil
 }
 
-// 消费收藏
+// 消费取消关注消息
 func ConsumeAddRelation() {
 	partitionList, err := kafkaAddConsumer.Partitions(constants.KafKaFavouriteAddTopic)
 	if err != nil {
@@ -61,7 +62,7 @@ func ConsumeAddRelation() {
 	}
 	for _, list := range partitionList { // 遍历所有分区
 		// 根据每个分区创建一个消费者
-		pc, err := kafkaAddConsumer.ConsumePartition("relation_add", int32(list), sarama.OffsetNewest)
+		pc, err := kafkaAddConsumer.ConsumePartition("favourite_add", int32(list), sarama.OffsetNewest)
 		if err != nil {
 			logger.Error(err)
 		}
@@ -70,8 +71,13 @@ func ConsumeAddRelation() {
 		go func(sarama.PartitionConsumer) {
 			for msg := range pc.Messages() {
 				params := strings.Split(string(msg.Value), "&")
-				userId, toUserId := params[0], params[1]
-				err := db.NewRelationDaoInstance().CreateRelation(context.Background(), userId, toUserId)
+				id, userId, vid := params[0], params[1], params[2]
+				favour := &models.FavouriteRaw{
+					Id:      id,
+					UserId:  userId,
+					VideoId: vid,
+				}
+				err := dal.NewFavouriteDaoInstance().CreateFavour(context.Background(), favour, vid)
 				if err != nil {
 					logger.Error(err)
 				}
@@ -80,7 +86,6 @@ func ConsumeAddRelation() {
 	}
 }
 
-// 消费取消收藏消息
 func ConsumeDelRelation() {
 	partitionList, err := kafkaDelConsumer.Partitions(constants.KafKaFavouriteDelTopic)
 	if err != nil {
@@ -89,7 +94,7 @@ func ConsumeDelRelation() {
 	}
 	for _, list := range partitionList { // 遍历所有分区
 		// 根据每个分区创建一个消费者
-		pc, err := kafkaDelConsumer.ConsumePartition("relation_del", int32(list), sarama.OffsetNewest)
+		pc, err := kafkaDelConsumer.ConsumePartition("favourite_del", int32(list), sarama.OffsetNewest)
 		if err != nil {
 			logger.Error(err)
 		}
@@ -98,8 +103,8 @@ func ConsumeDelRelation() {
 		go func(sarama.PartitionConsumer) {
 			for msg := range pc.Messages() {
 				params := strings.Split(string(msg.Value), "&")
-				userId, toUserId := params[0], params[1]
-				err := db.NewRelationDaoInstance().DeleteRelation(context.Background(), userId, toUserId)
+				userId, vid := params[0], params[1]
+				err := dal.NewFavouriteDaoInstance().DelFavour(context.Background(), userId, vid)
 				if err != nil {
 					logger.Error(err)
 				}

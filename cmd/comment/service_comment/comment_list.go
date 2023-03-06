@@ -3,10 +3,11 @@ package service_comment
 import (
 	"aweme_kitex/cmd/comment/kitex_gen/comment"
 	"aweme_kitex/cmd/comment/kitex_gen/user"
-	"aweme_kitex/cmd/relation/service_relation/db"
-	db2 "aweme_kitex/cmd/user/service_user/db"
+	commentRPC "aweme_kitex/cmd/comment/rpc"
+	"aweme_kitex/cmd/comment/service_comment/db"
+	"aweme_kitex/cmd/relation/kitex_gen/relation"
+	user2 "aweme_kitex/cmd/user/kitex_gen/user"
 	"aweme_kitex/models"
-	"aweme_kitex/models/dal"
 	"aweme_kitex/pkg/jwt"
 	"aweme_kitex/pkg/utils"
 	"context"
@@ -46,8 +47,8 @@ type commentListDataFlow struct {
 
 	userId      string
 	Comments    []*models.CommentRaw
-	UserMap     map[string]*models.UserRawData
-	RelationMap map[string]*models.RelationRaw
+	UserMap     map[string]*user2.User
+	RelationMap map[string]bool
 }
 
 func newCommentListDataFlow(ctx context.Context, uid string, videoId string) *commentListDataFlow {
@@ -59,9 +60,6 @@ func newCommentListDataFlow(ctx context.Context, uid string, videoId string) *co
 }
 
 func (c *commentListDataFlow) do() ([]*comment.Comment, error) {
-	if _, err := dal.NewVideoDaoInstance().CheckVideoId(c.ctx, []string{c.VideoId}); err != nil {
-		return nil, err
-	}
 	if err := c.prepareListCommentInfo(); err != nil {
 		return nil, err
 	}
@@ -73,7 +71,7 @@ func (c *commentListDataFlow) do() ([]*comment.Comment, error) {
 
 func (c *commentListDataFlow) prepareListCommentInfo() error {
 	// 获取一系列评论信息
-	comments, err := dal.NewCommentDaoInstance().QueryCommentByVideoId(c.ctx, c.VideoId)
+	comments, err := db.NewCommentDaoInstance().QueryCommentByVideoId(c.ctx, c.VideoId)
 	if err != nil {
 		return err
 	}
@@ -86,20 +84,28 @@ func (c *commentListDataFlow) prepareListCommentInfo() error {
 	}
 
 	// 获取一系列用户信息
-	users, err := db2.NewUserDaoInstance().QueryUserByIds(c.ctx, userIds)
+	users, err := commentRPC.GetUserInfo(c.ctx, &user2.SingleUserInfoRequest{UserIds: userIds})
 	if err != nil {
 		return err
 	}
-	userMap := make(map[string]*models.UserRawData)
+	userMap := make(map[string]*user2.User)
 	for _, user := range users {
 		userMap[user.UserId] = user
 	}
 	c.UserMap = userMap
 
 	// 获取一系列关注信息
-	relationMap, err := db.NewRelationDaoInstance().QueryRelationByIds(c.ctx, c.userId, userIds)
-	if err != nil {
-		return err
+	relationMap := make(map[string]bool, len(userIds))
+	for _, id := range userIds {
+		res, err := commentRPC.QueryRelation(c.ctx, &relation.QueryRelationRequest{
+			UserId:   c.userId,
+			ToUserId: id,
+			IsFollow: false,
+		})
+		if err != nil {
+			return err
+		}
+		relationMap[id] = res
 	}
 	c.RelationMap = relationMap
 

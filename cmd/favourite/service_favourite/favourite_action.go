@@ -2,8 +2,7 @@ package service_favourite
 
 import (
 	"aweme_kitex/cmd/favourite/kitex_gen/favourite"
-	"aweme_kitex/models"
-	"aweme_kitex/models/dal"
+	favKafka "aweme_kitex/cmd/favourite/service_favourite/kafka"
 	constants "aweme_kitex/pkg/constant"
 	"aweme_kitex/pkg/jwt"
 	"aweme_kitex/pkg/utils"
@@ -42,8 +41,6 @@ type favouriteActionDataFlow struct {
 	videoId    string
 	action     string
 
-	FavouriteData *models.FavouriteRaw
-
 	ctx context.Context
 }
 
@@ -57,28 +54,19 @@ func newFavouriteActionData(ctx context.Context, userId, videoId, action string)
 }
 
 func (f *favouriteActionDataFlow) do() error {
-	if _, err := dal.NewVideoDaoInstance().CheckVideoId(f.ctx, []string{f.videoId}); err != nil {
-		return err
-	}
+	// todo use rpc
+	// if _, err := db.NewVideoDaoInstance().CheckVideoId(f.ctx, []string{f.videoId}); err != nil {
+	// 	return err
+	// }
 	if f.action != constants.Like && f.action != constants.Unlike {
 		return errors.New("invalid action type")
 	}
 	if f.action == constants.Like {
-		favour := &models.FavouriteRaw{
-			Id:      utils.GenerateUUID(),
-			UserId:  f.CurrentUid,
-			VideoId: f.videoId,
-		}
-		f.FavouriteData = favour
-		err := dal.NewFavouriteDaoInstance().CreateFavour(f.ctx, favour, f.videoId)
-		if err != nil {
-			return err
-		}
+		msg := utils.GenerateUUID() + "&" + f.CurrentUid + "&" + f.videoId
+		favKafka.ProduceAddRelation(constants.KafKaFavouriteAddTopic, msg)
 	} else if f.action == constants.Unlike {
-		err := dal.NewFavouriteDaoInstance().DelFavour(f.ctx, f.CurrentUid, f.videoId)
-		if err != nil {
-			return err
-		}
+		msg := f.CurrentUid + "&" + f.videoId
+		favKafka.ProduceAddRelation(constants.KafKaFavouriteDelTopic, msg)
 	}
 	return nil
 }

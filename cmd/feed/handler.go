@@ -50,3 +50,17 @@ func (s *FeedServiceImpl) Feed(ctx context.Context, req *feed.FeedRequest) (resp
 	resp.NextTime = nextTime
 	return
 }
+
+// ChangeCommentCnt implements the FeedServiceImpl interface.
+func (s *FeedServiceImpl) ChangeCommentCnt(ctx context.Context, req *feed.ChangeCommentCountRequest) (resp *feed.ChangeCommentCountResponse, err error) {
+	resp = new(feed.ChangeCommentCountResponse)
+	err = service_feed.NewChangeCommentCountService(ctx).ChangeCommentCount(req.VideoId, req.Action)
+	if err != nil {
+		resp.BaseResp.StatusCode = -1
+	} else {
+		resp.BaseResp.StatusCode = 0
+	}
+	resp.BaseResp.StatusMsg = err.Error()
+	resp.BaseResp.ServiceTime = time.Now().Unix()
+	return
+}

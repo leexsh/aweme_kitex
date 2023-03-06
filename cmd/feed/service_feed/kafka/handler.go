@@ -1,18 +1,17 @@
-package kafka
+package videoKafka
 
 import (
-	"aweme_kitex/cmd/relation/service_relation/db"
+	videoDB "aweme_kitex/cmd/feed/service_feed/db"
 	constants "aweme_kitex/pkg/constant"
 	"aweme_kitex/pkg/logger"
 	"context"
-	"strings"
 
 	"github.com/Shopify/sarama"
 )
 
 var kafkaProducer sarama.SyncProducer
-var kafkaAddConsumer sarama.Consumer
-var kafkaDelConsumer sarama.Consumer
+var kafkaFollowAddConsumer sarama.Consumer
+var kafkaFollowDelConsumer sarama.Consumer
 
 func InitKafka() {
 	config := sarama.NewConfig()
@@ -26,21 +25,22 @@ func InitKafka() {
 		logger.Error(err)
 	}
 
-	kafkaAddConsumer, err = sarama.NewConsumer([]string{constants.KafkaAddress}, nil)
-	if err != nil {
-		logger.Error(err)
-	}
-	kafkaDelConsumer, err = sarama.NewConsumer([]string{constants.KafkaAddress}, nil)
+	kafkaFollowAddConsumer, err = sarama.NewConsumer([]string{constants.KafkaAddress}, nil)
 	if err != nil {
 		logger.Error(err)
 	}
 
-	go ConsumeAddRelation()
-	go ConsumeDelRelation()
+	kafkaFollowDelConsumer, err = sarama.NewConsumer([]string{constants.KafkaAddress}, nil)
+	if err != nil {
+		logger.Error(err)
+	}
+
+	go ConsumeFollowAddMsg()
+	go ConsumeFollowDelMsg()
 }
 
 // 生产消息
-func ProduceAddRelation(topic, val string) error {
+func ProduceFollowMsg(topic, val string) error {
 	msg := &sarama.ProducerMessage{
 		Topic: topic,
 		Value: sarama.StringEncoder(val),
@@ -52,16 +52,16 @@ func ProduceAddRelation(topic, val string) error {
 	return nil
 }
 
-// 消费收藏
-func ConsumeAddRelation() {
-	partitionList, err := kafkaAddConsumer.Partitions(constants.KafKaFavouriteAddTopic)
+// 消费增加关注数目
+func ConsumeFollowAddMsg() {
+	partitionList, err := kafkaFollowAddConsumer.Partitions(constants.KafKaVideoCommentAddTopic)
 	if err != nil {
 		logger.Error(err)
 		return
 	}
 	for _, list := range partitionList { // 遍历所有分区
 		// 根据每个分区创建一个消费者
-		pc, err := kafkaAddConsumer.ConsumePartition("relation_add", int32(list), sarama.OffsetNewest)
+		pc, err := kafkaFollowAddConsumer.ConsumePartition("comment_add", int32(list), sarama.OffsetNewest)
 		if err != nil {
 			logger.Error(err)
 		}
@@ -69,27 +69,26 @@ func ConsumeAddRelation() {
 		// 异步消费数据
 		go func(sarama.PartitionConsumer) {
 			for msg := range pc.Messages() {
-				params := strings.Split(string(msg.Value), "&")
-				userId, toUserId := params[0], params[1]
-				err := db.NewRelationDaoInstance().CreateRelation(context.Background(), userId, toUserId)
+				vid := string(msg.Value)
+				err := videoDB.NewVideoDaoInstance().IncreaseCommentCount(context.Background(), vid)
 				if err != nil {
-					logger.Error(err)
+					logger.Error("create relation err: " + err.Error())
 				}
 			}
 		}(pc)
 	}
 }
 
-// 消费取消收藏消息
-func ConsumeDelRelation() {
-	partitionList, err := kafkaDelConsumer.Partitions(constants.KafKaFavouriteDelTopic)
+// 消费减少关注数目
+func ConsumeFollowDelMsg() {
+	partitionList, err := kafkaFollowDelConsumer.Partitions(constants.KafKaVideoCommentDelTopic)
 	if err != nil {
 		logger.Error(err)
 		return
 	}
 	for _, list := range partitionList { // 遍历所有分区
 		// 根据每个分区创建一个消费者
-		pc, err := kafkaDelConsumer.ConsumePartition("relation_del", int32(list), sarama.OffsetNewest)
+		pc, err := kafkaFollowDelConsumer.ConsumePartition("comment_del", int32(list), sarama.OffsetNewest)
 		if err != nil {
 			logger.Error(err)
 		}
@@ -97,11 +96,10 @@ func ConsumeDelRelation() {
 		// 异步消费数据
 		go func(sarama.PartitionConsumer) {
 			for msg := range pc.Messages() {
-				params := strings.Split(string(msg.Value), "&")
-				userId, toUserId := params[0], params[1]
-				err := db.NewRelationDaoInstance().DeleteRelation(context.Background(), userId, toUserId)
+				vid := string(msg.Value)
+				err := videoDB.NewVideoDaoInstance().DecreaseCommentCount(context.Background(), vid)
 				if err != nil {
-					logger.Error(err)
+					logger.Error("create relation err: " + err.Error())
 				}
 			}
 		}(pc)

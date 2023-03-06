@@ -4,8 +4,10 @@ import (
 	"aweme_kitex/cmd/favourite/kitex_gen/favourite"
 	"aweme_kitex/cmd/favourite/kitex_gen/feed"
 	"aweme_kitex/cmd/favourite/kitex_gen/user"
+	favRPC "aweme_kitex/cmd/favourite/rpc"
+	db2 "aweme_kitex/cmd/feed/service_feed/db"
 	"aweme_kitex/cmd/relation/service_relation/db"
-	db2 "aweme_kitex/cmd/user/service_user/db"
+	user2 "aweme_kitex/cmd/user/kitex_gen/user"
 	"aweme_kitex/models"
 	"aweme_kitex/models/dal"
 	"aweme_kitex/pkg/jwt"
@@ -47,7 +49,7 @@ type favouriteListDataFlow struct {
 	favours []*feed.Video
 
 	videoRawData []*models.VideoRawData
-	users        map[string]*models.UserRawData
+	users        map[string]*user2.User
 	favoursMap   map[string]*models.FavouriteRaw
 	RelationMap  map[string]*models.RelationRaw
 	ctx          context.Context
@@ -76,7 +78,7 @@ func (f *favouriteListDataFlow) prepareVideoInfo() error {
 		return err
 	}
 	// get videos
-	videoData, err := dal.NewVideoDaoInstance().QueryVideosByIs(f.ctx, videosIds)
+	videoData, err := db2.NewVideoDaoInstance().QueryVideosByIs(f.ctx, videosIds)
 	if err != nil {
 		return err
 	}
@@ -88,11 +90,11 @@ func (f *favouriteListDataFlow) prepareVideoInfo() error {
 	}
 
 	// get video authors
-	users, err := db2.NewUserDaoInstance().QueryUserByIds(f.ctx, uids)
+	users, err := favRPC.GetUserInfo(f.ctx, &user2.SingleUserInfoRequest{UserIds: uids})
 	if err != nil {
 		return err
 	}
-	userMap := make(map[string]*models.UserRawData)
+	userMap := make(map[string]*user2.User)
 	for _, user := range users {
 		userMap[user.UserId] = user
 	}

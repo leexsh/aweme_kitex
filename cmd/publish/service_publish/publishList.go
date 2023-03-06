@@ -1,6 +1,7 @@
 package service_publish
 
 import (
+	db3 "aweme_kitex/cmd/feed/service_feed/db"
 	"aweme_kitex/cmd/publish/kitex_gen/feed"
 	"aweme_kitex/cmd/publish/kitex_gen/publish"
 	"aweme_kitex/cmd/publish/kitex_gen/user"
@@ -52,7 +53,7 @@ func newQueryUserVideoList(ctx context.Context, userId string) *userVideoList {
 }
 
 func (f *userVideoList) prepareVideoInfo() error {
-	videoData, err := dal.NewVideoDaoInstance().QueryVideosByUserId(f.ctx, f.UserId)
+	videoData, err := db3.NewVideoDaoInstance().QueryVideosByUserId(f.ctx, f.UserId)
 	if err != nil {
 		return err
 	}

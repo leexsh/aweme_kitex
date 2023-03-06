@@ -30,6 +30,16 @@ struct FeedResponse {
     3: i64 next_time
 }
 
+struct ChangeCommentCountRequest {
+    1: string video_id
+    2: i64 action
+}
+
+struct ChangeCommentCountResponse {
+    1: base.BaseResp base_resp
+}
+
 service FeedService {
     FeedResponse Feed(1: FeedRequest req)
+    ChangeCommentCountResponse ChangeCommentCnt(1: ChangeCommentCountRequest req)
 }

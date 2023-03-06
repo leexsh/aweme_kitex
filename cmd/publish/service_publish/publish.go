@@ -2,8 +2,8 @@ package service_publish
 
 import (
 	"aweme_kitex/cmd/publish/kitex_gen/publish"
+	"aweme_kitex/cmd/publish/service_publish/db"
 	"aweme_kitex/models"
-	"aweme_kitex/models/dal"
 	"aweme_kitex/pkg/jwt"
 	"aweme_kitex/pkg/utils"
 	"bytes"
@@ -34,13 +34,13 @@ func (s *PublishService) Publish(req *publish.PublishActionRequest) error {
 	fileName := fmt.Sprintf(uc.Id + title)
 	filePath := "/public/" + fileName
 	// 1.将视频保存到本地文件夹
-	err := dal.NewVideoDaoInstance().PublishBinaryDataToPublic(s.ctx, video, filePath)
+	err := db.NewCOSDaoInstance().PublishBinaryDataToPublic(s.ctx, video, filePath)
 	if err != nil {
 		return err
 	}
 	// 2.上传oss
 	cosKey := fileName
-	err = dal.NewCOSDaoInstance().PublishVideoToCOS(context.Background(), cosKey, filePath)
+	err = db.NewCOSDaoInstance().PublishVideoToCOS(context.Background(), cosKey, filePath)
 	// 2.upload cos
 	if err != nil {
 		return err
@@ -53,8 +53,7 @@ func (s *PublishService) Publish(req *publish.PublishActionRequest) error {
 	// 	return err
 	// }
 	// coverKey := "cover/" + coverName
-
-	ourl := dal.NewCOSDaoInstance().GetCOSVideoURL(cosKey)
+	ourl := db.NewCOSDaoInstance().GetCOSVideoURL(cosKey)
 	// 3.获取播放链接
 	video1 := &models.VideoRawData{
 		VideoId: utils.GenerateUUID(),
@@ -62,7 +61,7 @@ func (s *PublishService) Publish(req *publish.PublishActionRequest) error {
 		Title:   title,
 		PlayUrl: ourl.String(),
 	}
-	err = dal.NewVideoDaoInstance().SaveVideoData(context.Background(), video1)
+	err = db.NewCOSDaoInstance().SaveVideoData(context.Background(), video1)
 	if err != nil {
 		return err
 	}

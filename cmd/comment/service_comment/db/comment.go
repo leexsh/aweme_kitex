@@ -1,4 +1,4 @@
-package dal
+package db
 
 import (
 	"aweme_kitex/cfg"
@@ -7,8 +7,6 @@ import (
 	"context"
 	"errors"
 	"sync"
-
-	"gorm.io/gorm"
 )
 
 type CommentDao struct {
@@ -27,48 +25,18 @@ func NewCommentDaoInstance() *CommentDao {
 
 // 通过一条评论创建一条评论记录并增加视频评论数
 func (*CommentDao) CreateComment(ctx context.Context, comment *models.CommentRaw) error {
-	cfg.DB.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
-		err := tx.Table("comment").Create(comment).Error
-		if err != nil {
-			logger.Error("create comment fail " + err.Error())
-			return err
-		}
-		err = tx.Table("video").Where("video_id = ?", comment.VideoId).Update("comment_count", gorm.Expr("comment_count + ?", 1)).Error
-		if err != nil {
-			logger.Error("AddCommentCount error " + err.Error())
-			return err
-		}
-		return nil
-	})
-	return nil
+	return cfg.DB.WithContext(ctx).Table("comment").Create(comment).Error
 }
 
 // 通过评论id号删除一条评论，返回该评论
 func (*CommentDao) DeleteComment(ctx context.Context, commentId string) (*models.CommentRaw, error) {
 	var commentRaw *models.CommentRaw
-	cfg.DB.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
-		err := tx.Table("comment").Where("id = ?", commentId).First(&commentRaw).Error
-		if err == gorm.ErrRecordNotFound {
-			logger.Error("not find comment %v, %v", commentRaw, err.Error())
-			return err
-		}
-		if err != nil {
-			logger.Error("delete comment fail " + err.Error())
-			return err
-		}
-		err = tx.Table("comment").Where("comment_id = ?", commentId).Delete(&commentRaw).Error
-		if err != nil {
-			logger.Error("delete comment fail " + err.Error())
-			return err
-		}
-		err = tx.Table("video").Where("video_id = ?", commentRaw.VideoId).Update("comment_count", gorm.Expr("comment_count - ?", 1)).Error
-		if err != nil {
-			logger.Error("DelCommentCount error " + err.Error())
-			return err
-		}
-		return nil
-	})
-	return commentRaw, nil
+	err := cfg.DB.WithContext(ctx).Table("comment").Where("id = ?", commentId).First(&commentRaw).Error
+	if err != nil {
+		return nil, err
+	}
+	err = cfg.DB.WithContext(ctx).Table("comment").Delete(&commentRaw).Error
+	return commentRaw, err
 }
 
 // 通过评论id查询一组评论信息

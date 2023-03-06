@@ -90,7 +90,7 @@ func ConsumeFollowDelMsg() {
 	}
 	for _, list := range partitionList { // 遍历所有分区
 		// 根据每个分区创建一个消费者
-		pc, err := kafkaFollowDelConsumer.ConsumePartition("relation_add", int32(list), sarama.OffsetNewest)
+		pc, err := kafkaFollowDelConsumer.ConsumePartition("follow_del", int32(list), sarama.OffsetNewest)
 		if err != nil {
 			logger.Error(err)
 		}

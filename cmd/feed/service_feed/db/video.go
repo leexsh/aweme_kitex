@@ -1,4 +1,4 @@
-package dal
+package videoDB
 
 import (
 	"aweme_kitex/cfg"
@@ -7,11 +7,8 @@ import (
 	"aweme_kitex/pkg/utils"
 	"context"
 	"errors"
-	"mime/multipart"
-	"os"
 	"sync"
 
-	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
 )
 
@@ -61,39 +58,6 @@ func (v *VideoDao) QueryVideosByUserId(ctx context.Context, userId string) ([]*m
 	return videos, nil
 }
 
-// 将视频保存到本地文件夹中
-func (*VideoDao) PublishVideoToPublic(ctx context.Context, video *multipart.FileHeader, path string, c *gin.Context) error {
-	if err := c.SaveUploadedFile(video, path); err != nil {
-		logger.Error("save videos to local error : " + err.Error())
-		return err
-	}
-	return nil
-}
-
-func (v *VideoDao) PublishBinaryDataToPublic(ctx context.Context, video []byte, filePath string) error {
-	file, err := os.Create(filePath)
-	if err != nil {
-		logger.Error("create %s faile, %v", filePath, err.Error())
-		return err
-	}
-	defer file.Close()
-	_, err = file.Write(video)
-	if err != nil {
-		logger.Error("write file err, %v", err.Error())
-		return err
-	}
-	return nil
-}
-
-func (*VideoDao) SaveVideoData(ctx context.Context, videoData *models.VideoRawData) error {
-	err := cfg.DB.WithContext(ctx).Table("video").Debug().Create(videoData).Error
-	if err != nil {
-		logger.Error("create video error : " + err.Error())
-		return err
-	}
-	return nil
-}
-
 func (*VideoDao) QueryVideosByIs(ctx context.Context, videoId []string) ([]*models.VideoRawData, error) {
 	var videos []*models.VideoRawData
 	err := cfg.DB.WithContext(ctx).Table("video").Where("video_id in (?)", videoId).Find(&videos).Error
@@ -113,4 +77,16 @@ func (v *VideoDao) CheckVideoId(ctx context.Context, videoId []string) ([]*model
 		return nil, errors.New("video not exist")
 	}
 	return videos, nil
+}
+
+// 增加评论后修改评论数目
+func (v *VideoDao) IncreaseCommentCount(ctx context.Context, videoId string) error {
+	err := cfg.DB.WithContext(ctx).Table("video").Where("video_id = ?", videoId).Update("comment_count", gorm.Expr("comment_count + ?", 1)).Error
+	return err
+}
+
+// 删除评论后修改评论数目
+func (v *VideoDao) DecreaseCommentCount(ctx context.Context, videoId string) error {
+	err := cfg.DB.WithContext(ctx).Table("video").Where("video_id = ?", videoId).Update("comment_count", gorm.Expr("comment_count - ?", 1)).Error
+	return err
 }

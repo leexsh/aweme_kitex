@@ -3,6 +3,7 @@ package service_feed
 import (
 	feed "aweme_kitex/cmd/feed/kitex_gen/feed"
 	"aweme_kitex/cmd/feed/kitex_gen/user"
+	db3 "aweme_kitex/cmd/feed/service_feed/db"
 	"aweme_kitex/cmd/relation/service_relation/db"
 	db2 "aweme_kitex/cmd/user/service_user/db"
 	"aweme_kitex/models"
@@ -71,7 +72,7 @@ func (f *queryVideoDataFlow) Do() ([]*feed.Video, int64, error) {
 // prepare video
 func (f *queryVideoDataFlow) prepareVideoInfo() error {
 	// 1.get video
-	videoData, err := dal.NewVideoDaoInstance().QueryVideoByLatestTime(f.ctx, f.LatestTime)
+	videoData, err := db3.NewVideoDaoInstance().QueryVideoByLatestTime(f.ctx, f.LatestTime)
 	if err != nil {
 		return err
 	}
