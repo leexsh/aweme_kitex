@@ -64,3 +64,16 @@ func (s *FeedServiceImpl) ChangeCommentCnt(ctx context.Context, req *feed.Change
 	resp.BaseResp.ServiceTime = time.Now().Unix()
 	return
 }
+
+// CheckVideoInvalid implements the FeedServiceImpl interface.
+func (s *FeedServiceImpl) CheckVideoInvalid(ctx context.Context, req *feed.CheckVideoInvalidRequest) (resp *feed.CheckVideoInvalidResponse, err error) {
+	resp = new(feed.CheckVideoInvalidResponse)
+	err = service_feed.NewCheckVideoService(ctx).CheckVideoInvalid(req.VideoId)
+	if err != nil {
+		resp.BaseResp.StatusCode = -1
+	} else {
+		resp.BaseResp.StatusCode = 0
+	}
+	resp.BaseResp.ServiceTime = time.Now().Unix()
+	return
+}

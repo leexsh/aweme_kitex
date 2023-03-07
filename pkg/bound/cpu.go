@@ -12,8 +12,6 @@ import (
 	"github.com/shirou/gopsutil/cpu"
 )
 
-// todo
-
 var _ remote.InboundHandler = &cpuLimitHandler{}
 
 type cpuLimitHandler struct{}

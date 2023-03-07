@@ -39,7 +39,18 @@ struct ChangeCommentCountResponse {
     1: base.BaseResp base_resp
 }
 
+struct CheckVideoInvalidRequest {
+    1: list<string> video_id
+}
+
+struct CheckVideoInvalidResponse {
+    1: base.BaseResp base_resp
+}
+
+
+
 service FeedService {
     FeedResponse Feed(1: FeedRequest req)
     ChangeCommentCountResponse ChangeCommentCnt(1: ChangeCommentCountRequest req)
+    CheckVideoInvalidResponse CheckVideoInvalid(1: CheckVideoInvalidRequest req)
 }

@@ -2,7 +2,9 @@ package service_favourite
 
 import (
 	"aweme_kitex/cmd/favourite/kitex_gen/favourite"
+	favRPC "aweme_kitex/cmd/favourite/rpc"
 	favKafka "aweme_kitex/cmd/favourite/service_favourite/kafka"
+	"aweme_kitex/cmd/feed/kitex_gen/feed"
 	constants "aweme_kitex/pkg/constant"
 	"aweme_kitex/pkg/jwt"
 	"aweme_kitex/pkg/utils"
@@ -54,10 +56,10 @@ func newFavouriteActionData(ctx context.Context, userId, videoId, action string)
 }
 
 func (f *favouriteActionDataFlow) do() error {
-	// todo use rpc
-	// if _, err := db.NewVideoDaoInstance().CheckVideoId(f.ctx, []string{f.videoId}); err != nil {
-	// 	return err
-	// }
+	err := favRPC.CheckVideoInvalid(f.ctx, &feed.CheckVideoInvalidRequest{VideoId: []string{f.videoId}})
+	if err != nil {
+		return err
+	}
 	if f.action != constants.Like && f.action != constants.Unlike {
 		return errors.New("invalid action type")
 	}

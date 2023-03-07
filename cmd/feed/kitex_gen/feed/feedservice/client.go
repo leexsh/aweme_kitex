@@ -13,6 +13,7 @@ import (
 type Client interface {
 	Feed(ctx context.Context, req *feed.FeedRequest, callOptions ...callopt.Option) (r *feed.FeedResponse, err error)
 	ChangeCommentCnt(ctx context.Context, req *feed.ChangeCommentCountRequest, callOptions ...callopt.Option) (r *feed.ChangeCommentCountResponse, err error)
+	CheckVideoInvalid(ctx context.Context, req *feed.CheckVideoInvalidRequest, callOptions ...callopt.Option) (r *feed.CheckVideoInvalidResponse, err error)
 }
 
 // NewClient creates a client for the service defined in IDL.
@@ -52,4 +53,9 @@ func (p *kFeedServiceClient) Feed(ctx context.Context, req *feed.FeedRequest, ca
 func (p *kFeedServiceClient) ChangeCommentCnt(ctx context.Context, req *feed.ChangeCommentCountRequest, callOptions ...callopt.Option) (r *feed.ChangeCommentCountResponse, err error) {
 	ctx = client.NewCtxWithCallOptions(ctx, callOptions)
 	return p.kClient.ChangeCommentCnt(ctx, req)
+}
+
+func (p *kFeedServiceClient) CheckVideoInvalid(ctx context.Context, req *feed.CheckVideoInvalidRequest, callOptions ...callopt.Option) (r *feed.CheckVideoInvalidResponse, err error) {
+	ctx = client.NewCtxWithCallOptions(ctx, callOptions)
+	return p.kClient.CheckVideoInvalid(ctx, req)
 }

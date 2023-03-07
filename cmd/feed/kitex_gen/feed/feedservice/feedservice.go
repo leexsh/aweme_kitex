@@ -19,8 +19,9 @@ func NewServiceInfo() *kitex.ServiceInfo {
 	serviceName := "FeedService"
 	handlerType := (*feed.FeedService)(nil)
 	methods := map[string]kitex.MethodInfo{
-		"Feed":             kitex.NewMethodInfo(feedHandler, newFeedServiceFeedArgs, newFeedServiceFeedResult, false),
-		"ChangeCommentCnt": kitex.NewMethodInfo(changeCommentCntHandler, newFeedServiceChangeCommentCntArgs, newFeedServiceChangeCommentCntResult, false),
+		"Feed":              kitex.NewMethodInfo(feedHandler, newFeedServiceFeedArgs, newFeedServiceFeedResult, false),
+		"ChangeCommentCnt":  kitex.NewMethodInfo(changeCommentCntHandler, newFeedServiceChangeCommentCntArgs, newFeedServiceChangeCommentCntResult, false),
+		"CheckVideoInvalid": kitex.NewMethodInfo(checkVideoInvalidHandler, newFeedServiceCheckVideoInvalidArgs, newFeedServiceCheckVideoInvalidResult, false),
 	}
 	extra := map[string]interface{}{
 		"PackageName": "feed",
@@ -72,6 +73,24 @@ func newFeedServiceChangeCommentCntResult() interface{} {
 	return feed.NewFeedServiceChangeCommentCntResult()
 }
 
+func checkVideoInvalidHandler(ctx context.Context, handler interface{}, arg, result interface{}) error {
+	realArg := arg.(*feed.FeedServiceCheckVideoInvalidArgs)
+	realResult := result.(*feed.FeedServiceCheckVideoInvalidResult)
+	success, err := handler.(feed.FeedService).CheckVideoInvalid(ctx, realArg.Req)
+	if err != nil {
+		return err
+	}
+	realResult.Success = success
+	return nil
+}
+func newFeedServiceCheckVideoInvalidArgs() interface{} {
+	return feed.NewFeedServiceCheckVideoInvalidArgs()
+}
+
+func newFeedServiceCheckVideoInvalidResult() interface{} {
+	return feed.NewFeedServiceCheckVideoInvalidResult()
+}
+
 type kClient struct {
 	c client.Client
 }
@@ -97,6 +116,16 @@ func (p *kClient) ChangeCommentCnt(ctx context.Context, req *feed.ChangeCommentC
 	_args.Req = req
 	var _result feed.FeedServiceChangeCommentCntResult
 	if err = p.c.Call(ctx, "ChangeCommentCnt", &_args, &_result); err != nil {
+		return
+	}
+	return _result.GetSuccess(), nil
+}
+
+func (p *kClient) CheckVideoInvalid(ctx context.Context, req *feed.CheckVideoInvalidRequest) (r *feed.CheckVideoInvalidResponse, err error) {
+	var _args feed.FeedServiceCheckVideoInvalidArgs
+	_args.Req = req
+	var _result feed.FeedServiceCheckVideoInvalidResult
+	if err = p.c.Call(ctx, "CheckVideoInvalid", &_args, &_result); err != nil {
 		return
 	}
 	return _result.GetSuccess(), nil

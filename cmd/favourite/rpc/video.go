@@ -1,4 +1,4 @@
-package commentRPC
+package favRPC
 
 import (
 	"aweme_kitex/cmd/feed/kitex_gen/feed"
@@ -39,17 +39,6 @@ func initFeedRpc() {
 		logger.Error("feed service_user register error")
 	}
 	feedClient = client
-}
-
-func ChangeCommentCount(ctx context.Context, req *feed.ChangeCommentCountRequest) error {
-	resp, err := feedClient.ChangeCommentCnt(ctx, req)
-	if err != nil {
-		return err
-	}
-	if resp.BaseResp.StatusCode != 0 {
-		return errors.New(resp.BaseResp.StatusMsg)
-	}
-	return nil
 }
 
 func CheckVideoInvalid(ctx context.Context, req *feed.CheckVideoInvalidRequest) error {

@@ -5,6 +5,7 @@ import (
 	"aweme_kitex/cmd/comment/kitex_gen/user"
 	commentRPC "aweme_kitex/cmd/comment/rpc"
 	"aweme_kitex/cmd/comment/service_comment/db"
+	"aweme_kitex/cmd/feed/kitex_gen/feed"
 	"aweme_kitex/cmd/relation/kitex_gen/relation"
 	user2 "aweme_kitex/cmd/user/kitex_gen/user"
 	"aweme_kitex/models"
@@ -60,6 +61,10 @@ func newCommentListDataFlow(ctx context.Context, uid string, videoId string) *co
 }
 
 func (c *commentListDataFlow) do() ([]*comment.Comment, error) {
+	err := commentRPC.CheckVideoInvalid(c.ctx, &feed.CheckVideoInvalidRequest{VideoId: []string{c.VideoId}})
+	if err != nil {
+		return nil, err
+	}
 	if err := c.prepareListCommentInfo(); err != nil {
 		return nil, err
 	}
