@@ -3,7 +3,7 @@ package service_user
 import (
 	"aweme_kitex/cmd/user/kitex_gen/user"
 	"aweme_kitex/cmd/user/service_user/db"
-	"aweme_kitex/models"
+	"aweme_kitex/pkg/types"
 	"context"
 	"errors"
 	"strconv"
@@ -19,7 +19,7 @@ func NewUserInfoService(ctx context.Context) *UserInfoService {
 	}
 }
 
-func (s *UserInfoService) packUserInfo(u *models.UserRawData) (*user.User, error) {
+func (s *UserInfoService) packUserInfo(u *types.UserRawData) (*user.User, error) {
 	if u == nil {
 		return nil, errors.New("user is nil")
 	}

@@ -3,9 +3,9 @@ package service_user
 import (
 	"aweme_kitex/cmd/user/kitex_gen/user"
 	"aweme_kitex/cmd/user/service_user/db"
-	"aweme_kitex/models"
 	"aweme_kitex/pkg/jwt"
 	"aweme_kitex/pkg/logger"
+	"aweme_kitex/pkg/types"
 	"aweme_kitex/pkg/utils"
 	"context"
 )
@@ -34,7 +34,7 @@ func (s *RegisterUserService) do(name, password string) (string, string, error) 
 	// insert to data
 	userId := utils.GenerateUUID()
 	token, _ := jwt.GenerateToken(userId, name)
-	newUser := &models.UserRawData{
+	newUser := &types.UserRawData{
 		UserId:        userId,
 		Name:          name,
 		Password:      utils.Md5(password),

@@ -2,8 +2,8 @@ package db
 
 import (
 	"aweme_kitex/cfg"
-	"aweme_kitex/models"
 	"aweme_kitex/pkg/logger"
+	"aweme_kitex/pkg/types"
 	"context"
 	"errors"
 	"sync"
@@ -24,13 +24,13 @@ func NewCommentDaoInstance() *CommentDao {
 }
 
 // 通过一条评论创建一条评论记录并增加视频评论数
-func (*CommentDao) CreateComment(ctx context.Context, comment *models.CommentRaw) error {
+func (*CommentDao) CreateComment(ctx context.Context, comment *types.CommentRaw) error {
 	return cfg.DB.WithContext(ctx).Table("comment").Create(comment).Error
 }
 
 // 通过评论id号删除一条评论，返回该评论
-func (*CommentDao) DeleteComment(ctx context.Context, commentId string) (*models.CommentRaw, error) {
-	var commentRaw *models.CommentRaw
+func (*CommentDao) DeleteComment(ctx context.Context, commentId string) (*types.CommentRaw, error) {
+	var commentRaw *types.CommentRaw
 	err := cfg.DB.WithContext(ctx).Table("comment").Where("id = ?", commentId).First(&commentRaw).Error
 	if err != nil {
 		return nil, err
@@ -40,8 +40,8 @@ func (*CommentDao) DeleteComment(ctx context.Context, commentId string) (*models
 }
 
 // 通过评论id查询一组评论信息
-func (*CommentDao) QueryCommentByCommentIds(ctx context.Context, commentIds []string) ([]*models.CommentRaw, error) {
-	var comments []*models.CommentRaw
+func (*CommentDao) QueryCommentByCommentIds(ctx context.Context, commentIds []string) ([]*types.CommentRaw, error) {
+	var comments []*types.CommentRaw
 	err := cfg.DB.WithContext(ctx).Table("comment").Where("comment_id In ?", commentIds).Find(&comments).Error
 	if err != nil {
 		logger.Error("query comment by comment id fail " + err.Error())
@@ -51,8 +51,8 @@ func (*CommentDao) QueryCommentByCommentIds(ctx context.Context, commentIds []st
 }
 
 // 通过视频id号倒序返回一组评论信息
-func (*CommentDao) QueryCommentByVideoId(ctx context.Context, videoId string) ([]*models.CommentRaw, error) {
-	var comments []*models.CommentRaw
+func (*CommentDao) QueryCommentByVideoId(ctx context.Context, videoId string) ([]*types.CommentRaw, error) {
+	var comments []*types.CommentRaw
 	err := cfg.DB.Debug().WithContext(ctx).Table("comment").Order("created_at desc").Where("video_id = ?", videoId).Find(&comments).Error
 	if err != nil {
 		logger.Error("query comment err: " + err.Error())
@@ -62,7 +62,7 @@ func (*CommentDao) QueryCommentByVideoId(ctx context.Context, videoId string) ([
 }
 
 // 检查commentid
-func (c *CommentDao) CheckCommentId(ctx context.Context, commentIds []string) ([]*models.CommentRaw, error) {
+func (c *CommentDao) CheckCommentId(ctx context.Context, commentIds []string) ([]*types.CommentRaw, error) {
 	comments, err := c.QueryCommentByCommentIds(ctx, commentIds)
 	if err != nil {
 		return nil, err

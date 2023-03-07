@@ -7,8 +7,8 @@ import (
 	"aweme_kitex/cmd/comment/service_comment/db"
 	"aweme_kitex/cmd/feed/kitex_gen/feed"
 	user2 "aweme_kitex/cmd/user/kitex_gen/user"
-	"aweme_kitex/models"
 	"aweme_kitex/pkg/jwt"
+	"aweme_kitex/pkg/types"
 	"aweme_kitex/pkg/utils"
 	"context"
 	"errors"
@@ -40,7 +40,7 @@ func (s *CreateCommentService) CreateComment(req *comment.CommentActionRequest) 
 
 func (s *CreateCommentService) do() (*comment.Comment, error) {
 	// 1. create comment
-	commentRaw := &models.CommentRaw{
+	commentRaw := &types.CommentRaw{
 		Id:      utils.GenerateUUID(),
 		UserId:  s.uid,
 		VideoId: s.vid,

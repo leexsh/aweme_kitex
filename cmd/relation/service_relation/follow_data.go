@@ -6,7 +6,7 @@ import (
 	"aweme_kitex/cmd/relation/service_relation/db"
 	user2 "aweme_kitex/cmd/user/kitex_gen/user"
 	db2 "aweme_kitex/cmd/user/service_user/db"
-	"aweme_kitex/models"
+	"aweme_kitex/pkg/types"
 	"context"
 )
 
@@ -34,7 +34,7 @@ type relationListDataFlow struct {
 	UserList []*user.User
 
 	UserRaw     []*user2.User
-	RelationMap map[string]*models.RelationRaw
+	RelationMap map[string]*types.RelationRaw
 }
 
 func newRelationListDataFlow(ctx context.Context, userId string) *relationListDataFlow {

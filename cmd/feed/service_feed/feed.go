@@ -1,14 +1,14 @@
 package service_feed
 
 import (
+	db4 "aweme_kitex/cmd/favourite/service_favourite/db"
 	feed "aweme_kitex/cmd/feed/kitex_gen/feed"
 	"aweme_kitex/cmd/feed/kitex_gen/user"
 	db3 "aweme_kitex/cmd/feed/service_feed/db"
 	"aweme_kitex/cmd/relation/service_relation/db"
 	db2 "aweme_kitex/cmd/user/service_user/db"
-	"aweme_kitex/models"
-	"aweme_kitex/models/dal"
 	"aweme_kitex/pkg/jwt"
+	"aweme_kitex/pkg/types"
 	"context"
 	"errors"
 	"fmt"
@@ -53,10 +53,10 @@ type queryVideoDataFlow struct {
 	VideoList  []*feed.Video
 	NextTime   int64
 
-	VideoData   []*models.VideoRawData
-	UserMap     map[string]*models.UserRawData
-	FavoursMap  map[string]*models.FavouriteRaw
-	RelationMap map[string]*models.RelationRaw
+	VideoData   []*types.VideoRawData
+	UserMap     map[string]*types.UserRawData
+	FavoursMap  map[string]*types.FavouriteRaw
+	RelationMap map[string]*types.RelationRaw
 }
 
 func (f *queryVideoDataFlow) Do() ([]*feed.Video, int64, error) {
@@ -91,7 +91,7 @@ func (f *queryVideoDataFlow) prepareVideoInfo() error {
 	if err != nil {
 		return err
 	}
-	userMap := make(map[string]*models.UserRawData)
+	userMap := make(map[string]*types.UserRawData)
 	for _, user := range users {
 		userMap[user.UserId] = user
 	}
@@ -108,7 +108,7 @@ func (f *queryVideoDataFlow) prepareVideoInfo() error {
 	// 5.获取点赞信息
 	go func() {
 		defer wg.Done()
-		favoursMap, err := dal.NewFavouriteDaoInstance().QueryFavoursByIds(f.ctx, f.CurrentUserId, videoIds)
+		favoursMap, err := db4.NewFavouriteDaoInstance().QueryFavoursByIds(f.ctx, f.CurrentUserId, videoIds)
 		if err != nil {
 			favourErr = err
 			return

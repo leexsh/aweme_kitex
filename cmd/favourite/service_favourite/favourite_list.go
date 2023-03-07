@@ -5,12 +5,12 @@ import (
 	"aweme_kitex/cmd/favourite/kitex_gen/feed"
 	"aweme_kitex/cmd/favourite/kitex_gen/user"
 	favRPC "aweme_kitex/cmd/favourite/rpc"
+	db3 "aweme_kitex/cmd/favourite/service_favourite/db"
 	db2 "aweme_kitex/cmd/feed/service_feed/db"
 	"aweme_kitex/cmd/relation/service_relation/db"
 	user2 "aweme_kitex/cmd/user/kitex_gen/user"
-	"aweme_kitex/models"
-	"aweme_kitex/models/dal"
 	"aweme_kitex/pkg/jwt"
+	"aweme_kitex/pkg/types"
 	"context"
 	"errors"
 	"fmt"
@@ -48,10 +48,10 @@ type favouriteListDataFlow struct {
 
 	favours []*feed.Video
 
-	videoRawData []*models.VideoRawData
+	videoRawData []*types.VideoRawData
 	users        map[string]*user2.User
-	favoursMap   map[string]*models.FavouriteRaw
-	RelationMap  map[string]*models.RelationRaw
+	favoursMap   map[string]*types.FavouriteRaw
+	RelationMap  map[string]*types.RelationRaw
 	ctx          context.Context
 }
 
@@ -73,7 +73,7 @@ func (f *favouriteListDataFlow) do() ([]*feed.Video, error) {
 }
 
 func (f *favouriteListDataFlow) prepareVideoInfo() error {
-	videosIds, err := dal.NewFavouriteDaoInstance().QueryFavoursVideoIdByUid(f.ctx, f.currentUId)
+	videosIds, err := db3.NewFavouriteDaoInstance().QueryFavoursVideoIdByUid(f.ctx, f.currentUId)
 	if err != nil {
 		return err
 	}
@@ -105,7 +105,7 @@ func (f *favouriteListDataFlow) prepareVideoInfo() error {
 	var favErr, relationErr error
 	go func() {
 		defer wg.Done()
-		favoursMap, err := dal.NewFavouriteDaoInstance().QueryFavoursByIds(f.ctx, f.currentUId, videosIds)
+		favoursMap, err := db3.NewFavouriteDaoInstance().QueryFavoursByIds(f.ctx, f.currentUId, videosIds)
 		if err != nil {
 			favErr = err
 		}

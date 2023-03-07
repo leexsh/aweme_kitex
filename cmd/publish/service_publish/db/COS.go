@@ -2,8 +2,8 @@ package db
 
 import (
 	"aweme_kitex/cfg"
-	"aweme_kitex/models"
 	"aweme_kitex/pkg/logger"
+	"aweme_kitex/pkg/types"
 	"context"
 	"mime/multipart"
 	"net/url"
@@ -73,7 +73,7 @@ func (*COSDao) PublishBinaryDataToPublic(ctx context.Context, video []byte, file
 	return nil
 }
 
-func (*COSDao) SaveVideoData(ctx context.Context, videoData *models.VideoRawData) error {
+func (*COSDao) SaveVideoData(ctx context.Context, videoData *types.VideoRawData) error {
 	err := cfg.DB.WithContext(ctx).Table("video").Debug().Create(videoData).Error
 	if err != nil {
 		logger.Error("create video error : " + err.Error())

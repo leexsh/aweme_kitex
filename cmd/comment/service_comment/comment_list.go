@@ -8,8 +8,8 @@ import (
 	"aweme_kitex/cmd/feed/kitex_gen/feed"
 	"aweme_kitex/cmd/relation/kitex_gen/relation"
 	user2 "aweme_kitex/cmd/user/kitex_gen/user"
-	"aweme_kitex/models"
 	"aweme_kitex/pkg/jwt"
+	"aweme_kitex/pkg/types"
 	"aweme_kitex/pkg/utils"
 	"context"
 	"errors"
@@ -47,7 +47,7 @@ type commentListDataFlow struct {
 	CommentList []*comment.Comment
 
 	userId      string
-	Comments    []*models.CommentRaw
+	Comments    []*types.CommentRaw
 	UserMap     map[string]*user2.User
 	RelationMap map[string]bool
 }

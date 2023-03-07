@@ -3,8 +3,8 @@ package service_publish
 import (
 	"aweme_kitex/cmd/publish/kitex_gen/publish"
 	"aweme_kitex/cmd/publish/service_publish/db"
-	"aweme_kitex/models"
 	"aweme_kitex/pkg/jwt"
+	"aweme_kitex/pkg/types"
 	"aweme_kitex/pkg/utils"
 	"bytes"
 	"context"
@@ -55,7 +55,7 @@ func (s *PublishService) Publish(req *publish.PublishActionRequest) error {
 	// coverKey := "cover/" + coverName
 	ourl := db.NewCOSDaoInstance().GetCOSVideoURL(cosKey)
 	// 3.获取播放链接
-	video1 := &models.VideoRawData{
+	video1 := &types.VideoRawData{
 		VideoId: utils.GenerateUUID(),
 		UserId:  uc.Id,
 		Title:   title,

@@ -1,15 +1,15 @@
 package service_publish
 
 import (
+	db4 "aweme_kitex/cmd/favourite/service_favourite/db"
 	db3 "aweme_kitex/cmd/feed/service_feed/db"
 	"aweme_kitex/cmd/publish/kitex_gen/feed"
 	"aweme_kitex/cmd/publish/kitex_gen/publish"
 	"aweme_kitex/cmd/publish/kitex_gen/user"
 	"aweme_kitex/cmd/relation/service_relation/db"
 	db2 "aweme_kitex/cmd/user/service_user/db"
-	"aweme_kitex/models"
-	"aweme_kitex/models/dal"
 	"aweme_kitex/pkg/jwt"
+	"aweme_kitex/pkg/types"
 	"context"
 	"errors"
 	"fmt"
@@ -39,10 +39,10 @@ type userVideoList struct {
 	UserId string
 
 	VideoList    []*feed.Video
-	VideoData    []*models.VideoRawData
-	UserMap      map[string]*models.UserRawData
-	FavouriteMap map[string]*models.FavouriteRaw
-	RelationMap  map[string]*models.RelationRaw
+	VideoData    []*types.VideoRawData
+	UserMap      map[string]*types.UserRawData
+	FavouriteMap map[string]*types.FavouriteRaw
+	RelationMap  map[string]*types.RelationRaw
 }
 
 func newQueryUserVideoList(ctx context.Context, userId string) *userVideoList {
@@ -69,7 +69,7 @@ func (f *userVideoList) prepareVideoInfo() error {
 	if err != nil {
 		return err
 	}
-	userMap := make(map[string]*models.UserRawData)
+	userMap := make(map[string]*types.UserRawData)
 	for _, user := range users {
 		userMap[user.UserId] = user
 	}
@@ -81,7 +81,7 @@ func (f *userVideoList) prepareVideoInfo() error {
 	// 获取点赞信息
 	go func() {
 		defer wg.Done()
-		favoriteMap, err := dal.NewFavouriteDaoInstance().QueryFavoursByIds(f.ctx, f.UserId, videoIds)
+		favoriteMap, err := db4.NewFavouriteDaoInstance().QueryFavoursByIds(f.ctx, f.UserId, videoIds)
 		if err != nil {
 			favoriteErr = err
 			return

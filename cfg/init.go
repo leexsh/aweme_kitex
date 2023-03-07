@@ -1,8 +1,8 @@
 package cfg
 
 import (
-	"aweme_kitex/models"
 	constants "aweme_kitex/pkg/constant"
+	"aweme_kitex/pkg/types"
 	"fmt"
 	"net/http"
 	"net/url"
@@ -57,8 +57,8 @@ func Init() error {
 		panic(err)
 	}
 
-	err = DB.AutoMigrate(&models.UserRawData{}, &models.VideoRawData{},
-		&models.FavouriteRaw{}, &models.CommentRaw{}, &models.RelationRaw{})
+	err = DB.AutoMigrate(&types.UserRawData{}, &types.VideoRawData{},
+		&types.FavouriteRaw{}, &types.CommentRaw{}, &types.RelationRaw{})
 	if err != nil {
 		panic(err)
 	}
