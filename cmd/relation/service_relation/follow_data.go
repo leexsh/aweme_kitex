@@ -33,7 +33,7 @@ type relationListDataFlow struct {
 	UserId   string
 	UserList []*user.User
 
-	UserRaw     []*user2.User
+	UserRaw     map[string]*user2.User
 	RelationMap map[string]*types.RelationRaw
 }
 
@@ -75,6 +75,7 @@ func (r *relationListDataFlow) prepareFollowInfo() error {
 	r.RelationMap = relationMap
 	return nil
 }
+
 func (r *relationListDataFlow) packageFollowInfo() error {
 	userList := make([]*user.User, 0)
 	for _, u := range r.UserRaw {

@@ -64,7 +64,7 @@ func (s *UserServiceImpl) GetUserInfoByUserId(ctx context.Context, req *user.Sin
 			resp.BaseResp.StatusMsg = "get signle user info error"
 			return resp, err
 		}
-		resp.Users = append(resp.Users, us)
+		resp.Users[uid] = us
 	}
 	resp.BaseResp.StatusCode = 0
 	resp.BaseResp.StatusMsg = "getuserInfo success"

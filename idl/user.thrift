@@ -47,7 +47,7 @@ struct SingleUserInfoRequest {
 
 struct SingleUserInfoResponse {
     1: base.BaseResp base_resp
-    2: list<User> users
+    2: map<string, User> users
 }
 
 struct ChangeFollowStatusRequest {

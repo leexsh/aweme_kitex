@@ -47,10 +47,18 @@ struct CheckVideoInvalidResponse {
     1: base.BaseResp base_resp
 }
 
-
+struct GetVideosResponse {
+    1: base.BaseResp base_resp
+    2: list<Video> videos
+}
 
 service FeedService {
+    // feed流操作
     FeedResponse Feed(1: FeedRequest req)
+    // 修改评论数目
     ChangeCommentCountResponse ChangeCommentCnt(1: ChangeCommentCountRequest req)
+    // 查询vid 是否合理
     CheckVideoInvalidResponse CheckVideoInvalid(1: CheckVideoInvalidRequest req)
+    // 获取视频
+    GetVideosResponse GetVideosById(1: CheckVideoInvalidRequest req)
 }

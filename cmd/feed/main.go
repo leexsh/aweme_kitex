@@ -2,6 +2,7 @@ package main
 
 import (
 	feed "aweme_kitex/cmd/feed/kitex_gen/feed/feedservice"
+	feedRPC "aweme_kitex/cmd/feed/rpc"
 	videoKafka "aweme_kitex/cmd/feed/service_feed/kafka"
 	"aweme_kitex/pkg/bound"
 	constants "aweme_kitex/pkg/constant"
@@ -19,6 +20,7 @@ import (
 )
 
 func Init() {
+	feedRPC.Init()
 	videoKafka.InitKafka()
 	logger.DoInit("", "feed_log", logrus.DebugLevel)
 	tracer.InitJaeger(constants.FeedServiceName)

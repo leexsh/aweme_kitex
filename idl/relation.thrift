@@ -44,8 +44,12 @@ struct QueryRelationResponse {
 }
 
 service RelationService {
+    // relation操作
     RelationActionResponse RelationAction(1: RelationActionRequest req)
+    // 获取关注列表
     FollowListResponse FollowList(1: FollowListRequest req)
+    // 获取粉丝列表
     FollowerListResponse FollowerList(1: FollowerListRequest req)
+    // 查询是否关注
     QueryRelationResponse QueryRelation(1: QueryRelationRequest req)
 }

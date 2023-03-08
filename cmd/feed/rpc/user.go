@@ -1,4 +1,4 @@
-package relationRPC
+package feedRPC
 
 import (
 	"aweme_kitex/cmd/user/kitex_gen/user"
@@ -14,10 +14,6 @@ import (
 	etcd "github.com/kitex-contrib/registry-etcd"
 	trace "github.com/kitex-contrib/tracer-opentracing"
 )
-
-func Init() {
-	initUserRpc()
-}
 
 var userClient userservice.Client
 
@@ -42,11 +38,6 @@ func initUserRpc() {
 		panic(err)
 	}
 	userClient = c
-}
-
-// 关注或者取消关注-修改user的数据库信息
-func ChangeFollowCount(ctx context.Context, req *user.ChangeFollowStatusRequest) error {
-	return userClient.ChangeFollowStatus(ctx, req)
 }
 
 // 获取用户信息

@@ -22,6 +22,7 @@ func NewServiceInfo() *kitex.ServiceInfo {
 		"Feed":              kitex.NewMethodInfo(feedHandler, newFeedServiceFeedArgs, newFeedServiceFeedResult, false),
 		"ChangeCommentCnt":  kitex.NewMethodInfo(changeCommentCntHandler, newFeedServiceChangeCommentCntArgs, newFeedServiceChangeCommentCntResult, false),
 		"CheckVideoInvalid": kitex.NewMethodInfo(checkVideoInvalidHandler, newFeedServiceCheckVideoInvalidArgs, newFeedServiceCheckVideoInvalidResult, false),
+		"GetVideosById":     kitex.NewMethodInfo(getVideosByIdHandler, newFeedServiceGetVideosByIdArgs, newFeedServiceGetVideosByIdResult, false),
 	}
 	extra := map[string]interface{}{
 		"PackageName": "feed",
@@ -91,6 +92,24 @@ func newFeedServiceCheckVideoInvalidResult() interface{} {
 	return feed.NewFeedServiceCheckVideoInvalidResult()
 }
 
+func getVideosByIdHandler(ctx context.Context, handler interface{}, arg, result interface{}) error {
+	realArg := arg.(*feed.FeedServiceGetVideosByIdArgs)
+	realResult := result.(*feed.FeedServiceGetVideosByIdResult)
+	success, err := handler.(feed.FeedService).GetVideosById(ctx, realArg.Req)
+	if err != nil {
+		return err
+	}
+	realResult.Success = success
+	return nil
+}
+func newFeedServiceGetVideosByIdArgs() interface{} {
+	return feed.NewFeedServiceGetVideosByIdArgs()
+}
+
+func newFeedServiceGetVideosByIdResult() interface{} {
+	return feed.NewFeedServiceGetVideosByIdResult()
+}
+
 type kClient struct {
 	c client.Client
 }
@@ -126,6 +145,16 @@ func (p *kClient) CheckVideoInvalid(ctx context.Context, req *feed.CheckVideoInv
 	_args.Req = req
 	var _result feed.FeedServiceCheckVideoInvalidResult
 	if err = p.c.Call(ctx, "CheckVideoInvalid", &_args, &_result); err != nil {
+		return
+	}
+	return _result.GetSuccess(), nil
+}
+
+func (p *kClient) GetVideosById(ctx context.Context, req *feed.CheckVideoInvalidRequest) (r *feed.GetVideosResponse, err error) {
+	var _args feed.FeedServiceGetVideosByIdArgs
+	_args.Req = req
+	var _result feed.FeedServiceGetVideosByIdResult
+	if err = p.c.Call(ctx, "GetVideosById", &_args, &_result); err != nil {
 		return
 	}
 	return _result.GetSuccess(), nil
