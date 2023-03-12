@@ -1,13 +1,13 @@
 package service_feed
 
 import (
-	db4 "aweme_kitex/cmd/favourite/service_favourite/db"
+	favourite2 "aweme_kitex/cmd/favourite/kitex_gen/favourite"
 	feed "aweme_kitex/cmd/feed/kitex_gen/feed"
 	"aweme_kitex/cmd/feed/kitex_gen/user"
-	db3 "aweme_kitex/cmd/feed/service_feed/db"
-	"aweme_kitex/cmd/relation/service_relation/db"
-	db2 "aweme_kitex/cmd/user/service_user/db"
-	"aweme_kitex/pkg/jwt"
+	feedRPC "aweme_kitex/cmd/feed/rpc"
+	videoDB "aweme_kitex/cmd/feed/service_feed/db"
+	relation2 "aweme_kitex/cmd/relation/kitex_gen/relation"
+	user2 "aweme_kitex/cmd/user/kitex_gen/user"
 	"aweme_kitex/pkg/types"
 	"context"
 	"errors"
@@ -23,8 +23,7 @@ func NewFeedService(ctx context.Context) *FeedService {
 	return &FeedService{ctx: ctx}
 }
 func (f *FeedService) Feed(req *feed.FeedRequest) ([]*feed.Video, int64, error) {
-	uc, _ := jwt.AnalyzeToken(req.Token)
-	videoList, nextTime, err := queryVideoData(f.ctx, req.LatestTime, uc.Id)
+	videoList, nextTime, err := queryVideoData(f.ctx, req.LatestTime, req.UserId)
 	if err != nil {
 		return nil, 0, err
 	}
@@ -54,9 +53,9 @@ type queryVideoDataFlow struct {
 	NextTime   int64
 
 	VideoData   []*types.VideoRawData
-	UserMap     map[string]*types.UserRawData
-	FavoursMap  map[string]*types.FavouriteRaw
-	RelationMap map[string]*types.RelationRaw
+	UserMap     map[string]*user2.User
+	FavoursMap  map[string]bool
+	RelationMap map[string]bool
 }
 
 func (f *queryVideoDataFlow) Do() ([]*feed.Video, int64, error) {
@@ -72,7 +71,7 @@ func (f *queryVideoDataFlow) Do() ([]*feed.Video, int64, error) {
 // prepare video
 func (f *queryVideoDataFlow) prepareVideoInfo() error {
 	// 1.get video
-	videoData, err := db3.NewVideoDaoInstance().QueryVideoByLatestTime(f.ctx, f.LatestTime)
+	videoData, err := videoDB.NewVideoDaoInstance().QueryVideoByLatestTime(f.ctx, f.LatestTime)
 	if err != nil {
 		return err
 	}
@@ -85,46 +84,44 @@ func (f *queryVideoDataFlow) prepareVideoInfo() error {
 		videoIds = append(videoIds, video.VideoId)
 		authorIds = append(authorIds, video.UserId)
 	}
-
-	// 3. get user info
-	users, err := db2.NewUserDaoInstance().QueryUserByIds(f.ctx, authorIds)
-	if err != nil {
-		return err
-	}
-	userMap := make(map[string]*types.UserRawData)
-	for _, user := range users {
-		userMap[user.UserId] = user
-	}
-	f.UserMap = userMap
-
-	// 4. should login
-	if f.CurrentUserId == "" {
-		return nil
-	}
-
 	var wg sync.WaitGroup
 	wg.Add(2)
-	var favourErr, relationErr error
+	var favourErr, relationErr, userErr error
+	userMap := make(map[string]*user2.User)
+	relationMap := make(map[string]bool, len(authorIds))
+	// 3. get user info
+	go func() {
+		defer wg.Done()
+		users, err := feedRPC.GetUserInfo(f.ctx, &user2.SingleUserInfoRequest{UserIds: authorIds})
+		if err != nil {
+			userErr = err
+		}
+		for _, user := range users {
+			userMap[user.UserId] = user
+			req := &relation2.QueryRelationRequest{
+				UserId:   f.CurrentUserId,
+				ToUserId: user.UserId,
+				IsFollow: false,
+			}
+			isfollow, err := feedRPC.QueryRelation(f.ctx, req)
+			if err != nil {
+				relationErr = err
+			}
+			relationMap[user.UserId] = isfollow
+		}
+		f.UserMap = userMap
+		f.RelationMap = relationMap
+	}()
+
 	// 5.获取点赞信息
 	go func() {
 		defer wg.Done()
-		favoursMap, err := db4.NewFavouriteDaoInstance().QueryFavoursByIds(f.ctx, f.CurrentUserId, videoIds)
+		favList, err := feedRPC.QueryIsFavourite(f.ctx, &favourite2.QueryVideoIsFavouriteRequest{VideosId: videoIds, UserId: f.CurrentUserId})
 		if err != nil {
 			favourErr = err
 			return
 		}
-		f.FavoursMap = favoursMap
-	}()
-	// 6.获取关注信息
-	go func() {
-		defer wg.Done()
-		relationMap, err := db.NewRelationDaoInstance().QueryRelationByIds(f.ctx, f.CurrentUserId, authorIds)
-		if err != nil {
-			relationErr = err
-			return
-		}
-		f.RelationMap = relationMap
-
+		f.FavoursMap = favList
 	}()
 	wg.Wait()
 
@@ -133,6 +130,9 @@ func (f *queryVideoDataFlow) prepareVideoInfo() error {
 	}
 	if relationErr != nil {
 		return relationErr
+	}
+	if userErr != nil {
+		return userErr
 	}
 	return nil
 }
@@ -144,8 +144,8 @@ func (f *queryVideoDataFlow) packVideoInfo() error {
 		if !ok {
 			return errors.New("has no video user info for " + fmt.Sprint(video.UserId))
 		}
-		var isFavourite bool = false
-		var isFollow bool = false
+		var isFavourite = false
+		var isFollow = false
 		if f.CurrentUserId != "" {
 			if _, ok := f.FavoursMap[video.VideoId]; ok {
 				isFavourite = true

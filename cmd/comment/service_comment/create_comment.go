@@ -6,6 +6,7 @@ import (
 	commentRPC "aweme_kitex/cmd/comment/rpc"
 	"aweme_kitex/cmd/comment/service_comment/db"
 	"aweme_kitex/cmd/feed/kitex_gen/feed"
+	relation2 "aweme_kitex/cmd/relation/kitex_gen/relation"
 	user2 "aweme_kitex/cmd/user/kitex_gen/user"
 	"aweme_kitex/pkg/jwt"
 	"aweme_kitex/pkg/types"
@@ -52,13 +53,20 @@ func (s *CreateCommentService) do() (*comment.Comment, error) {
 		s.vid,
 		2,
 	})
+	// 3. use relationRPC get relation
+	videos, err := commentRPC.GetVideosById(s.ctx, &feed.CheckVideoInvalidRequest{VideoId: []string{s.vid}})
+	if err != nil || len(videos) <= 0 {
+		return nil, err
+	}
+	relation, err := commentRPC.QueryRelation(s.ctx, &relation2.QueryRelationRequest{
+		UserId:   s.uid,
+		ToUserId: videos[0].Author.UserId,
+		IsFollow: false,
+	})
 	if err != nil {
 		return nil, err
 	}
-	if err != nil {
-		return nil, err
-	}
-	// 3.user rpc get user info
+	// 4.user rpc get user info
 	resp, err := commentRPC.GetUserInfo(s.ctx, &user2.SingleUserInfoRequest{UserIds: []string{s.uid}})
 	if err != nil {
 		return nil, err
@@ -66,7 +74,7 @@ func (s *CreateCommentService) do() (*comment.Comment, error) {
 	if len(resp) == 0 {
 		return nil, errors.New("not found this user")
 	}
-	us := resp[0]
+	us := resp[s.uid]
 	comm := &comment.Comment{
 		CommentId: commentRaw.Id,
 		User: &user.User{
@@ -74,7 +82,7 @@ func (s *CreateCommentService) do() (*comment.Comment, error) {
 			Name:          us.Name,
 			FollowCount:   us.FollowCount,
 			FollowerCount: us.FollowerCount,
-			IsFollow:      false,
+			IsFollow:      relation,
 		},
 		Content:    commentRaw.Content,
 		CreateTime: utils.TimeToString(commentRaw.CreatedAt),

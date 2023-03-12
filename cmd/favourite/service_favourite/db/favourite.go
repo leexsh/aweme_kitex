@@ -1,4 +1,4 @@
-package db
+package favouriteDB
 
 import (
 	"aweme_kitex/cfg"
@@ -44,6 +44,31 @@ func (f *FavouriteDao) QueryFavoursByIds(ctx context.Context, currentUId string,
 		favoursMap[favour.VideoId] = favour
 	}
 	return favoursMap, nil
+}
+
+// 根据uid 和 videoId 获取喜欢列表
+func (f *FavouriteDao) QueryIsFavours(ctx context.Context, currentUId string, videoIds []string) (map[string]bool, error) {
+	var favours []*types.FavouriteRaw
+	isFavours := make(map[string]bool, len(videoIds))
+	err := cfg.DB.WithContext(ctx).Table("favourite").Where("user_id=? AND video_id IN ?", currentUId, videoIds).Find(&favours).Error
+	if err == gorm.ErrRecordNotFound {
+		return nil, errors.New("favourite not found")
+	}
+	if err != nil {
+		logger.Error("query favours by id err: " + err.Error())
+		return nil, err
+	}
+	favoursMap := make(map[string]*types.FavouriteRaw)
+	for _, favour := range favours {
+		favoursMap[favour.VideoId] = favour
+	}
+	for i := 0; i < len(videoIds); i++ {
+		isFavours[videoIds[i]] = false
+		if _, ok := favoursMap[videoIds[i]]; ok {
+			isFavours[videoIds[i]] = true
+		}
+	}
+	return isFavours, nil
 }
 
 // 创建一条点赞

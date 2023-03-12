@@ -80,9 +80,22 @@ func (s *FeedServiceImpl) CheckVideoInvalid(ctx context.Context, req *feed.Check
 
 // GetVideosById implements the FeedServiceImpl interface.
 func (s *FeedServiceImpl) GetVideosById(ctx context.Context, req *feed.CheckVideoInvalidRequest) (resp *feed.GetVideosResponse, err error) {
-	// TODO: Your code here...
 	resp = new(feed.GetVideosResponse)
 	videos, err := service_feed.NewCheckVideoService(ctx).GetVideos(req.VideoId)
+	if err != nil {
+		resp.BaseResp.StatusCode = -1
+	} else {
+		resp.BaseResp.StatusCode = 0
+	}
+	resp.BaseResp.ServiceTime = time.Now().Unix()
+	resp.Videos = videos
+	return
+}
+
+// GetVideosByUserID implements the FeedServiceImpl interface.
+func (s *FeedServiceImpl) GetVideosByUserID(ctx context.Context, req *feed.GetVideoByUserIDRequest) (resp *feed.GetVideoByUserIDResponse, err error) {
+	resp = new(feed.GetVideoByUserIDResponse)
+	videos, err := service_feed.NewCheckVideoService(ctx).GetVideosByUserID(req.UserId)
 	if err != nil {
 		resp.BaseResp.StatusCode = -1
 	} else {

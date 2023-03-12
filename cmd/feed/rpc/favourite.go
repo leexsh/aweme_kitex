@@ -1,8 +1,9 @@
-package commentRPC
+package feedRPC
 
 import (
-	"aweme_kitex/cmd/feed/kitex_gen/feed"
-	"aweme_kitex/cmd/feed/kitex_gen/feed/feedservice"
+	favourite2 "aweme_kitex/cmd/favourite/kitex_gen/favourite"
+	favourite "aweme_kitex/cmd/favourite/kitex_gen/favourite/favouriteservice"
+	"aweme_kitex/cmd/favourite/kitex_gen/feed"
 	constants "aweme_kitex/pkg/constant"
 	"aweme_kitex/pkg/logger"
 	"aweme_kitex/pkg/middleware"
@@ -16,15 +17,15 @@ import (
 	trace "github.com/kitex-contrib/tracer-opentracing"
 )
 
-var feedClient feedservice.Client
+var favouriteClient favourite.Client
 
-func initFeedRpc() {
+func initFavouriteRpc() {
 	r, err := etcd.NewEtcdResolver([]string{constants.EtcdAddress})
 	if err != nil {
 		logger.Error("feed service_user register error")
 		return
 	}
-	client, err := feedservice.NewClient(
+	client, err := favourite.NewClient(
 		constants.FeedServiceName,
 		client2.WithMiddleware(middleware.CommonMiddleware),
 		client2.WithInstanceMW(middleware.ClientMiddleware),
@@ -38,38 +39,27 @@ func initFeedRpc() {
 	if err != nil {
 		logger.Error("feed service_user register error")
 	}
-	feedClient = client
+	favouriteClient = client
 }
 
-func ChangeCommentCount(ctx context.Context, req *feed.ChangeCommentCountRequest) error {
-	resp, err := feedClient.ChangeCommentCnt(ctx, req)
-	if err != nil {
-		return err
-	}
-	if resp.BaseResp.StatusCode != 0 {
-		return errors.New(resp.BaseResp.StatusMsg)
-	}
-	return nil
-}
-
-func CheckVideoInvalid(ctx context.Context, req *feed.CheckVideoInvalidRequest) error {
-	resp, err := feedClient.CheckVideoInvalid(ctx, req)
-	if err != nil {
-		return err
-	}
-	if resp.BaseResp.StatusCode != 0 {
-		return errors.New(resp.BaseResp.StatusMsg)
-	}
-	return nil
-}
-
-func GetVideosById(ctx context.Context, req *feed.CheckVideoInvalidRequest) ([]*feed.Video, error) {
-	resp, err := feedClient.GetVideosById(ctx, req)
+func GetFavouriteList(ctx context.Context, request *favourite2.FavouriteListRequest) (map[string]*feed.Video, error) {
+	resp, err := favouriteClient.FavouriteList(ctx, request)
 	if err != nil {
 		return nil, err
 	}
 	if resp.BaseResp.StatusCode != 0 {
-		return nil, errors.New(resp.BaseResp.StatusMsg)
+		return nil, errors.New("error")
 	}
-	return resp.Videos, nil
+	return resp.VideoList, nil
+}
+
+func QueryIsFavourite(ctx context.Context, request *favourite2.QueryVideoIsFavouriteRequest) (map[string]bool, error) {
+	resp, err := favouriteClient.QueryVideoIsFavourite(ctx, request)
+	if err != nil {
+		return nil, err
+	}
+	if resp.BaseResp.StatusCode != 0 {
+		return nil, errors.New("error")
+	}
+	return resp.IsFavourites, nil
 }

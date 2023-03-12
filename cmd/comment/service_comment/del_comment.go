@@ -6,6 +6,7 @@ import (
 	commentRPC "aweme_kitex/cmd/comment/rpc"
 	"aweme_kitex/cmd/comment/service_comment/db"
 	"aweme_kitex/cmd/feed/kitex_gen/feed"
+	relation2 "aweme_kitex/cmd/relation/kitex_gen/relation"
 	user2 "aweme_kitex/cmd/user/kitex_gen/user"
 	"aweme_kitex/pkg/jwt"
 	"aweme_kitex/pkg/utils"
@@ -44,7 +45,17 @@ func (s *DeleteCommentService) do(uid, cid, vid string) (*comment.Comment, error
 	if err != nil {
 		return nil, err
 	}
-	// 3.user rpc get user info
+	// 3. use relationRPC get relation
+	videos, err := commentRPC.GetVideosById(s.ctx, &feed.CheckVideoInvalidRequest{VideoId: []string{vid}})
+	if err != nil || len(videos) <= 0 {
+		return nil, err
+	}
+	relation, err := commentRPC.QueryRelation(s.ctx, &relation2.QueryRelationRequest{
+		UserId:   uid,
+		ToUserId: videos[0].Author.UserId,
+		IsFollow: false,
+	})
+	// 4.user rpc get user info
 	resp, err := commentRPC.GetUserInfo(s.ctx, &user2.SingleUserInfoRequest{UserIds: []string{uid}})
 	if err != nil {
 		return nil, err
@@ -52,7 +63,7 @@ func (s *DeleteCommentService) do(uid, cid, vid string) (*comment.Comment, error
 	if len(resp) == 0 {
 		return nil, errors.New("not found this user")
 	}
-	us := resp[0]
+	us := resp[uid]
 	comm := &comment.Comment{
 		CommentId: delComm.Id,
 		User: &user.User{
@@ -60,7 +71,7 @@ func (s *DeleteCommentService) do(uid, cid, vid string) (*comment.Comment, error
 			Name:          us.Name,
 			FollowCount:   us.FollowCount,
 			FollowerCount: us.FollowerCount,
-			IsFollow:      false,
+			IsFollow:      relation,
 		},
 		Content:    delComm.Content,
 		CreateTime: utils.TimeToString(delComm.CreatedAt),

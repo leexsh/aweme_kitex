@@ -1,4 +1,4 @@
-package commentRPC
+package publishRPC
 
 import (
 	user2 "aweme_kitex/cmd/user/kitex_gen/user"

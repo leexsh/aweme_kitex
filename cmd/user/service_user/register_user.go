@@ -2,7 +2,7 @@ package service_user
 
 import (
 	"aweme_kitex/cmd/user/kitex_gen/user"
-	"aweme_kitex/cmd/user/service_user/db"
+	userDB "aweme_kitex/cmd/user/service_user/db"
 	"aweme_kitex/pkg/jwt"
 	"aweme_kitex/pkg/logger"
 	"aweme_kitex/pkg/types"
@@ -43,6 +43,6 @@ func (s *RegisterUserService) do(name, password string) (string, string, error) 
 		FollowerCount: 0,
 	}
 	logger.Info("Register success userName is %s", name)
-	err := db.NewUserDaoInstance().UploadUserData(context.Background(), newUser)
+	err := userDB.NewUserDaoInstance().UploadUserData(context.Background(), newUser)
 	return userId, token, err
 }

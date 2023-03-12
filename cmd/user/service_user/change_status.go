@@ -3,7 +3,7 @@ package service_user
 import (
 	"aweme_kitex/cmd/relation/kitex_gen/relation"
 	userRPC "aweme_kitex/cmd/user/rpc"
-	"aweme_kitex/cmd/user/service_user/db"
+	userDB "aweme_kitex/cmd/user/service_user/db"
 	userKafka "aweme_kitex/cmd/user/service_user/kafka"
 	constants "aweme_kitex/pkg/constant"
 	"context"
@@ -43,14 +43,14 @@ func (u *ChangeFollowService) ChangeStatus(userId, toUserId string, isfollow boo
 			return nil
 		}
 		// redis删除
-		db.DelCount(u.ctx, userId, toUserId)
+		userDB.DelCount(u.ctx, userId, toUserId)
 		// 发送打消息队列
 		err := userKafka.ProduceFollowMsg(constants.KafKaUserAddRelationTopic, msg)
 		if err != nil {
 			return err
 		}
 		time.Sleep(constants.SleepTime)
-		db.DelCount(u.ctx, userId, toUserId)
+		userDB.DelCount(u.ctx, userId, toUserId)
 	} else {
 		// 取消关注操作
 		if !flag {
@@ -58,14 +58,14 @@ func (u *ChangeFollowService) ChangeStatus(userId, toUserId string, isfollow boo
 			return nil
 		}
 		// redis删除
-		db.DelCount(u.ctx, userId, toUserId)
+		userDB.DelCount(u.ctx, userId, toUserId)
 		// 发送打消息队列
 		err := userKafka.ProduceFollowMsg(constants.KafKaUserDelRelationTopic, msg)
 		if err != nil {
 			return err
 		}
 		time.Sleep(constants.SleepTime)
-		db.DelCount(u.ctx, userId, toUserId)
+		userDB.DelCount(u.ctx, userId, toUserId)
 	}
 	return nil
 }

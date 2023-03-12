@@ -2,6 +2,7 @@ package main
 
 import (
 	publish "aweme_kitex/cmd/publish/kitex_gen/publish/publishservice"
+	publishRPC "aweme_kitex/cmd/publish/rpc"
 	"aweme_kitex/pkg/bound"
 	constants "aweme_kitex/pkg/constant"
 	"aweme_kitex/pkg/logger"
@@ -18,6 +19,7 @@ import (
 )
 
 func Init() {
+	publishRPC.InitRPC()
 	logger.DoInit("", "publish_log", logrus.DebugLevel)
 	tracer.InitJaeger(constants.FeedServiceName)
 }

@@ -23,6 +23,7 @@ func NewServiceInfo() *kitex.ServiceInfo {
 		"ChangeCommentCnt":  kitex.NewMethodInfo(changeCommentCntHandler, newFeedServiceChangeCommentCntArgs, newFeedServiceChangeCommentCntResult, false),
 		"CheckVideoInvalid": kitex.NewMethodInfo(checkVideoInvalidHandler, newFeedServiceCheckVideoInvalidArgs, newFeedServiceCheckVideoInvalidResult, false),
 		"GetVideosById":     kitex.NewMethodInfo(getVideosByIdHandler, newFeedServiceGetVideosByIdArgs, newFeedServiceGetVideosByIdResult, false),
+		"GetVideosByUserID": kitex.NewMethodInfo(getVideosByUserIDHandler, newFeedServiceGetVideosByUserIDArgs, newFeedServiceGetVideosByUserIDResult, false),
 	}
 	extra := map[string]interface{}{
 		"PackageName": "feed",
@@ -110,6 +111,24 @@ func newFeedServiceGetVideosByIdResult() interface{} {
 	return feed.NewFeedServiceGetVideosByIdResult()
 }
 
+func getVideosByUserIDHandler(ctx context.Context, handler interface{}, arg, result interface{}) error {
+	realArg := arg.(*feed.FeedServiceGetVideosByUserIDArgs)
+	realResult := result.(*feed.FeedServiceGetVideosByUserIDResult)
+	success, err := handler.(feed.FeedService).GetVideosByUserID(ctx, realArg.Req)
+	if err != nil {
+		return err
+	}
+	realResult.Success = success
+	return nil
+}
+func newFeedServiceGetVideosByUserIDArgs() interface{} {
+	return feed.NewFeedServiceGetVideosByUserIDArgs()
+}
+
+func newFeedServiceGetVideosByUserIDResult() interface{} {
+	return feed.NewFeedServiceGetVideosByUserIDResult()
+}
+
 type kClient struct {
 	c client.Client
 }
@@ -155,6 +174,16 @@ func (p *kClient) GetVideosById(ctx context.Context, req *feed.CheckVideoInvalid
 	_args.Req = req
 	var _result feed.FeedServiceGetVideosByIdResult
 	if err = p.c.Call(ctx, "GetVideosById", &_args, &_result); err != nil {
+		return
+	}
+	return _result.GetSuccess(), nil
+}
+
+func (p *kClient) GetVideosByUserID(ctx context.Context, req *feed.GetVideoByUserIDRequest) (r *feed.GetVideoByUserIDResponse, err error) {
+	var _args feed.FeedServiceGetVideosByUserIDArgs
+	_args.Req = req
+	var _result feed.FeedServiceGetVideosByUserIDResult
+	if err = p.c.Call(ctx, "GetVideosByUserID", &_args, &_result); err != nil {
 		return
 	}
 	return _result.GetSuccess(), nil

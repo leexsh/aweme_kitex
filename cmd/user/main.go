@@ -23,7 +23,7 @@ import (
 
 func Init() {
 	// redis init
-	db.InitRedis()
+	userDB.InitRedis()
 	// kafka init
 	userKafka.InitKafka()
 	// rpc init

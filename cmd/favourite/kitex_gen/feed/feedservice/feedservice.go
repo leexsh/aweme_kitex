@@ -19,7 +19,11 @@ func NewServiceInfo() *kitex.ServiceInfo {
 	serviceName := "FeedService"
 	handlerType := (*feed.FeedService)(nil)
 	methods := map[string]kitex.MethodInfo{
-		"Feed": kitex.NewMethodInfo(feedHandler, newFeedServiceFeedArgs, newFeedServiceFeedResult, false),
+		"Feed":              kitex.NewMethodInfo(feedHandler, newFeedServiceFeedArgs, newFeedServiceFeedResult, false),
+		"ChangeCommentCnt":  kitex.NewMethodInfo(changeCommentCntHandler, newFeedServiceChangeCommentCntArgs, newFeedServiceChangeCommentCntResult, false),
+		"CheckVideoInvalid": kitex.NewMethodInfo(checkVideoInvalidHandler, newFeedServiceCheckVideoInvalidArgs, newFeedServiceCheckVideoInvalidResult, false),
+		"GetVideosById":     kitex.NewMethodInfo(getVideosByIdHandler, newFeedServiceGetVideosByIdArgs, newFeedServiceGetVideosByIdResult, false),
+		"GetVideosByUserID": kitex.NewMethodInfo(getVideosByUserIDHandler, newFeedServiceGetVideosByUserIDArgs, newFeedServiceGetVideosByUserIDResult, false),
 	}
 	extra := map[string]interface{}{
 		"PackageName": "feed",
@@ -53,6 +57,78 @@ func newFeedServiceFeedResult() interface{} {
 	return feed.NewFeedServiceFeedResult()
 }
 
+func changeCommentCntHandler(ctx context.Context, handler interface{}, arg, result interface{}) error {
+	realArg := arg.(*feed.FeedServiceChangeCommentCntArgs)
+	realResult := result.(*feed.FeedServiceChangeCommentCntResult)
+	success, err := handler.(feed.FeedService).ChangeCommentCnt(ctx, realArg.Req)
+	if err != nil {
+		return err
+	}
+	realResult.Success = success
+	return nil
+}
+func newFeedServiceChangeCommentCntArgs() interface{} {
+	return feed.NewFeedServiceChangeCommentCntArgs()
+}
+
+func newFeedServiceChangeCommentCntResult() interface{} {
+	return feed.NewFeedServiceChangeCommentCntResult()
+}
+
+func checkVideoInvalidHandler(ctx context.Context, handler interface{}, arg, result interface{}) error {
+	realArg := arg.(*feed.FeedServiceCheckVideoInvalidArgs)
+	realResult := result.(*feed.FeedServiceCheckVideoInvalidResult)
+	success, err := handler.(feed.FeedService).CheckVideoInvalid(ctx, realArg.Req)
+	if err != nil {
+		return err
+	}
+	realResult.Success = success
+	return nil
+}
+func newFeedServiceCheckVideoInvalidArgs() interface{} {
+	return feed.NewFeedServiceCheckVideoInvalidArgs()
+}
+
+func newFeedServiceCheckVideoInvalidResult() interface{} {
+	return feed.NewFeedServiceCheckVideoInvalidResult()
+}
+
+func getVideosByIdHandler(ctx context.Context, handler interface{}, arg, result interface{}) error {
+	realArg := arg.(*feed.FeedServiceGetVideosByIdArgs)
+	realResult := result.(*feed.FeedServiceGetVideosByIdResult)
+	success, err := handler.(feed.FeedService).GetVideosById(ctx, realArg.Req)
+	if err != nil {
+		return err
+	}
+	realResult.Success = success
+	return nil
+}
+func newFeedServiceGetVideosByIdArgs() interface{} {
+	return feed.NewFeedServiceGetVideosByIdArgs()
+}
+
+func newFeedServiceGetVideosByIdResult() interface{} {
+	return feed.NewFeedServiceGetVideosByIdResult()
+}
+
+func getVideosByUserIDHandler(ctx context.Context, handler interface{}, arg, result interface{}) error {
+	realArg := arg.(*feed.FeedServiceGetVideosByUserIDArgs)
+	realResult := result.(*feed.FeedServiceGetVideosByUserIDResult)
+	success, err := handler.(feed.FeedService).GetVideosByUserID(ctx, realArg.Req)
+	if err != nil {
+		return err
+	}
+	realResult.Success = success
+	return nil
+}
+func newFeedServiceGetVideosByUserIDArgs() interface{} {
+	return feed.NewFeedServiceGetVideosByUserIDArgs()
+}
+
+func newFeedServiceGetVideosByUserIDResult() interface{} {
+	return feed.NewFeedServiceGetVideosByUserIDResult()
+}
+
 type kClient struct {
 	c client.Client
 }
@@ -68,6 +144,46 @@ func (p *kClient) Feed(ctx context.Context, req *feed.FeedRequest) (r *feed.Feed
 	_args.Req = req
 	var _result feed.FeedServiceFeedResult
 	if err = p.c.Call(ctx, "Feed", &_args, &_result); err != nil {
+		return
+	}
+	return _result.GetSuccess(), nil
+}
+
+func (p *kClient) ChangeCommentCnt(ctx context.Context, req *feed.ChangeCommentCountRequest) (r *feed.ChangeCommentCountResponse, err error) {
+	var _args feed.FeedServiceChangeCommentCntArgs
+	_args.Req = req
+	var _result feed.FeedServiceChangeCommentCntResult
+	if err = p.c.Call(ctx, "ChangeCommentCnt", &_args, &_result); err != nil {
+		return
+	}
+	return _result.GetSuccess(), nil
+}
+
+func (p *kClient) CheckVideoInvalid(ctx context.Context, req *feed.CheckVideoInvalidRequest) (r *feed.CheckVideoInvalidResponse, err error) {
+	var _args feed.FeedServiceCheckVideoInvalidArgs
+	_args.Req = req
+	var _result feed.FeedServiceCheckVideoInvalidResult
+	if err = p.c.Call(ctx, "CheckVideoInvalid", &_args, &_result); err != nil {
+		return
+	}
+	return _result.GetSuccess(), nil
+}
+
+func (p *kClient) GetVideosById(ctx context.Context, req *feed.CheckVideoInvalidRequest) (r *feed.GetVideosResponse, err error) {
+	var _args feed.FeedServiceGetVideosByIdArgs
+	_args.Req = req
+	var _result feed.FeedServiceGetVideosByIdResult
+	if err = p.c.Call(ctx, "GetVideosById", &_args, &_result); err != nil {
+		return
+	}
+	return _result.GetSuccess(), nil
+}
+
+func (p *kClient) GetVideosByUserID(ctx context.Context, req *feed.GetVideoByUserIDRequest) (r *feed.GetVideoByUserIDResponse, err error) {
+	var _args feed.FeedServiceGetVideosByUserIDArgs
+	_args.Req = req
+	var _result feed.FeedServiceGetVideosByUserIDResult
+	if err = p.c.Call(ctx, "GetVideosByUserID", &_args, &_result); err != nil {
 		return
 	}
 	return _result.GetSuccess(), nil

@@ -22,14 +22,25 @@ struct FavouriteActionResponse {
 
 struct FavouriteListRequest {
     1: required string token
+    2: string user_id
 }
 
 struct FavouriteListResponse {
     1: base.BaseResp base_resp
-    2: list<feed.Video> video_list
+    2: map<string, feed.Video> video_list
+}
+
+struct QueryVideoIsFavouriteRequest {
+    1: string user_id
+    2: list<string> videos_id
+}
+struct QueryVideoIsFavouriteResponse {
+    1: base.BaseResp base_resp
+    2: map<string, bool> is_favourites
 }
 
 service FavouriteService {
      FavouriteActionResponse FavouriteAction(1: FavouriteActionRequest req)
      FavouriteListResponse FavouriteList(1: FavouriteListRequest req)
+     QueryVideoIsFavouriteResponse QueryVideoIsFavourite(1: QueryVideoIsFavouriteRequest req)
 }

@@ -1,4 +1,4 @@
-package db
+package userDB
 
 import (
 	constants "aweme_kitex/pkg/constant"
@@ -39,7 +39,7 @@ func AddName(ctx context.Context, userId, userName string) {
 // 删除UserId的关注数和ToUserId的粉丝数
 func DelCount(ctx context.Context, UserId string, ToUserId string) (bool, error) {
 	// 删除粉丝缓存的两者关系
-	//scard计算集合大小,SRem移除关系
+	// scard计算集合大小,SRem移除关系
 	RedisClient.HDel(ctx, UserId, FollowNum)
 	RedisClient.HDel(ctx, ToUserId, FollowerNum)
 	RedisClient.Expire(ctx, UserId, constants.RedisExpireTime)

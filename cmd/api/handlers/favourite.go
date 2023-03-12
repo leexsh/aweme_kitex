@@ -38,12 +38,15 @@ func FavoriteAction(c *gin.Context) {
 // FavoriteList get favorite list info
 func FavoriteList(c *gin.Context) {
 	token := c.Query("token")
-	_, err := jwt.AnalyzeToken(token)
+	uc, err := jwt.AnalyzeToken(token)
 	if err != nil {
 		SendResponse(c, errno.TokenInvalidErr)
 		return
 	}
-	favouriteListReq := &favourite.FavouriteListRequest{Token: token}
+	favouriteListReq := &favourite.FavouriteListRequest{
+		Token:  token,
+		UserId: uc.Id,
+	}
 	videoList, err := rpc.FavoriteList(context.Background(), favouriteListReq)
 	if err != nil {
 		SendResponse(c, errno.ConvertErr(err))

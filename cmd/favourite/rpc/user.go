@@ -41,7 +41,7 @@ func initUserRpc() {
 }
 
 // 获取用户信息
-func GetUserInfo(ctx context.Context, req *user2.SingleUserInfoRequest) ([]*user2.User, error) {
+func GetUserInfo(ctx context.Context, req *user2.SingleUserInfoRequest) (map[string]*user2.User, error) {
 	resp, err := userClient.GetUserInfoByUserId(ctx, req)
 	if err != nil {
 		return nil, err

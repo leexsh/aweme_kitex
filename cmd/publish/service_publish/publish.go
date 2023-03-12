@@ -27,14 +27,14 @@ func NewPublishService(ctx context.Context) *PublishService {
 
 // Publish upload video info
 func (s *PublishService) Publish(req *publish.PublishActionRequest) error {
-	uc, _ := jwt.AnalyzeToken(req.Token)
+	_, err := jwt.AnalyzeToken(req.Token)
 	video := req.Data
 	title := req.Title
 
-	fileName := fmt.Sprintf(uc.Id + title)
+	fileName := fmt.Sprintf(req.UserId + title)
 	filePath := "/public/" + fileName
 	// 1.将视频保存到本地文件夹
-	err := db.NewCOSDaoInstance().PublishBinaryDataToPublic(s.ctx, video, filePath)
+	err = db.NewCOSDaoInstance().PublishBinaryDataToPublic(s.ctx, video, filePath)
 	if err != nil {
 		return err
 	}
@@ -57,7 +57,7 @@ func (s *PublishService) Publish(req *publish.PublishActionRequest) error {
 	// 3.获取播放链接
 	video1 := &types.VideoRawData{
 		VideoId: utils.GenerateUUID(),
-		UserId:  uc.Id,
+		UserId:  req.UserId,
 		Title:   title,
 		PlayUrl: ourl.String(),
 	}

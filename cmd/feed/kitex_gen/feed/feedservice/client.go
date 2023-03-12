@@ -15,6 +15,7 @@ type Client interface {
 	ChangeCommentCnt(ctx context.Context, req *feed.ChangeCommentCountRequest, callOptions ...callopt.Option) (r *feed.ChangeCommentCountResponse, err error)
 	CheckVideoInvalid(ctx context.Context, req *feed.CheckVideoInvalidRequest, callOptions ...callopt.Option) (r *feed.CheckVideoInvalidResponse, err error)
 	GetVideosById(ctx context.Context, req *feed.CheckVideoInvalidRequest, callOptions ...callopt.Option) (r *feed.GetVideosResponse, err error)
+	GetVideosByUserID(ctx context.Context, req *feed.GetVideoByUserIDRequest, callOptions ...callopt.Option) (r *feed.GetVideoByUserIDResponse, err error)
 }
 
 // NewClient creates a client for the service defined in IDL.
@@ -64,4 +65,9 @@ func (p *kFeedServiceClient) CheckVideoInvalid(ctx context.Context, req *feed.Ch
 func (p *kFeedServiceClient) GetVideosById(ctx context.Context, req *feed.CheckVideoInvalidRequest, callOptions ...callopt.Option) (r *feed.GetVideosResponse, err error) {
 	ctx = client.NewCtxWithCallOptions(ctx, callOptions)
 	return p.kClient.GetVideosById(ctx, req)
+}
+
+func (p *kFeedServiceClient) GetVideosByUserID(ctx context.Context, req *feed.GetVideoByUserIDRequest, callOptions ...callopt.Option) (r *feed.GetVideoByUserIDResponse, err error) {
+	ctx = client.NewCtxWithCallOptions(ctx, callOptions)
+	return p.kClient.GetVideosByUserID(ctx, req)
 }

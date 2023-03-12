@@ -3,7 +3,7 @@
 package userservice
 
 import (
-	user "aweme_kitex/cmd/favourite/kitex_gen/user"
+	user "aweme_kitex/cmd/publish/kitex_gen/user"
 	"context"
 	client "github.com/cloudwego/kitex/client"
 	kitex "github.com/cloudwego/kitex/pkg/serviceinfo"

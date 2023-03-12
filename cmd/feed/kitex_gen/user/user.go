@@ -2107,8 +2107,8 @@ func (p *SingleUserInfoRequest) Field1DeepEqual(src []string) bool {
 }
 
 type SingleUserInfoResponse struct {
-	BaseResp *base.BaseResp `thrift:"base_resp,1" frugal:"1,default,base.BaseResp" json:"base_resp"`
-	Users    []*User        `thrift:"users,2" frugal:"2,default,list<User>" json:"users"`
+	BaseResp *base.BaseResp   `thrift:"base_resp,1" frugal:"1,default,base.BaseResp" json:"base_resp"`
+	Users    map[string]*User `thrift:"users,2" frugal:"2,default,map<string:User>" json:"users"`
 }
 
 func NewSingleUserInfoResponse() *SingleUserInfoResponse {
@@ -2128,13 +2128,13 @@ func (p *SingleUserInfoResponse) GetBaseResp() (v *base.BaseResp) {
 	return p.BaseResp
 }
 
-func (p *SingleUserInfoResponse) GetUsers() (v []*User) {
+func (p *SingleUserInfoResponse) GetUsers() (v map[string]*User) {
 	return p.Users
 }
 func (p *SingleUserInfoResponse) SetBaseResp(val *base.BaseResp) {
 	p.BaseResp = val
 }
-func (p *SingleUserInfoResponse) SetUsers(val []*User) {
+func (p *SingleUserInfoResponse) SetUsers(val map[string]*User) {
 	p.Users = val
 }
 
@@ -2177,7 +2177,7 @@ func (p *SingleUserInfoResponse) Read(iprot thrift.TProtocol) (err error) {
 				}
 			}
 		case 2:
-			if fieldTypeId == thrift.LIST {
+			if fieldTypeId == thrift.MAP {
 				if err = p.ReadField2(iprot); err != nil {
 					goto ReadFieldError
 				}
@@ -2225,20 +2225,26 @@ func (p *SingleUserInfoResponse) ReadField1(iprot thrift.TProtocol) error {
 }
 
 func (p *SingleUserInfoResponse) ReadField2(iprot thrift.TProtocol) error {
-	_, size, err := iprot.ReadListBegin()
+	_, _, size, err := iprot.ReadMapBegin()
 	if err != nil {
 		return err
 	}
-	p.Users = make([]*User, 0, size)
+	p.Users = make(map[string]*User, size)
 	for i := 0; i < size; i++ {
-		_elem := NewUser()
-		if err := _elem.Read(iprot); err != nil {
+		var _key string
+		if v, err := iprot.ReadString(); err != nil {
+			return err
+		} else {
+			_key = v
+		}
+		_val := NewUser()
+		if err := _val.Read(iprot); err != nil {
 			return err
 		}
 
-		p.Users = append(p.Users, _elem)
+		p.Users[_key] = _val
 	}
-	if err := iprot.ReadListEnd(); err != nil {
+	if err := iprot.ReadMapEnd(); err != nil {
 		return err
 	}
 	return nil
@@ -2295,18 +2301,23 @@ WriteFieldEndError:
 }
 
 func (p *SingleUserInfoResponse) writeField2(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("users", thrift.LIST, 2); err != nil {
+	if err = oprot.WriteFieldBegin("users", thrift.MAP, 2); err != nil {
 		goto WriteFieldBeginError
 	}
-	if err := oprot.WriteListBegin(thrift.STRUCT, len(p.Users)); err != nil {
+	if err := oprot.WriteMapBegin(thrift.STRING, thrift.STRUCT, len(p.Users)); err != nil {
 		return err
 	}
-	for _, v := range p.Users {
+	for k, v := range p.Users {
+
+		if err := oprot.WriteString(k); err != nil {
+			return err
+		}
+
 		if err := v.Write(oprot); err != nil {
 			return err
 		}
 	}
-	if err := oprot.WriteListEnd(); err != nil {
+	if err := oprot.WriteMapEnd(); err != nil {
 		return err
 	}
 	if err = oprot.WriteFieldEnd(); err != nil {
@@ -2348,13 +2359,13 @@ func (p *SingleUserInfoResponse) Field1DeepEqual(src *base.BaseResp) bool {
 	}
 	return true
 }
-func (p *SingleUserInfoResponse) Field2DeepEqual(src []*User) bool {
+func (p *SingleUserInfoResponse) Field2DeepEqual(src map[string]*User) bool {
 
 	if len(p.Users) != len(src) {
 		return false
 	}
-	for i, v := range p.Users {
-		_src := src[i]
+	for k, v := range p.Users {
+		_src := src[k]
 		if !v.DeepEqual(_src) {
 			return false
 		}

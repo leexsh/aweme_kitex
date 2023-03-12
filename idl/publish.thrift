@@ -6,6 +6,7 @@ struct PublishActionRequest {
     1: string token
     2: binary data
     3: string title
+    4: string user_id
 }
 
 struct PublishActionResponse {
@@ -14,6 +15,7 @@ struct PublishActionResponse {
 
 struct PublishListRequest {
     1: string token
+    2: string user_id
 }
 
 struct PublishListResponse {

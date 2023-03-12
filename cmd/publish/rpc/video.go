@@ -1,4 +1,4 @@
-package commentRPC
+package publishRPC
 
 import (
 	"aweme_kitex/cmd/feed/kitex_gen/feed"
@@ -41,17 +41,6 @@ func initFeedRpc() {
 	feedClient = client
 }
 
-func ChangeCommentCount(ctx context.Context, req *feed.ChangeCommentCountRequest) error {
-	resp, err := feedClient.ChangeCommentCnt(ctx, req)
-	if err != nil {
-		return err
-	}
-	if resp.BaseResp.StatusCode != 0 {
-		return errors.New(resp.BaseResp.StatusMsg)
-	}
-	return nil
-}
-
 func CheckVideoInvalid(ctx context.Context, req *feed.CheckVideoInvalidRequest) error {
 	resp, err := feedClient.CheckVideoInvalid(ctx, req)
 	if err != nil {
@@ -65,6 +54,17 @@ func CheckVideoInvalid(ctx context.Context, req *feed.CheckVideoInvalidRequest) 
 
 func GetVideosById(ctx context.Context, req *feed.CheckVideoInvalidRequest) ([]*feed.Video, error) {
 	resp, err := feedClient.GetVideosById(ctx, req)
+	if err != nil {
+		return nil, err
+	}
+	if resp.BaseResp.StatusCode != 0 {
+		return nil, errors.New(resp.BaseResp.StatusMsg)
+	}
+	return resp.Videos, nil
+}
+
+func GetVideosByUserId(ctx context.Context, req *feed.GetVideoByUserIDRequest) ([]*feed.Video, error) {
+	resp, err := feedClient.GetVideosByUserID(ctx, req)
 	if err != nil {
 		return nil, err
 	}

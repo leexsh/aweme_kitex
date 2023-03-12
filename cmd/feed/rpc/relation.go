@@ -1,8 +1,8 @@
-package commentRPC
+package feedRPC
 
 import (
-	user2 "aweme_kitex/cmd/user/kitex_gen/user"
-	"aweme_kitex/cmd/user/kitex_gen/user/userservice"
+	relation2 "aweme_kitex/cmd/relation/kitex_gen/relation"
+	relation "aweme_kitex/cmd/relation/kitex_gen/relation/relationservice"
 	constants "aweme_kitex/pkg/constant"
 	"aweme_kitex/pkg/errno"
 	"aweme_kitex/pkg/middleware"
@@ -15,15 +15,15 @@ import (
 	trace "github.com/kitex-contrib/tracer-opentracing"
 )
 
-var userClient userservice.Client
+var relationClient relation.Client
 
-func initUserRpc() {
+func initRelationRpc() {
 	r, err := etcd.NewEtcdResolver([]string{constants.EtcdAddress})
 	if err != nil {
 		panic(err)
 	}
 
-	c, err := userservice.NewClient(
+	c, err := relation.NewClient(
 		constants.UserServiceName,
 		client.WithMiddleware(middleware.CommonMiddleware),
 		client.WithInstanceMW(middleware.ClientMiddleware),
@@ -37,17 +37,16 @@ func initUserRpc() {
 	if err != nil {
 		panic(err)
 	}
-	userClient = c
+	relationClient = c
 }
 
-// 获取用户信息
-func GetUserInfo(ctx context.Context, req *user2.SingleUserInfoRequest) (map[string]*user2.User, error) {
-	resp, err := userClient.GetUserInfoByUserId(ctx, req)
+func QueryRelation(ctx context.Context, req *relation2.QueryRelationRequest) (bool, error) {
+	resp, err := relationClient.QueryRelation(ctx, req)
 	if err != nil {
-		return nil, err
+		return false, err
 	}
 	if resp.BaseResp.StatusCode != 0 {
-		return nil, errno.NewErr(resp.BaseResp.StatusCode, resp.BaseResp.StatusMsg)
+		return false, errno.NewErr(resp.BaseResp.StatusCode, resp.BaseResp.StatusMsg)
 	}
-	return resp.Users, nil
+	return resp.IsFollow, nil
 }

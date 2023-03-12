@@ -51,3 +51,14 @@ func CheckVideoInvalid(ctx context.Context, req *feed.CheckVideoInvalidRequest) 
 	}
 	return nil
 }
+
+func GetVideosById(ctx context.Context, req *feed.CheckVideoInvalidRequest) ([]*feed.Video, error) {
+	resp, err := feedClient.GetVideosById(ctx, req)
+	if err != nil {
+		return nil, err
+	}
+	if resp.BaseResp.StatusCode != 0 {
+		return nil, errors.New(resp.BaseResp.StatusMsg)
+	}
+	return resp.Videos, nil
+}

@@ -14,7 +14,7 @@ import (
 
 func Publish(c *gin.Context) {
 	token := c.Query("token")
-	_, err := jwt.AnalyzeToken(token)
+	uc, err := jwt.AnalyzeToken(token)
 	if err != nil {
 		SendResponse(c, errno.TokenInvalidErr)
 		return
@@ -40,9 +40,10 @@ func Publish(c *gin.Context) {
 	video := buf.Bytes()
 
 	req := &publish.PublishActionRequest{
-		Token: token,
-		Data:  video,
-		Title: title,
+		Token:  token,
+		Data:   video,
+		Title:  title,
+		UserId: uc.Id,
 	}
 	err = rpc.PublishVideoData(context.Background(), req)
 	if err != nil {
@@ -54,12 +55,12 @@ func Publish(c *gin.Context) {
 
 func PublishList(c *gin.Context) {
 	token := c.Query("token")
-	_, err := jwt.AnalyzeToken(token)
+	uc, err := jwt.AnalyzeToken(token)
 	if err != nil {
 		SendResponse(c, errno.TokenInvalidErr)
 		return
 	}
-	videoList, err := rpc.PublishVideoList(context.Background(), &publish.PublishListRequest{Token: token})
+	videoList, err := rpc.PublishVideoList(context.Background(), &publish.PublishListRequest{Token: token, UserId: uc.Id})
 	if err != nil {
 		SendResponse(c, errno.ConvertErr(err))
 		return

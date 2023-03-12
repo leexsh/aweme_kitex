@@ -5,7 +5,6 @@ import (
 	relationRPC "aweme_kitex/cmd/relation/rpc"
 	"aweme_kitex/cmd/relation/service_relation/db"
 	user2 "aweme_kitex/cmd/user/kitex_gen/user"
-	db2 "aweme_kitex/cmd/user/service_user/db"
 	"aweme_kitex/pkg/types"
 	"context"
 )
@@ -101,9 +100,6 @@ func (r *relationListDataFlow) packageFollowInfo() error {
 }
 
 func (r *relationListDataFlow) getFollower() ([]*user.User, error) {
-	if _, err := db2.NewUserDaoInstance().CheckUserId(r.ctx, []string{r.UserId}); err != nil {
-		return nil, err
-	}
 	if err := r.prepareFollowerInfo(); err != nil {
 		return nil, err
 	}

@@ -1,7 +1,8 @@
-package favRPC
+package publishRPC
 
 func InitRPC() {
-	initUserRpc()
 	initFeedRpc()
+	initUserRpc()
 	initRelationRpc()
+	initFavouriteRpc()
 }

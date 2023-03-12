@@ -2,7 +2,7 @@ package service_user
 
 import (
 	"aweme_kitex/cmd/user/kitex_gen/user"
-	"aweme_kitex/cmd/user/service_user/db"
+	userDB "aweme_kitex/cmd/user/service_user/db"
 	"aweme_kitex/pkg/types"
 	"context"
 	"errors"
@@ -32,7 +32,7 @@ func (s *UserInfoService) packUserInfo(u *types.UserRawData) (*user.User, error)
 }
 
 func (s *UserInfoService) UserInfo(req *user.UserInfoRequest) (user *user.User, err error) {
-	u, err := db.NewUserDaoInstance().QueryUserByUserId(s.ctx, req.UserId)
+	u, err := userDB.NewUserDaoInstance().QueryUserByUserId(s.ctx, req.UserId)
 	if err != nil {
 		return nil, err
 	}
@@ -41,9 +41,9 @@ func (s *UserInfoService) UserInfo(req *user.UserInfoRequest) (user *user.User, 
 
 func (s *UserInfoService) SingleUserInfo(uid string) (user *user.User, err error) {
 
-	followNum, _ := db.RedisClient.HGet(s.ctx, uid, db.FollowNum).Result()
-	followerNum, _ := db.RedisClient.HGet(s.ctx, uid, db.FollowerNum).Result()
-	name, _ := db.RedisClient.Get(s.ctx, uid).Result()
+	followNum, _ := userDB.RedisClient.HGet(s.ctx, uid, userDB.FollowNum).Result()
+	followerNum, _ := userDB.RedisClient.HGet(s.ctx, uid, userDB.FollowerNum).Result()
+	name, _ := userDB.RedisClient.Get(s.ctx, uid).Result()
 	// 1.Redis exist
 	if len(name) > 0 && len(followNum) > 0 && len(followerNum) > 0 {
 		fInt, _ := strconv.ParseInt(followNum, 10, 64)
@@ -56,12 +56,12 @@ func (s *UserInfoService) SingleUserInfo(uid string) (user *user.User, err error
 		return
 	} else {
 		// 2. redis不存在，查询sql，并写入redis
-		u, err := db.NewUserDaoInstance().QueryUserByUserId(s.ctx, uid)
+		u, err := userDB.NewUserDaoInstance().QueryUserByUserId(s.ctx, uid)
 		if err != nil {
 			return nil, err
 		}
-		db.AddName(s.ctx, u.UserId, u.Name)
-		db.UpdateCount(s.ctx, u.UserId, u.FollowCount, u.FollowerCount)
+		userDB.AddName(s.ctx, u.UserId, u.Name)
+		userDB.UpdateCount(s.ctx, u.UserId, u.FollowCount, u.FollowerCount)
 		return s.packUserInfo(u)
 	}
 	return

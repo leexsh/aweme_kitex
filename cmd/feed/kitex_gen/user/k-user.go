@@ -1718,7 +1718,7 @@ func (p *SingleUserInfoResponse) FastRead(buf []byte) (int, error) {
 				}
 			}
 		case 2:
-			if fieldTypeId == thrift.LIST {
+			if fieldTypeId == thrift.MAP {
 				l, err = p.FastReadField2(buf[offset:])
 				offset += l
 				if err != nil {
@@ -1782,23 +1782,32 @@ func (p *SingleUserInfoResponse) FastReadField1(buf []byte) (int, error) {
 func (p *SingleUserInfoResponse) FastReadField2(buf []byte) (int, error) {
 	offset := 0
 
-	_, size, l, err := bthrift.Binary.ReadListBegin(buf[offset:])
+	_, _, size, l, err := bthrift.Binary.ReadMapBegin(buf[offset:])
 	offset += l
 	if err != nil {
 		return offset, err
 	}
-	p.Users = make([]*User, 0, size)
+	p.Users = make(map[string]*User, size)
 	for i := 0; i < size; i++ {
-		_elem := NewUser()
-		if l, err := _elem.FastRead(buf[offset:]); err != nil {
+		var _key string
+		if v, l, err := bthrift.Binary.ReadString(buf[offset:]); err != nil {
+			return offset, err
+		} else {
+			offset += l
+
+			_key = v
+
+		}
+		_val := NewUser()
+		if l, err := _val.FastRead(buf[offset:]); err != nil {
 			return offset, err
 		} else {
 			offset += l
 		}
 
-		p.Users = append(p.Users, _elem)
+		p.Users[_key] = _val
 	}
-	if l, err := bthrift.Binary.ReadListEnd(buf[offset:]); err != nil {
+	if l, err := bthrift.Binary.ReadMapEnd(buf[offset:]); err != nil {
 		return offset, err
 	} else {
 		offset += l
@@ -1845,16 +1854,19 @@ func (p *SingleUserInfoResponse) fastWriteField1(buf []byte, binaryWriter bthrif
 
 func (p *SingleUserInfoResponse) fastWriteField2(buf []byte, binaryWriter bthrift.BinaryWriter) int {
 	offset := 0
-	offset += bthrift.Binary.WriteFieldBegin(buf[offset:], "users", thrift.LIST, 2)
-	listBeginOffset := offset
-	offset += bthrift.Binary.ListBeginLength(thrift.STRUCT, 0)
+	offset += bthrift.Binary.WriteFieldBegin(buf[offset:], "users", thrift.MAP, 2)
+	mapBeginOffset := offset
+	offset += bthrift.Binary.MapBeginLength(thrift.STRING, thrift.STRUCT, 0)
 	var length int
-	for _, v := range p.Users {
+	for k, v := range p.Users {
 		length++
+
+		offset += bthrift.Binary.WriteStringNocopy(buf[offset:], binaryWriter, k)
+
 		offset += v.FastWriteNocopy(buf[offset:], binaryWriter)
 	}
-	bthrift.Binary.WriteListBegin(buf[listBeginOffset:], thrift.STRUCT, length)
-	offset += bthrift.Binary.WriteListEnd(buf[offset:])
+	bthrift.Binary.WriteMapBegin(buf[mapBeginOffset:], thrift.STRING, thrift.STRUCT, length)
+	offset += bthrift.Binary.WriteMapEnd(buf[offset:])
 	offset += bthrift.Binary.WriteFieldEnd(buf[offset:])
 	return offset
 }
@@ -1869,12 +1881,15 @@ func (p *SingleUserInfoResponse) field1Length() int {
 
 func (p *SingleUserInfoResponse) field2Length() int {
 	l := 0
-	l += bthrift.Binary.FieldBeginLength("users", thrift.LIST, 2)
-	l += bthrift.Binary.ListBeginLength(thrift.STRUCT, len(p.Users))
-	for _, v := range p.Users {
+	l += bthrift.Binary.FieldBeginLength("users", thrift.MAP, 2)
+	l += bthrift.Binary.MapBeginLength(thrift.STRING, thrift.STRUCT, len(p.Users))
+	for k, v := range p.Users {
+
+		l += bthrift.Binary.StringLengthNocopy(k)
+
 		l += v.BLength()
 	}
-	l += bthrift.Binary.ListEndLength()
+	l += bthrift.Binary.MapEndLength()
 	l += bthrift.Binary.FieldEndLength()
 	return l
 }

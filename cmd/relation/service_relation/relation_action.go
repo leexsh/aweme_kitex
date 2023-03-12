@@ -6,7 +6,6 @@ import (
 	relation_db "aweme_kitex/cmd/relation/service_relation/db"
 	"aweme_kitex/cmd/relation/service_relation/kafka"
 	user2 "aweme_kitex/cmd/user/kitex_gen/user"
-	"aweme_kitex/cmd/user/service_user/db"
 	constants "aweme_kitex/pkg/constant"
 	"aweme_kitex/pkg/jwt"
 	"context"
@@ -53,9 +52,6 @@ type relationActionDataFlow struct {
 }
 
 func (r *relationActionDataFlow) do() error {
-	if _, err := db.NewUserDaoInstance().CheckUserId(r.ctx, []string{r.toUserId}); err != nil {
-		return err
-	}
 	if r.actionType == constants.Follow {
 		err := r.createRelation()
 		if err != nil {

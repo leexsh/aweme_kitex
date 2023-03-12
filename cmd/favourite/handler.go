@@ -33,3 +33,14 @@ func (s *FavouriteServiceImpl) FavouriteList(ctx context.Context, req *favourite
 
 	return favPack.FavouriteListResponse(0, "favourite action success", videoList), nil
 }
+
+// QueryVideoIsFavourite implements the FavouriteServiceImpl interface.
+func (s *FavouriteServiceImpl) QueryVideoIsFavourite(ctx context.Context, req *favourite.QueryVideoIsFavouriteRequest) (resp *favourite.QueryVideoIsFavouriteResponse, err error) {
+	isFavours, err := service_favourite.NewQueryIsFavouriteService(ctx).QueryIsFavours(req)
+	if err != nil {
+		return favPack.QueryFavoursResponse(-1, err.Error(), nil), nil
+	}
+
+	return favPack.QueryFavoursResponse(0, "favourite action success", isFavours), nil
+	return
+}

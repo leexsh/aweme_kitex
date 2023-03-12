@@ -22,6 +22,7 @@ struct Video {
 struct FeedRequest {
     1: i64 latest_time
     2: string token
+    3: string user_id
 }
 
 struct FeedResponse {
@@ -52,6 +53,15 @@ struct GetVideosResponse {
     2: list<Video> videos
 }
 
+struct GetVideoByUserIDRequest {
+    1: string user_id
+}
+
+struct GetVideoByUserIDResponse {
+    1: base.BaseResp base_resp
+    2: list<Video> videos
+}
+
 service FeedService {
     // feed流操作
     FeedResponse Feed(1: FeedRequest req)
@@ -61,4 +71,6 @@ service FeedService {
     CheckVideoInvalidResponse CheckVideoInvalid(1: CheckVideoInvalidRequest req)
     // 获取视频
     GetVideosResponse GetVideosById(1: CheckVideoInvalidRequest req)
+    // 根据userId获取视频
+    GetVideoByUserIDResponse GetVideosByUserID(1: GetVideoByUserIDRequest req)
 }

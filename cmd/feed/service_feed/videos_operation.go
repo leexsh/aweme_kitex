@@ -4,7 +4,7 @@ import (
 	"aweme_kitex/cmd/feed/kitex_gen/feed"
 	"aweme_kitex/cmd/feed/kitex_gen/user"
 	feedRPC "aweme_kitex/cmd/feed/rpc"
-	db2 "aweme_kitex/cmd/feed/service_feed/db"
+	videoDB "aweme_kitex/cmd/feed/service_feed/db"
 	user2 "aweme_kitex/cmd/user/kitex_gen/user"
 	"aweme_kitex/pkg/types"
 	"context"
@@ -22,12 +22,12 @@ func NewCheckVideoService(ctx context.Context) *CheckVideoService {
 }
 
 func (c *CheckVideoService) CheckVideoInvalid(vids []string) error {
-	_, err := db2.NewVideoDaoInstance().QueryVideosByIs(c.ctx, vids)
+	_, err := videoDB.NewVideoDaoInstance().QueryVideosByIs(c.ctx, vids)
 	return err
 }
 
 func (c *CheckVideoService) GetVideos(vids []string) ([]*feed.Video, error) {
-	vidos, err := db2.NewVideoDaoInstance().QueryVideosByIs(c.ctx, vids)
+	vidos, err := videoDB.NewVideoDaoInstance().QueryVideosByIs(c.ctx, vids)
 	if err != nil {
 		return nil, err
 	}
@@ -36,6 +36,16 @@ func (c *CheckVideoService) GetVideos(vids []string) ([]*feed.Video, error) {
 		uids = append(uids, vidos[i].UserId)
 	}
 	users, err := feedRPC.GetUserInfo(c.ctx, &user2.SingleUserInfoRequest{UserIds: uids})
+	return c.packageinfo(vidos, users)
+}
+
+func (c *CheckVideoService) GetVideosByUserID(userId string) ([]*feed.Video, error) {
+	vidos, err := videoDB.NewVideoDaoInstance().QueryVideosByUserId(c.ctx, userId)
+	if err != nil {
+		return nil, err
+	}
+	users, err := feedRPC.GetUserInfo(c.ctx, &user2.SingleUserInfoRequest{UserIds: []string{userId}})
+
 	return c.packageinfo(vidos, users)
 }
 

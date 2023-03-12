@@ -14,7 +14,7 @@ import (
 
 func Feed(c *gin.Context) {
 	token := c.DefaultQuery("token", "")
-	_, err := jwt.AnalyzeToken(token)
+	uc, err := jwt.AnalyzeToken(token)
 	if err != nil {
 		SendResponse(c, errno.TokenInvalidErr)
 		return
@@ -28,6 +28,7 @@ func Feed(c *gin.Context) {
 	req := &feed.FeedRequest{
 		LatestTime: latestTime,
 		Token:      token,
+		UserId:     uc.Id,
 	}
 	video, nextTime, err := rpc.Feed(context.Background(), req)
 	if err != nil {

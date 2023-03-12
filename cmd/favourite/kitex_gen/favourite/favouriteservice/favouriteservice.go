@@ -19,8 +19,9 @@ func NewServiceInfo() *kitex.ServiceInfo {
 	serviceName := "FavouriteService"
 	handlerType := (*favourite.FavouriteService)(nil)
 	methods := map[string]kitex.MethodInfo{
-		"FavouriteAction": kitex.NewMethodInfo(favouriteActionHandler, newFavouriteServiceFavouriteActionArgs, newFavouriteServiceFavouriteActionResult, false),
-		"FavouriteList":   kitex.NewMethodInfo(favouriteListHandler, newFavouriteServiceFavouriteListArgs, newFavouriteServiceFavouriteListResult, false),
+		"FavouriteAction":       kitex.NewMethodInfo(favouriteActionHandler, newFavouriteServiceFavouriteActionArgs, newFavouriteServiceFavouriteActionResult, false),
+		"FavouriteList":         kitex.NewMethodInfo(favouriteListHandler, newFavouriteServiceFavouriteListArgs, newFavouriteServiceFavouriteListResult, false),
+		"QueryVideoIsFavourite": kitex.NewMethodInfo(queryVideoIsFavouriteHandler, newFavouriteServiceQueryVideoIsFavouriteArgs, newFavouriteServiceQueryVideoIsFavouriteResult, false),
 	}
 	extra := map[string]interface{}{
 		"PackageName": "favourite",
@@ -72,6 +73,24 @@ func newFavouriteServiceFavouriteListResult() interface{} {
 	return favourite.NewFavouriteServiceFavouriteListResult()
 }
 
+func queryVideoIsFavouriteHandler(ctx context.Context, handler interface{}, arg, result interface{}) error {
+	realArg := arg.(*favourite.FavouriteServiceQueryVideoIsFavouriteArgs)
+	realResult := result.(*favourite.FavouriteServiceQueryVideoIsFavouriteResult)
+	success, err := handler.(favourite.FavouriteService).QueryVideoIsFavourite(ctx, realArg.Req)
+	if err != nil {
+		return err
+	}
+	realResult.Success = success
+	return nil
+}
+func newFavouriteServiceQueryVideoIsFavouriteArgs() interface{} {
+	return favourite.NewFavouriteServiceQueryVideoIsFavouriteArgs()
+}
+
+func newFavouriteServiceQueryVideoIsFavouriteResult() interface{} {
+	return favourite.NewFavouriteServiceQueryVideoIsFavouriteResult()
+}
+
 type kClient struct {
 	c client.Client
 }
@@ -97,6 +116,16 @@ func (p *kClient) FavouriteList(ctx context.Context, req *favourite.FavouriteLis
 	_args.Req = req
 	var _result favourite.FavouriteServiceFavouriteListResult
 	if err = p.c.Call(ctx, "FavouriteList", &_args, &_result); err != nil {
+		return
+	}
+	return _result.GetSuccess(), nil
+}
+
+func (p *kClient) QueryVideoIsFavourite(ctx context.Context, req *favourite.QueryVideoIsFavouriteRequest) (r *favourite.QueryVideoIsFavouriteResponse, err error) {
+	var _args favourite.FavouriteServiceQueryVideoIsFavouriteArgs
+	_args.Req = req
+	var _result favourite.FavouriteServiceQueryVideoIsFavouriteResult
+	if err = p.c.Call(ctx, "QueryVideoIsFavourite", &_args, &_result); err != nil {
 		return
 	}
 	return _result.GetSuccess(), nil

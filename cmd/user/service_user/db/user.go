@@ -1,4 +1,4 @@
-package db
+package userDB
 
 import (
 	"aweme_kitex/cfg"
