@@ -6,22 +6,22 @@
 - 3.使用Kitex构建RPC微服务，Gin构建HTTP服务
 - 4.GORM操作MySQL数据库，防止SQL注入，使用事务保证数据一致性，完整性，使用redis保存用户信息
 - 5.使用**ETCD**进行服务注册、服务发现，**Jarger**进行链路追踪
-- 6.使用**MySQL**数据库进行数据存储，并建立索引
+- 6.使用**MySQL**数据库进行数据存储，并建立索引，利用redis进行缓存
 - 7.使用**OSS**进行视频对象存储，上传视频和封面
 - 8.使用**JWT**鉴权，**MD5**密码加密，**ffmpeg**处理视频
 - 9.进行了**部分单元测试**，api**自动化测试**，[Postman](https://api.postman.com/collections/22021660-83a8235f-4e00-48e7-ab5f-88c62b61c47c?access_key=PMAT-01GS5K8MV2RF39KMPE3MG5QTV9)
 - 10.使用logrus进行log本地记录，支持日志写入kafka
 ## 2.服务名称
 
-| 服务名   | 用途                               | 框架                    | 协议  | 注册中心 | 链路追踪 | 数据存储            | 日志    |
-| -------- | ---------------------------------- | ----------------------- |-----| -------- | -------- |-----------------|-------|
-| api      | http接口，通过RPC客户端调用RPC服务 | `gin` `kitex`           | `http` | `etcd`   | `jaeger` |                 | `zap` |
-| feed     | 视频流RPC微服务                    | `kitex` `gorm`          | `thrift` | `etcd`   | `jaeger` | `mysql`         | `zap` |
-| publish  | 视频上传RPC微服务                  | `kitex` `gorm` `ffmpeg` | `thrift` | `etcd`   | `jaeger` | `mysql` `oss`   | `zap` |
-| user     | 用户RPC微服务                      | `kitex` `gorm` `jwt`    | `thrift` | `etcd`   | `jaeger` | `mysql` `redis` | `zap` |
-| favorite | 点赞RPC微服务                      | `kitex` `gorm`          | `thrift` | `etcd`   | `jaeger` | `mysql`         | `zap` |
-| comment  | 评论RPC微服务                      | `kitex` `gorm`          | `thrift` | `etcd`   | `jaeger` | `mysql`         | `zap` |
-| relation | 关注RPC微服务                      | `kitex` `gorm`          | `thrift` | `etcd`   | `jaeger` | `mysql`         | `zap` |
+| 服务名   | 用途                               | 框架                    | 协议  | 注册中心 | 链路追踪 | 数据存储            | 日志      | 队列      |  
+| -------- | ---------------------------------- | ----------------------- |-----| -------- | -------- |-----------------|---------|---------|
+| api      | http接口，通过RPC客户端调用RPC服务 | `gin` `kitex`           | `http` | `etcd`   | `jaeger` |                 | `logus` | `-`     |
+| feed     | 视频流RPC微服务                    | `kitex` `gorm`          | `thrift` | `etcd`   | `jaeger` | `mysql`         | `logus` | `-`     |
+| publish  | 视频上传RPC微服务                  | `kitex` `gorm` `ffmpeg` | `thrift` | `etcd`   | `jaeger` | `mysql` `oss`   | `logus` | `-`     |
+| user     | 用户RPC微服务                      | `kitex` `gorm` `jwt`    | `thrift` | `etcd`   | `jaeger` | `mysql` `redis` | `logus` | `kafka` |
+| favorite | 点赞RPC微服务                      | `kitex` `gorm`          | `thrift` | `etcd`   | `jaeger` | `mysql`         | `logus` | `kafka` |
+| comment  | 评论RPC微服务                      | `kitex` `gorm`          | `thrift` | `etcd`   | `jaeger` | `mysql redis`   | `logus` | `kafka` |
+| relation | 关注RPC微服务                      | `kitex` `gorm`          | `thrift` | `etcd`   | `jaeger` | `mysql`         | `logus` | `-`     |
 ## 3.文件说明<br>
 | 目录               | 说明                                                    |
 |------------------|-------------------------------------------------------|
@@ -57,7 +57,7 @@
 | jwt-go          | v3.20 | jwt组件   
 | go-uuid         | v1.0.3 | generate uuid   
 | logrus          | v1.24.0 | [log组件](https://)   
-| kafka           | v1.24.0 | [log组件](https://)   
+| kafka           | v1.24.0 | [队列](https://)   
 | logkafka-hook   | v1.1.0 | log hook组件支持写入kafka
 | cos-go-sdk-v5   | v7.40.0 | [腾讯云对象存储组件](https://cloud.tencent.com/document/product/436/31215)   
 | ffmpeg-go       | v0.4.1 | ffmpeg组件(github.com/u2takey/ffmpeg-go)   
