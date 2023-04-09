@@ -55,7 +55,7 @@ func FavoriteAction(ctx context.Context, req *favourite2.FavouriteActionRequest)
 }
 
 // FavoriteList get favorite list info
-func FavoriteList(ctx context.Context, req *favourite2.FavouriteListRequest) ([]*feed.Video, error) {
+func FavoriteList(ctx context.Context, req *favourite2.FavouriteListRequest) (map[string]*feed.Video, error) {
 	resp, err := favouriteClient.FavouriteList(ctx, req)
 	if err != nil {
 		return nil, err

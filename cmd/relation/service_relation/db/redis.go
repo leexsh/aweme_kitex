@@ -12,8 +12,8 @@ var RelationClient *redis.Client
 func InitRedis() {
 	RelationClient = redis.NewClient(&redis.Options{
 		Addr:     "121.5.114.14:6379",
-		Password: "123456",                 // no password set
-		DB:       constants.RedisRelation1, // use default DB
+		Password: "123456",              // no password set
+		DB:       constants.RedisFollow, // use default DB
 	})
 
 }

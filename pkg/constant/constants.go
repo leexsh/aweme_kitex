@@ -67,5 +67,4 @@ const (
 	RedisFollow     = 1
 	RedisRelation1  = 2
 	RedisUser       = 3
-	RedisCount2     = 4
 )
