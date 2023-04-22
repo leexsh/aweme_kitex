@@ -1,7 +1,7 @@
 package favKafka
 
 import (
-	"aweme_kitex/cmd/favourite/service_favourite/db"
+	favouriteDB "aweme_kitex/cmd/favourite/service_favourite/db"
 	constants "aweme_kitex/pkg/constant"
 	"aweme_kitex/pkg/logger"
 	"aweme_kitex/pkg/types"
@@ -77,7 +77,7 @@ func ConsumeAddRelation() {
 					UserId:  userId,
 					VideoId: vid,
 				}
-				err := db.NewFavouriteDaoInstance().CreateFavour(context.Background(), favour, vid)
+				err := favouriteDB.NewFavouriteDaoInstance().CreateFavour(context.Background(), favour, vid)
 				if err != nil {
 					logger.Error(err)
 				}
@@ -104,7 +104,7 @@ func ConsumeDelRelation() {
 			for msg := range pc.Messages() {
 				params := strings.Split(string(msg.Value), "&")
 				userId, vid := params[0], params[1]
-				err := db.NewFavouriteDaoInstance().DelFavour(context.Background(), userId, vid)
+				err := favouriteDB.NewFavouriteDaoInstance().DelFavour(context.Background(), userId, vid)
 				if err != nil {
 					logger.Error(err)
 				}

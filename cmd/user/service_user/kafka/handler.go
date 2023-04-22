@@ -1,7 +1,7 @@
 package userKafka
 
 import (
-	"aweme_kitex/cmd/user/service_user/db"
+	userDB "aweme_kitex/cmd/user/service_user/db"
 	constants "aweme_kitex/pkg/constant"
 	"aweme_kitex/pkg/logger"
 	"context"
@@ -72,7 +72,7 @@ func ConsumeFollowAddMsg() {
 			for msg := range pc.Messages() {
 				params := strings.Split(string(msg.Value), "&")
 				userId, toUserId := params[0], params[1]
-				err := db.NewUserDaoInstance().IncreaseFollowCount(context.Background(), userId, toUserId)
+				err := userDB.NewUserDaoInstance().IncreaseFollowCount(context.Background(), userId, toUserId)
 				if err != nil {
 					logger.Error("create relation err: " + err.Error())
 				}
@@ -100,7 +100,7 @@ func ConsumeFollowDelMsg() {
 			for msg := range pc.Messages() {
 				params := strings.Split(string(msg.Value), "&")
 				userId, toUserId := params[0], params[1]
-				err := db.NewUserDaoInstance().DecreaseFollowCount(context.Background(), userId, toUserId)
+				err := userDB.NewUserDaoInstance().DecreaseFollowCount(context.Background(), userId, toUserId)
 				if err != nil {
 					logger.Error("create relation err: " + err.Error())
 				}
